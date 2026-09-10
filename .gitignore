@@ -1,0 +1,39 @@
+# Secrets and environment — never commit
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+credentials*.json
+client_secret*.json
+service-account*.json
+token*.json
+secrets/
+.secrets/
+
+# Exported operational data — may contain client or personal data
+exports/
+backups/
+*.bak
+data/live/
+seed/real/
+
+# Local artefacts
+.DS_Store
+Thumbs.db
+*.tmp
+*.log
+.cache/
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*~
