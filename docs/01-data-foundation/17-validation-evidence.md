@@ -8,23 +8,16 @@
 
 | | |
 |---|---|
-| **Commit tested** | `e25a714aeb4563f932f7a1973f614017451f2130` |
-| **Commit subject** | Correct figures the D-22 to D-24 pass moved |
+| **Commit tested** | `337f48a877c98e104d272858f4e72e70a902433f` |
+| **Commit subject** | Recommendations for the eight open questions, OQ-15 to OQ-22 |
 | **Command executed** | `python3 tools/run_validation.py` |
-| **Executed at** | 2026-09-11 15:33:01 UTC |
+| **Executed at** | 2026-09-11 17:48:00 UTC |
 | **Python** | 3.11.15 (CPython, GCC 13.3.0) |
 | **Operating system** | Linux 6.18.44-fc-v24 (x86_64) |
 | **Environment** | Ephemeral Linux container. This run made no network call, used no credential and contacted no external service |
 | **Third-party dependencies** | **None.** Python standard library only |
 | **Model version** | 1.0.0 |
-| **Working tree before the run** | MODIFIED — see below |
-
-```
-M docs/OWNER-REVIEW-PACK.md
-```
-
-> The run was executed against a working tree containing uncommitted changes. The commit recorded above is the parent commit, not the exact state tested. Re-run after committing to obtain a clean reproduction record.
-
+| **Working tree before the run** | clean |
 
 ### Byte-identical regeneration
 
@@ -232,8 +225,8 @@ The evidence is captured exactly once; the description is optional; AI proposes 
 | `CAP-43` | PASS | Skipping is about waste, not coverage: a report still uses every relevant approved photograph | every photograph a reviewer may approve for a report. Skipping is abou… |
 | `CAP-44` | PASS | Every eligibility proportion is labelled an estimate until measured | replaced by counts in the pilot's first month |
 | `CAP-45` | PASS | The eligible share is arithmetic on the stated assumptions, not a guess | 1 - (0.08 + 0.05 + 0.04) = 0.83; 360 x 0.83 = 299 |
-| `CAP-25` | PASS | The CAP-01 acceptance requirement appears in the documentation the owner reads, not only in the model | 13 documents cite CAP-01 |
-| `CAP-26` | PASS | No surviving document still makes the work description mandatory | 69 documents scanned |
+| `CAP-25` | PASS | The CAP-01 acceptance requirement appears in the documentation the owner reads, not only in the model | 14 documents cite CAP-01 |
+| `CAP-26` | PASS | No surviving document still makes the work description mandatory | 70 documents scanned |
 
 ### Lean operational MVP  ·  `structural`  ·  19/19 passed
 
@@ -506,7 +499,7 @@ The operating rules the owner approved, expressed as assertions so that weakenin
 ## 6. Reproducing this run
 
 ```
-git checkout e25a714aeb4563f932f7a1973f614017451f2130
+git checkout 337f48a877c98e104d272858f4e72e70a902433f
 python3 tools/run_validation.py
 ```
 
