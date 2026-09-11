@@ -1,6 +1,7 @@
 # Key, Identifier and Content-Hash Strategy
 
 **Document ID:** AH-SYS-P1-002 · **Revision:** 1 · **Date:** 2026-09-11
+**Status:** Completed · Validated Locally · Submitted for Owner Review
 **Closes:** conflict C-06 ("approval invalidated by material edit" needed a definition of *material*)
 **Executable statement:** `tools/contenthash.py` · **Evidence:** `17-validation-evidence.md` (HASH-01 … HASH-14)
 
@@ -130,7 +131,7 @@ quiet edit. Existing approvals are re-evaluated under the version they were made
 
 ## 4. Audit trail
 
-`AuditLog` is append-only for **every** role, including `SystemAdmin` (GOV-07). No update or delete
+`AuditLog` is append-only for **every** role, including both administrator roles and break-glass access (GOV-07). No update or delete
 path exists anywhere in the security matrix (GOV-06).
 
 Each entry records: UTC timestamp, actor (user or service), action, entity type and identifier,
@@ -146,10 +147,12 @@ version history.
 
 ## 5. Why an administrator cannot quietly fix things
 
-The security model gives `SystemAdmin` no create or update access to `Approvals` (GOV-08), no write
-access to `AuditLog`, and no read access to operational evidence or documents at all. An
-administrator configures the platform and works the error queue; they do not need to read a client's
-photographs to do either, so they cannot.
+The security model gives `SystemAdministrator` no create or update access to `Approvals` (GOV-08), no
+write access to `AuditLog`, and no read access to operational evidence, documents or financial
+records at all. A technical administrator configures the platform, provisions users and works the
+error queue; none of that requires reading a client's photographs, so they cannot. Business
+master-data administration is a separate role (`BusinessAdministrator`) which also opens no
+evidence, no documents and no money. See `04-security-model.md`.
 
 An override — waiving an evidence rule, certifying beyond a contract quantity — is recorded **as an
 override**, with an approver and a reason, on the `Approvals` row (`IsOverride`, `OverrideReason`).

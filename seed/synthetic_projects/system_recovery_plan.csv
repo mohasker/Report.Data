@@ -1,0 +1,2 @@
+PlanID,PrimaryAdministratorUserID,BackupAdministratorUserID,RecoveryRouteDocumented,RecoveryRouteReference,BreakGlassAccountConfigured,OwnerCanAuthoriseBreakGlass,LastTestedAt,TestedByUserID,TestResult,GoLiveBlocker,IsActive
+SRP-0001,USR-0002,USR-0014,TRUE,SYNTHETIC-RUNBOOK-REF-ADMIN-RECOVERY,TRUE,TRUE,2026-04-15,USR-0001,Passed,FALSE,TRUE

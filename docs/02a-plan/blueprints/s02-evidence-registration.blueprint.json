@@ -1,0 +1,45 @@
+{
+  "__specification_only": true,
+  "__not_connected": true,
+  "__authored": "2026-09-11",
+  "__note": "Specification of Scenario 02. Not an export. Nothing is connected.",
+  "name": "S02 Evidence registration",
+  "enabled": false,
+  "settings": {"sequential": true, "maxErrors": 3, "autoCommit": false},
+  "idempotency": {
+    "keyTemplate": "S02:Photo:{{PhotoID}}:Registered",
+    "store": "MAKE_DATASTORE_IDEMPOTENCY",
+    "claimBeforeSideEffect": true
+  },
+  "invariants": [
+    "The received file is created in 01_Original_Evidence and NEVER updated, moved destructively, annotated, resized or deleted (D-13).",
+    "A derivative is written to 02_Derived_Images as a separate file with its own record.",
+    "The checksum is taken from the storage provider's own file metadata where available, rather than downloading the file (C-03).",
+    "A suspected duplicate is FLAGGED, never deleted or merged (S-09)."
+  ],
+  "modules": [
+    {"id": 1, "type": "trigger", "name": "New photograph synchronised",
+     "config": {"payloadUse": "PhotoID and CorrelationID ONLY"}},
+    {"id": 2, "type": "datastore.get", "name": "Claim idempotency key",
+     "routes": [{"condition": "already claimed", "action": "log DuplicateSuppressed; stop"}]},
+    {"id": 3, "type": "source.read", "name": "Re-read authoritative Photos row"},
+    {"id": 4, "type": "storage.resolveFolder", "name": "Resolve or create the period folder",
+     "config": {"algorithm": "look up by parent and exact name before creating; more than one match is an ERROR, never a choice",
+                "path": "{ProjectCode}/{YYYY}/{MM}/01_Original_Evidence"},
+     "errorRoute": {"class": "Conflict", "action": "dead-letter; duplicate folder needs human resolution"}},
+    {"id": 5, "type": "storage.getMetadata", "name": "Read file metadata and checksum",
+     "config": {"fields": ["id", "checksum", "mimeType", "sizeBytes", "imageWidth", "imageHeight"],
+                "note": "Provider-computed checksum is better evidence than a client-asserted one, and far cheaper than downloading"}},
+    {"id": 6, "type": "source.update", "name": "Record original file reference and metadata",
+     "config": {"fields": ["OriginalFileKey", "OriginalChecksum", "ChecksumAlgorithm", "OriginalMimeType",
+                           "OriginalSizeBytes", "OriginalWidth", "OriginalHeight", "ReceivedAt", "CapturedBy"],
+                "note": "IsOriginalDeviceImageVerified stays FALSE until real-device testing proves no upstream re-encoding"}},
+    {"id": 7, "type": "compute", "name": "Duplicate detection",
+     "config": {"rule": "same checksum within the same project and period",
+                "action": "set IsDuplicateSuspected and DuplicateOfPhotoID. FLAG ONLY — never delete, never merge"}},
+    {"id": 8, "type": "storage.createDerivative", "name": "Create the downscaled derivative",
+     "config": {"destination": "02_Derived_Images", "note": "Never written over the original"}},
+    {"id": 9, "type": "source.create", "name": "Write IntegrationJobs row",
+     "config": {"note": "Sanitised summaries only"}}
+  ]
+}

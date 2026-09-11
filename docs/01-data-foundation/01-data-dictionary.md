@@ -53,6 +53,8 @@
 | [`EntityVersions`](#entityversions) | control | project | internal | Phase 1–2 (MVP core) | 15 | Immutable version history of hashable entities. Supports proving what a decision applied to. |
 | [`AuditLog`](#auditlog) | control | global | internal | Phase 1–2 (MVP core) | 13 | Append-only record of every state transition and every consequential action. |
 | [`IntegrationJobs`](#integrationjobs) | control | global | internal | Phase 3 | 18 | One row per external call attempt, with idempotency and failure classification. |
+| [`TemporaryAccessGrants`](#temporaryaccessgrants) | control | global | internal | Phase 1–2 (MVP core) | 27 | Time-bound, explicitly authorised access. Covers auditor access and break-glass emergency access. Without an active grant, the roles that depend on one resolve to no access at all. |
+| [`SystemRecoveryPlan`](#systemrecoveryplan) | control | global | internal | Phase 1–2 (MVP core) | 16 | How administrative control is recovered when no administrator is available. The system must not become unrecoverable because one person is unreachable. |
 | [`Contracts`](#contracts) | financial | project | financial | Phase 6 | 23 | Commercial agreement governing a project. Hidden from field roles entirely. |
 | [`WorkOrders`](#workorders) | financial | project | financial | Phase 6 | 14 | A discrete instruction under a contract, or a one-off job. |
 | [`BOQItems`](#boqitems) | financial | project | financial | Phase 6 | 20 | Bill of quantities. Cumulative quantity is controlled, never merely recorded. |
@@ -65,7 +67,7 @@
 | [`Employees`](#employees) | master | global | personal | Phase 5 | 12 | Crew register for resource reporting. Payroll data is deliberately excluded (spec 5.13). |
 | [`VisitManpower`](#visitmanpower) | operational | project | internal | Phase 5 | 12 | Manpower present during a visit, for resource summaries only. |
 
-**44 tables · 786 columns · 24 controlled vocabularies.**
+**46 tables · 829 columns · 26 controlled vocabularies.**
 
 ---
 
@@ -1051,7 +1053,7 @@ Append-only record of every state transition and every consequential action.
 | `Result` | text | ✔ | system |  |  | Success\|Failure\|Denied. |
 | `Reason` | text |  | system |  |  |  |
 
-> Append-only. No update or delete path exists for any role, including SystemAdmin.
+> Append-only. No update or delete path exists for any role, including every kind of administrator and break-glass access.
 > Never stores an access token, a credential or a full sensitive payload.
 
 ## IntegrationJobs
@@ -1084,6 +1086,76 @@ One row per external call attempt, with idempotency and failure classification.
 | `ErrorCode` | text |  | system |  |  |  |
 | `RetryAfter` | datetime |  | system |  |  |  |
 | `IsRetriable` | bool | ✔ | system |  |  | Default `FALSE`. Derived from ErrorClass. Validation and authorisation failures are never retried. |
+
+## TemporaryAccessGrants
+
+Time-bound, explicitly authorised access. Covers auditor access and break-glass emergency access. Without an active grant, the roles that depend on one resolve to no access at all.
+
+*صلاحيات وصول مؤقتة ومحددة بزمن*
+
+**Primary key:** `GrantID` · **Category:** control · **Scope:** global · **Sensitivity:** internal · **Built in:** Phase 1–2 (MVP core)
+
+| Column | Type | Req | Source | Sens | Hash | Validation / notes |
+|---|---|---|---|---|---|---|
+| `GrantID` | id | ✔ |  |  |  | **PK.** Example: `TAG-P4K9M2` |
+| `GrantKind` | text | ✔ | user |  |  | Audit\|Emergency\|Support. Audit: a time-bound review. Emergency: break-glass. Support: a bounded investigation by an administrator into their own technical scope. |
+| `UserID` | ref → `Users.UserID` | ✔ | user |  |  | The individual receiving the grant. A grant is never issued to a shared account. |
+| `RoleID` | ref → `Roles.RoleID` | ✔ | user |  |  | The role the grant activates. It can never exceed that role's own matrix. |
+| `Scope` | text | ✔ | user |  |  | AllProjects\|SpecificProjects\|TechnicalOnly. TechnicalOnly is the break-glass default: administrative capability, no business content. |
+| `ProjectIDs` | text |  | user |  |  | Semicolon-separated, required when Scope = SpecificProjects. |
+| `Reason` | longtext | ✔ | user |  |  | MANDATORY. A grant without a stated reason is refused, for every kind. |
+| `RequestedByUserID` | ref → `Users.UserID` | ✔ | user |  |  |  |
+| `RequestedAt` | datetime | ✔ | system |  |  |  |
+| `AuthorisedByUserID` | ref → `Users.UserID` | ✔ | user |  |  | Must be someone other than the recipient. Self-authorisation is refused. |
+| `AuthorisedAt` | datetime | ✔ | system |  |  |  |
+| `ValidFrom` | datetime | ✔ | user |  |  |  |
+| `ValidTo` | datetime | ✔ | user |  |  | Mandatory, after ValidFrom, and within MaxDurationHours. MANDATORY. No grant is open-ended, for any kind. |
+| `MaxDurationHours` | int | ✔ | config |  |  | Default `24`. Emergency grants default to 24 hours; audit grants may be configured longer. The ceiling is configuration, never absent. |
+| `NotificationRecipients` | text | ✔ | config |  |  | MANDATORY for Emergency. Who was told that break-glass was used. |
+| `NotificationSentAt` | datetime |  | system |  |  | Required for GrantKind = Emergency before the grant becomes usable. A break-glass grant that nobody was told about is not break-glass, it is a back door. |
+| `AuditReference` | text |  | system |  |  | Correlation identifier linking every action taken under this grant to the audit log. |
+| `UsageCount` | int | ✔ | system |  |  | Default `0`. How many times the grant was actually exercised. Zero is worth reviewing too. |
+| `RevokedAt` | datetime |  | user |  |  |  |
+| `RevokedByUserID` | ref → `Users.UserID` |  | user |  |  |  |
+| `ReviewedAt` | datetime |  | user |  |  | Post-use review. Every exercised emergency grant is reviewed after the fact. |
+| `ReviewedByUserID` | ref → `Users.UserID` |  | user |  |  |  |
+| `IsActive` | bool | ✔ | user |  |  | Default `TRUE`. Soft delete. Rows are never hard-deleted; history is evidence. |
+| `CreatedAt` | datetime | ✔ | system |  |  | UTC. Set once on insert. |
+| `CreatedBy` | email | ✔ | system |  |  | USEREMAIL() or the service identity. |
+| `UpdatedAt` | datetime | ✔ | system |  |  | UTC. Excluded from ContentHash. |
+| `UpdatedBy` | email | ✔ | system |  |  |  |
+
+> A grant is evidence. It is revoked, expired or reviewed, and never deleted.
+> Actions performed under a grant are tagged with the GrantID in the audit log, so 'what did break-glass actually do' is answerable.
+
+## SystemRecoveryPlan
+
+How administrative control is recovered when no administrator is available. The system must not become unrecoverable because one person is unreachable.
+
+*خطة استعادة السيطرة الإدارية*
+
+**Primary key:** `PlanID` · **Category:** control · **Scope:** global · **Sensitivity:** internal · **Built in:** Phase 1–2 (MVP core)
+
+| Column | Type | Req | Source | Sens | Hash | Validation / notes |
+|---|---|---|---|---|---|---|
+| `PlanID` | id | ✔ |  |  |  | **PK.** Example: `SRP-B7T2X5` |
+| `PrimaryAdministratorUserID` | ref → `Users.UserID` |  | user |  |  | Left unassigned until the owner names a person. |
+| `BackupAdministratorUserID` | ref → `Users.UserID` |  | user |  |  | The simplest recovery route: a second administrator-capable account. |
+| `RecoveryRouteDocumented` | bool | ✔ | user |  |  | Default `FALSE`. TRUE when a written recovery procedure exists and has been located by someone other than the administrator. |
+| `RecoveryRouteReference` | text |  | user |  |  | Required when RecoveryRouteDocumented is TRUE. Where the procedure lives. No credential, and no location of a credential. |
+| `BreakGlassAccountConfigured` | bool | ✔ | user |  |  | Default `FALSE`. Whether an emergency account exists that can be activated by a grant. |
+| `OwnerCanAuthoriseBreakGlass` | bool | ✔ | config |  |  | Default `TRUE`. The system owner can always authorise a break-glass grant. |
+| `LastTestedAt` | date |  | user |  |  | An untested recovery route is a hope, not a control. |
+| `TestedByUserID` | ref → `Users.UserID` |  | user |  |  |  |
+| `TestResult` | text |  | user |  |  | Passed\|Failed\|NotTested. |
+| `GoLiveBlocker` | bool | ✔ | system |  |  | Default `TRUE`. Stays TRUE until either a backup administrator exists or a documented recovery route exists. Go-live is blocked while it is TRUE. |
+| `IsActive` | bool | ✔ | user |  |  | Default `TRUE`. Soft delete. Rows are never hard-deleted; history is evidence. |
+| `CreatedAt` | datetime | ✔ | system |  |  | UTC. Set once on insert. |
+| `CreatedBy` | email | ✔ | system |  |  | USEREMAIL() or the service identity. |
+| `UpdatedAt` | datetime | ✔ | system |  |  | UTC. Excluded from ContentHash. |
+| `UpdatedBy` | email | ✔ | system |  |  |  |
+
+> This table holds no credential and no instruction for obtaining one. It records WHETHER a route exists and whether it has been tested.
 
 ## Contracts
 
@@ -1212,8 +1284,8 @@ A calculated billing request. Drafts only until Phase 7; never posted from Phase
 | `NetPayable` | decimal(3) | ✔ | calculation |  |  | Default `0`. |
 | `CalculationTrace` | json |  | calculation |  |  | Ordered record of every step and rounding decision, reproducible from stored inputs. |
 | `SourceDocumentID` | ref → `Documents.DocumentID` |  | system |  |  | The completion certificate or report this billing derives from. |
-| `FinanceStatus` | text | ✔ | system |  |  | Default `Draft`. Draft\|PendingFinanceApproval\|FinanceApproved\|Rejected\|Void. |
-| `QuickBooksStatus` | text | ✔ | system |  |  | Default `NotSent`. NotSent\|Draft\|Posted\|Failed\|ReconciliationFailed. |
+| `FinanceStatus` | enum `InvoiceFinanceStatus` | ✔ | system |  |  | Default `Draft`. |
+| `QuickBooksStatus` | enum `QuickBooksSyncStatus` | ✔ | system |  |  | Default `NotSent`. Production posting is unreachable until QBO_POSTING_ENABLED is set by written authorisation (ADR-0008). |
 | `QuickBooksInvoiceID` | text |  | integration |  |  |  |
 | `DraftInvoiceNumber` | text |  | system |  |  | Internal. Separate from the final accounting number (spec 11). |
 | `FinalInvoiceNumber` | text |  | integration |  |  |  |
@@ -1654,6 +1726,32 @@ Outcome of one external call attempt.
 | `Failed` | Failed | فشل |  |
 | `DeadLettered` | Dead lettered | في طابور المراجعة | Awaiting an operator. |
 | `DuplicateSuppressed` | Duplicate suppressed | تم منع التكرار | Idempotency key already claimed. |
+
+### InvoiceFinanceStatus
+
+Finance lifecycle of an invoice request (Phase 6/7).
+
+| Code | English | العربية | Meaning |
+|---|---|---|---|
+| `Draft` | Draft | مسودة | Calculated but not submitted for finance approval. |
+| `PendingFinanceApproval` | Pending finance approval | بانتظار الاعتماد المالي |  |
+| `FinanceApproved` | Finance approved | معتمد مالياً | Required before anything may reach the accounting system. |
+| `Rejected` | Rejected | مرفوض | Returned with a reason; a new calculation is required. |
+| `Void` | Void - inputs changed | لاغٍ لتغير المدخلات | The source content hash changed after approval. |
+
+### QuickBooksSyncStatus
+
+Accounting synchronisation lifecycle (Phase 7). Nothing here is reachable until the owner authorises production posting in writing.
+
+| Code | English | العربية | Meaning |
+|---|---|---|---|
+| `NotSent` | Not sent | لم يُرسل | Default. The invoice exists only inside this system. |
+| `Queued` | Queued for sandbox | في الطابور للبيئة التجريبية | Awaiting a sandbox posting attempt. |
+| `SandboxPosted` | Posted to sandbox | مُرحّل في البيئة التجريبية | Posted to a test company only. |
+| `Reconciling` | Reconciling | قيد المطابقة | Reading back the posted document to compare totals. |
+| `ReconciliationFailed` | Reconciliation failed | فشلت المطابقة | Totals differ. Never auto-corrected in either direction; a human resolves it. |
+| `Posted` | Posted to production | مُرحّل للإنتاج | Requires written authorisation to enable. |
+| `Failed` | Failed | فشل | Classified failure; retried only when the class is retriable. |
 
 ### DataClassificationCode
 

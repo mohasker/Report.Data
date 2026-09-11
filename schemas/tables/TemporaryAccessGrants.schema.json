@@ -1,0 +1,179 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/TemporaryAccessGrants.schema.json",
+  "title": "TemporaryAccessGrants",
+  "description": "Time-bound, explicitly authorised access. Covers auditor access and break-glass emergency access. Without an active grant, the roles that depend on one resolve to no access at all.",
+  "x-description-ar": "صلاحيات وصول مؤقتة ومحددة بزمن",
+  "x-category": "control",
+  "x-scope": "global",
+  "x-sensitivity": "internal",
+  "x-built-in-phase": 1,
+  "x-primary-key": "GrantID",
+  "x-content-hash-fields": [],
+  "x-unique-together": [],
+  "x-at-least-one": [],
+  "x-notes": [
+    "A grant is evidence. It is revoked, expired or reviewed, and never deleted.",
+    "Actions performed under a grant are tagged with the GrantID in the audit log, so 'what did break-glass actually do' is answerable."
+  ],
+  "type": "object",
+  "properties": {
+    "GrantID": {
+      "type": "string"
+    },
+    "GrantKind": {
+      "type": "string",
+      "x-source": "user",
+      "description": "Audit: a time-bound review. Emergency: break-glass. Support: a bounded investigation by an administrator into their own technical scope. Validation: Audit|Emergency|Support"
+    },
+    "UserID": {
+      "type": "string",
+      "x-references": "Users.UserID",
+      "x-source": "user",
+      "description": "The individual receiving the grant. A grant is never issued to a shared account. References Users.UserID"
+    },
+    "RoleID": {
+      "type": "string",
+      "x-references": "Roles.RoleID",
+      "x-source": "user",
+      "description": "The role the grant activates. It can never exceed that role's own matrix. References Roles.RoleID"
+    },
+    "Scope": {
+      "type": "string",
+      "x-source": "user",
+      "description": "TechnicalOnly is the break-glass default: administrative capability, no business content. Validation: AllProjects|SpecificProjects|TechnicalOnly"
+    },
+    "ProjectIDs": {
+      "type": "string",
+      "x-source": "user",
+      "description": "Semicolon-separated, required when Scope = SpecificProjects."
+    },
+    "Reason": {
+      "type": "string",
+      "x-source": "user",
+      "description": "MANDATORY. A grant without a stated reason is refused, for every kind."
+    },
+    "RequestedByUserID": {
+      "type": "string",
+      "x-references": "Users.UserID",
+      "x-source": "user",
+      "description": "References Users.UserID"
+    },
+    "RequestedAt": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "AuthorisedByUserID": {
+      "type": "string",
+      "x-references": "Users.UserID",
+      "x-source": "user",
+      "description": "Must be someone other than the recipient. Self-authorisation is refused. References Users.UserID"
+    },
+    "AuthorisedAt": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "ValidFrom": {
+      "type": "string",
+      "x-source": "user"
+    },
+    "ValidTo": {
+      "type": "string",
+      "x-source": "user",
+      "description": "MANDATORY. No grant is open-ended, for any kind. Validation: Mandatory, after ValidFrom, and within MaxDurationHours"
+    },
+    "MaxDurationHours": {
+      "type": "integer",
+      "x-source": "config",
+      "description": "Emergency grants default to 24 hours; audit grants may be configured longer. The ceiling is configuration, never absent."
+    },
+    "NotificationRecipients": {
+      "type": "string",
+      "x-source": "config",
+      "description": "MANDATORY for Emergency. Who was told that break-glass was used."
+    },
+    "NotificationSentAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "A break-glass grant that nobody was told about is not break-glass, it is a back door. Validation: Required for GrantKind = Emergency before the grant becomes usable"
+    },
+    "AuditReference": {
+      "type": "string",
+      "x-source": "system",
+      "description": "Correlation identifier linking every action taken under this grant to the audit log."
+    },
+    "UsageCount": {
+      "type": "integer",
+      "x-source": "system",
+      "description": "How many times the grant was actually exercised. Zero is worth reviewing too."
+    },
+    "RevokedAt": {
+      "type": "string",
+      "x-source": "user"
+    },
+    "RevokedByUserID": {
+      "type": "string",
+      "x-references": "Users.UserID",
+      "x-source": "user",
+      "description": "References Users.UserID"
+    },
+    "ReviewedAt": {
+      "type": "string",
+      "x-source": "user",
+      "description": "Post-use review. Every exercised emergency grant is reviewed after the fact."
+    },
+    "ReviewedByUserID": {
+      "type": "string",
+      "x-references": "Users.UserID",
+      "x-source": "user",
+      "description": "References Users.UserID"
+    },
+    "IsActive": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "Soft delete. Rows are never hard-deleted; history is evidence."
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "GrantID",
+    "GrantKind",
+    "UserID",
+    "RoleID",
+    "Scope",
+    "Reason",
+    "RequestedByUserID",
+    "RequestedAt",
+    "AuthorisedByUserID",
+    "AuthorisedAt",
+    "ValidFrom",
+    "ValidTo",
+    "MaxDurationHours",
+    "NotificationRecipients",
+    "UsageCount",
+    "IsActive",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

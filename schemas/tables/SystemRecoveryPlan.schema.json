@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/SystemRecoveryPlan.schema.json",
+  "title": "SystemRecoveryPlan",
+  "description": "How administrative control is recovered when no administrator is available. The system must not become unrecoverable because one person is unreachable.",
+  "x-description-ar": "خطة استعادة السيطرة الإدارية",
+  "x-category": "control",
+  "x-scope": "global",
+  "x-sensitivity": "internal",
+  "x-built-in-phase": 1,
+  "x-primary-key": "PlanID",
+  "x-content-hash-fields": [],
+  "x-unique-together": [],
+  "x-at-least-one": [],
+  "x-notes": [
+    "This table holds no credential and no instruction for obtaining one. It records WHETHER a route exists and whether it has been tested."
+  ],
+  "type": "object",
+  "properties": {
+    "PlanID": {
+      "type": "string"
+    },
+    "PrimaryAdministratorUserID": {
+      "type": "string",
+      "x-references": "Users.UserID",
+      "x-source": "user",
+      "description": "Left unassigned until the owner names a person. References Users.UserID"
+    },
+    "BackupAdministratorUserID": {
+      "type": "string",
+      "x-references": "Users.UserID",
+      "x-source": "user",
+      "description": "The simplest recovery route: a second administrator-capable account. References Users.UserID"
+    },
+    "RecoveryRouteDocumented": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "TRUE when a written recovery procedure exists and has been located by someone other than the administrator."
+    },
+    "RecoveryRouteReference": {
+      "type": "string",
+      "x-source": "user",
+      "description": "Where the procedure lives. No credential, and no location of a credential. Validation: Required when RecoveryRouteDocumented is TRUE"
+    },
+    "BreakGlassAccountConfigured": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "Whether an emergency account exists that can be activated by a grant."
+    },
+    "OwnerCanAuthoriseBreakGlass": {
+      "type": "boolean",
+      "x-source": "config",
+      "description": "The system owner can always authorise a break-glass grant."
+    },
+    "LastTestedAt": {
+      "type": "string",
+      "x-source": "user",
+      "description": "An untested recovery route is a hope, not a control."
+    },
+    "TestedByUserID": {
+      "type": "string",
+      "x-references": "Users.UserID",
+      "x-source": "user",
+      "description": "References Users.UserID"
+    },
+    "TestResult": {
+      "type": "string",
+      "x-source": "user",
+      "description": "Validation: Passed|Failed|NotTested"
+    },
+    "GoLiveBlocker": {
+      "type": "boolean",
+      "x-source": "system",
+      "description": "Stays TRUE until either a backup administrator exists or a documented recovery route exists. Go-live is blocked while it is TRUE."
+    },
+    "IsActive": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "Soft delete. Rows are never hard-deleted; history is evidence."
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "PlanID",
+    "RecoveryRouteDocumented",
+    "BreakGlassAccountConfigured",
+    "OwnerCanAuthoriseBreakGlass",
+    "GoLiveBlocker",
+    "IsActive",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

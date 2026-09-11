@@ -1,6 +1,7 @@
 # Naming, Numbering and File Conventions
 
 **Document ID:** AH-SYS-P1-006 · **Revision:** 1 · **Date:** 2026-09-11
+**Status:** Completed · Validated Locally · Submitted for Owner Review
 **Delivers:** D-15 item 9 · **Implements:** D-10, ADR-0005 rev 1 · **Closes:** C-04
 **Executable statement:** `tools/numbering.py` · **Evidence:** `17-validation-evidence.md` (NUM-01 … NUM-13)
 

@@ -11,3 +11,6 @@ USR-0009,finance@synthetic.example,Synthetic Finance Reviewer,المراجع ا�
 USR-0010,auditor@synthetic.example,Synthetic Auditor,المدقق الاصطناعي,+974 31000010,ROLE-AUDITOR,SYN-EMP-010,,en,TRUE
 USR-0011,unassigned@synthetic.example,Synthetic Unassigned User,مستخدم غير مسند,+974 31000011,ROLE-FIELD,SYN-EMP-011,,en,TRUE
 USR-0012,sup4@synthetic.example,Synthetic Supervisor Four (expired),مشرف اصطناعي ٤ منتهي,+974 31000012,ROLE-SUPERVISOR,SYN-EMP-012,,en,TRUE
+USR-0013,bizadmin@synthetic.example,Synthetic Business Administrator,مدير البيانات الأساسية الاصطناعي,+974 31000013,ROLE-BIZADMIN,SYN-EMP-013,,en,TRUE
+USR-0014,admin2@synthetic.example,Synthetic Backup Administrator,مدير النظام الاحتياطي الاصطناعي,+974 31000014,ROLE-SYSADMIN,SYN-EMP-014,,en,TRUE
+USR-0015,breakglass@synthetic.example,Synthetic Break-Glass Account,حساب الطوارئ الاصطناعي,+974 31000015,ROLE-EMERGENCY,SYN-EMP-015,,en,TRUE

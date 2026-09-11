@@ -143,13 +143,30 @@
     },
     "FinanceStatus": {
       "type": "string",
-      "x-source": "system",
-      "description": "Validation: Draft|PendingFinanceApproval|FinanceApproved|Rejected|Void"
+      "enum": [
+        "Draft",
+        "PendingFinanceApproval",
+        "FinanceApproved",
+        "Rejected",
+        "Void"
+      ],
+      "x-enum": "InvoiceFinanceStatus",
+      "x-source": "system"
     },
     "QuickBooksStatus": {
       "type": "string",
+      "enum": [
+        "NotSent",
+        "Queued",
+        "SandboxPosted",
+        "Reconciling",
+        "ReconciliationFailed",
+        "Posted",
+        "Failed"
+      ],
+      "x-enum": "QuickBooksSyncStatus",
       "x-source": "system",
-      "description": "Validation: NotSent|Draft|Posted|Failed|ReconciliationFailed"
+      "description": "Production posting is unreachable until QBO_POSTING_ENABLED is set by written authorisation (ADR-0008)."
     },
     "QuickBooksInvoiceID": {
       "type": "string",

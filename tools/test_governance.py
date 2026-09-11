@@ -97,14 +97,14 @@ def run(model, data):
     # 7. the audit log is append-only for everyone, including the administrator
     writable = [role for role, grants in matrix.items()
                 if grants["AuditLog"]["update"] != "none" or grants["AuditLog"]["create"] != "none"]
-    c.check("GOV-07", "The audit log is append-only for every role including SystemAdmin",
+    c.check("GOV-07", "The audit log is append-only for every role, administrators and break-glass included",
             not writable, f"roles able to alter the audit log: {writable or 'none'}")
 
     # 8. the administrator cannot manufacture an approval
     c.check("GOV-08", "An administrator cannot create or alter an approval",
-            matrix["SystemAdmin"]["Approvals"]["create"] == "none"
-            and matrix["SystemAdmin"]["Approvals"]["update"] == "none",
-            "SystemAdmin holds read-only access to Approvals")
+            all(matrix[r]["Approvals"]["create"] == "none" and matrix[r]["Approvals"]["update"] == "none"
+                for r in ("SystemAdministrator", "BusinessAdministrator", "EmergencyAccess")),
+            "neither administrator role nor break-glass can create or alter an approval")
 
     # 9. AI fields exist but are excluded from every content hash
     ai_cols = [(t, col["name"]) for t, tbl in tables.items() for col in tbl["columns"]

@@ -1,9 +1,11 @@
 RoleID,RoleCode,NameEN,NameAR,Description,SeesFinancialData,MayApprove,MayAdministerMasterData,IsActive
-ROLE-SYSADMIN,SystemAdmin,System administrator,مدير النظام,Maintains master data and configuration and works the error queue. Deliberately has no access to financial tables and cannot create an approval.,FALSE,FALSE,TRUE,TRUE
-ROLE-GM,GeneralManager,General manager,المدير العام,Final technical financial and release approver for the MVP. Delegation is supported from the initial architecture.,TRUE,TRUE,TRUE,TRUE
-ROLE-TECHREV,TechnicalReviewer,Technical reviewer,المراجع الفني,Reviews submitted evidence and technical documents for assigned projects.,FALSE,TRUE,FALSE,TRUE
-ROLE-FINREV,FinanceReviewer,Finance reviewer,المراجع المالي,Approves financial calculations and invoice requests. Never approves the evidence behind them.,TRUE,TRUE,FALSE,TRUE
+ROLE-SYSADMIN,SystemAdministrator,System administrator (technical),مدير النظام التقني,Technical configuration integration monitoring user provisioning and system health. Deliberately has no access to project evidence reports contracts or financial information and cannot create an approval.,FALSE,FALSE,TRUE,TRUE
+ROLE-BIZADMIN,BusinessAdministrator,Business administrator,مدير البيانات الأساسية,Controlled administration of business master data: clients projects locations activity rules templates and numbering series. No access to evidence documents or financial records.,FALSE,FALSE,TRUE,TRUE
+ROLE-GM,GeneralManager,General manager / system owner,المدير العام ومالك النظام,Final technical financial and release approver and access to all authorised company projects and documents. Delegation is supported from the initial architecture.,TRUE,TRUE,TRUE,TRUE
+ROLE-TECHREV,TechnicalReviewer,Technical reviewer,المراجع الفني,Reviews submitted evidence and technical documents for assigned projects only.,FALSE,TRUE,FALSE,TRUE
+ROLE-FINREV,FinanceReviewer,Finance reviewer,المراجع المالي,Approves financial calculations and invoice requests and sees only the commercial and financial records the role requires.,TRUE,TRUE,FALSE,TRUE
 ROLE-PM,ProjectManager,Project manager,مدير المشروع,Runs assigned projects and acts as first-line reviewer where the approval matrix assigns them.,FALSE,TRUE,FALSE,TRUE
 ROLE-SUPERVISOR,SiteSupervisor,Site supervisor,مشرف الموقع,Captures field evidence and manages snags on assigned projects.,FALSE,FALSE,FALSE,TRUE
 ROLE-FIELD,FieldUser,Field user,مستخدم ميداني,Captures field evidence only and sees only their own submissions.,FALSE,FALSE,FALSE,TRUE
-ROLE-AUDITOR,ReadOnlyAuditor,Read-only auditor,مدقق للاطلاع فقط,Reads everything and changes nothing. Exists so that an audit never requires a write-capable account.,TRUE,FALSE,FALSE,TRUE
+ROLE-AUDITOR,ReadOnlyAuditor,Read-only auditor (time-bound),مدقق للاطلاع فقط بصلاحية مؤقتة,Reads and changes nothing and functions only while an explicitly authorised time-bound access grant is valid.,TRUE,FALSE,FALSE,TRUE
+ROLE-EMERGENCY,EmergencyAccess,Emergency break-glass access,وصول طارئ استثنائي,Restores administrative capability when no administrator is available. Requires a reason an expiry notification and an immutable audit record and never opens client evidence documents or financial records.,FALSE,FALSE,TRUE,TRUE

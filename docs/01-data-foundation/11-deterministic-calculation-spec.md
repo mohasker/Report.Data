@@ -1,6 +1,7 @@
 # Deterministic Calculation Specification
 
 **Document ID:** AH-SYS-P1-011 · **Revision:** 1 · **Date:** 2026-09-11
+**Status:** Completed · Validated Locally · Submitted for Owner Review · **Not Verified in Integration** (no accounting system connected)
 **Delivers:** D-15 item 13 · **Implements:** D-08, invariant I-4 · **Closes:** C-09
 **Executable statement:** `tools/calc.py` · **Evidence:** `17-validation-evidence.md` (CALC-01 … CALC-22)
 

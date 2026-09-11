@@ -248,6 +248,26 @@ enum("IntegrationStatus", "Outcome of one external call attempt.", [
     ("DuplicateSuppressed", "Duplicate suppressed", "تم منع التكرار", "Idempotency key already claimed."),
 ])
 
+enum("InvoiceFinanceStatus", "Finance lifecycle of an invoice request (Phase 6/7).", [
+    ("Draft", "Draft", "مسودة", "Calculated but not submitted for finance approval."),
+    ("PendingFinanceApproval", "Pending finance approval", "بانتظار الاعتماد المالي", ""),
+    ("FinanceApproved", "Finance approved", "معتمد مالياً", "Required before anything may reach the accounting system."),
+    ("Rejected", "Rejected", "مرفوض", "Returned with a reason; a new calculation is required."),
+    ("Void", "Void - inputs changed", "لاغٍ لتغير المدخلات", "The source content hash changed after approval."),
+])
+
+enum("QuickBooksSyncStatus", "Accounting synchronisation lifecycle (Phase 7). Nothing here is "
+     "reachable until the owner authorises production posting in writing.", [
+    ("NotSent", "Not sent", "لم يُرسل", "Default. The invoice exists only inside this system."),
+    ("Queued", "Queued for sandbox", "في الطابور للبيئة التجريبية", "Awaiting a sandbox posting attempt."),
+    ("SandboxPosted", "Posted to sandbox", "مُرحّل في البيئة التجريبية", "Posted to a test company only."),
+    ("Reconciling", "Reconciling", "قيد المطابقة", "Reading back the posted document to compare totals."),
+    ("ReconciliationFailed", "Reconciliation failed", "فشلت المطابقة",
+     "Totals differ. Never auto-corrected in either direction; a human resolves it."),
+    ("Posted", "Posted to production", "مُرحّل للإنتاج", "Requires written authorisation to enable."),
+    ("Failed", "Failed", "فشل", "Classified failure; retried only when the class is retriable."),
+])
+
 enum("DataClassificationCode", "Sensitivity classes used to drive residency and sharing rules (D-12).", [
     ("Public", "Public", "عام", ""),
     ("Internal", "Internal", "داخلي", ""),
@@ -1091,7 +1111,7 @@ table("AuditLog", "control", "global", "internal", 1,
     col("Result", "text", True, src="system", validation="Success|Failure|Denied"),
     col("Reason", "text", False, src="system"),
 ] + [],
-      notes=["Append-only. No update or delete path exists for any role, including SystemAdmin.",
+      notes=["Append-only. No update or delete path exists for any role, including every kind of administrator and break-glass access.",
              "Never stores an access token, a credential or a full sensitive payload."])
 
 table("IntegrationJobs", "control", "global", "internal", 3,
@@ -1120,6 +1140,86 @@ table("IntegrationJobs", "control", "global", "internal", 3,
         note="Derived from ErrorClass. Validation and authorisation failures are never retried."),
 ] + [],
       unique_together=[["IdempotencyKey", "AttemptNumber"]])
+
+table("TemporaryAccessGrants", "control", "global", "internal", 1,
+      "Time-bound, explicitly authorised access. Covers auditor access and break-glass emergency "
+      "access. Without an active grant, the roles that depend on one resolve to no access at all.",
+      "صلاحيات وصول مؤقتة ومحددة بزمن", "GrantID", [
+    col("GrantID", "id", True, key="pk", ex="TAG-P4K9M2"),
+    col("GrantKind", "text", True, src="user", validation="Audit|Emergency|Support",
+        note="Audit: a time-bound review. Emergency: break-glass. Support: a bounded "
+             "investigation by an administrator into their own technical scope."),
+    col("UserID", "ref", True, ref="Users.UserID", src="user",
+        note="The individual receiving the grant. A grant is never issued to a shared account."),
+    col("RoleID", "ref", True, ref="Roles.RoleID", src="user",
+        note="The role the grant activates. It can never exceed that role's own matrix."),
+    col("Scope", "text", True, src="user", validation="AllProjects|SpecificProjects|TechnicalOnly",
+        note="TechnicalOnly is the break-glass default: administrative capability, no business "
+             "content."),
+    col("ProjectIDs", "text", False, src="user",
+        note="Semicolon-separated, required when Scope = SpecificProjects."),
+    col("Reason", "longtext", True, src="user",
+        note="MANDATORY. A grant without a stated reason is refused, for every kind."),
+    col("RequestedByUserID", "ref", True, ref="Users.UserID", src="user"),
+    col("RequestedAt", "datetime", True, src="system"),
+    col("AuthorisedByUserID", "ref", True, ref="Users.UserID", src="user",
+        note="Must be someone other than the recipient. Self-authorisation is refused."),
+    col("AuthorisedAt", "datetime", True, src="system"),
+    col("ValidFrom", "datetime", True, src="user"),
+    col("ValidTo", "datetime", True, src="user",
+        validation="Mandatory, after ValidFrom, and within MaxDurationHours",
+        note="MANDATORY. No grant is open-ended, for any kind."),
+    col("MaxDurationHours", "int", True, default="24", src="config",
+        note="Emergency grants default to 24 hours; audit grants may be configured longer. The "
+             "ceiling is configuration, never absent."),
+    col("NotificationRecipients", "text", True, src="config",
+        note="MANDATORY for Emergency. Who was told that break-glass was used."),
+    col("NotificationSentAt", "datetime", False, src="system",
+        validation="Required for GrantKind = Emergency before the grant becomes usable",
+        note="A break-glass grant that nobody was told about is not break-glass, it is a back door."),
+    col("AuditReference", "text", False, src="system",
+        note="Correlation identifier linking every action taken under this grant to the audit log."),
+    col("UsageCount", "int", True, default="0", src="system",
+        note="How many times the grant was actually exercised. Zero is worth reviewing too."),
+    col("RevokedAt", "datetime", False, src="user"),
+    col("RevokedByUserID", "ref", False, ref="Users.UserID", src="user"),
+    col("ReviewedAt", "datetime", False, src="user",
+        note="Post-use review. Every exercised emergency grant is reviewed after the fact."),
+    col("ReviewedByUserID", "ref", False, ref="Users.UserID", src="user"),
+] + ACTIVE + AUDIT,
+      notes=["A grant is evidence. It is revoked, expired or reviewed, and never deleted.",
+             "Actions performed under a grant are tagged with the GrantID in the audit log, so "
+             "'what did break-glass actually do' is answerable."])
+
+table("SystemRecoveryPlan", "control", "global", "internal", 1,
+      "How administrative control is recovered when no administrator is available. The system must "
+      "not become unrecoverable because one person is unreachable.",
+      "خطة استعادة السيطرة الإدارية", "PlanID", [
+    col("PlanID", "id", True, key="pk", ex="SRP-B7T2X5"),
+    col("PrimaryAdministratorUserID", "ref", False, ref="Users.UserID", src="user",
+        note="Left unassigned until the owner names a person."),
+    col("BackupAdministratorUserID", "ref", False, ref="Users.UserID", src="user",
+        note="The simplest recovery route: a second administrator-capable account."),
+    col("RecoveryRouteDocumented", "bool", True, default="FALSE", src="user",
+        note="TRUE when a written recovery procedure exists and has been located by someone other "
+             "than the administrator."),
+    col("RecoveryRouteReference", "text", False, src="user",
+        validation="Required when RecoveryRouteDocumented is TRUE",
+        note="Where the procedure lives. No credential, and no location of a credential."),
+    col("BreakGlassAccountConfigured", "bool", True, default="FALSE", src="user",
+        note="Whether an emergency account exists that can be activated by a grant."),
+    col("OwnerCanAuthoriseBreakGlass", "bool", True, default="TRUE", src="config",
+        note="The system owner can always authorise a break-glass grant."),
+    col("LastTestedAt", "date", False, src="user",
+        note="An untested recovery route is a hope, not a control."),
+    col("TestedByUserID", "ref", False, ref="Users.UserID", src="user"),
+    col("TestResult", "text", False, src="user", validation="Passed|Failed|NotTested"),
+    col("GoLiveBlocker", "bool", True, default="TRUE", src="system",
+        note="Stays TRUE until either a backup administrator exists or a documented recovery route "
+             "exists. Go-live is blocked while it is TRUE."),
+] + ACTIVE + AUDIT,
+      notes=["This table holds no credential and no instruction for obtaining one. It records "
+             "WHETHER a route exists and whether it has been tested."])
 
 # --------------------------------------------------------------------------
 # 6. Designed now, built later: contracts, billing, resources
@@ -1216,10 +1316,11 @@ table("InvoiceRequests", "financial", "project", "financial", 6,
         note="Ordered record of every step and rounding decision, reproducible from stored inputs."),
     col("SourceDocumentID", "ref", False, ref="Documents.DocumentID", src="system",
         note="The completion certificate or report this billing derives from."),
-    col("FinanceStatus", "text", True, default="Draft", src="system",
-        validation="Draft|PendingFinanceApproval|FinanceApproved|Rejected|Void"),
-    col("QuickBooksStatus", "text", True, default="NotSent", src="system",
-        validation="NotSent|Draft|Posted|Failed|ReconciliationFailed"),
+    col("FinanceStatus", "enum", True, default="Draft", enum="InvoiceFinanceStatus", src="system"),
+    col("QuickBooksStatus", "enum", True, default="NotSent", enum="QuickBooksSyncStatus",
+        src="system",
+        note="Production posting is unreachable until QBO_POSTING_ENABLED is set by written "
+             "authorisation (ADR-0008)."),
     col("QuickBooksInvoiceID", "text", False, src="integration"),
     col("DraftInvoiceNumber", "text", False, src="system",
         note="Internal. Separate from the final accounting number (spec 11)."),
@@ -1330,7 +1431,9 @@ TRANSITIONS = {}
 
 
 def transitions(entity, field, allowed, forbidden, terminal):
-    TRANSITIONS[entity] = {
+    # Keyed by entity AND field: one table may own more than one lifecycle, and an invoice
+    # request owns two (its finance status and its accounting synchronisation status).
+    TRANSITIONS[f"{entity}.{field}"] = {
         "entity": entity, "field": field,
         "allowed": [
             {"from": f, "to": t, "roles": r, "preconditions": p, "side_effects": s, "invalidates": i}
@@ -1375,7 +1478,7 @@ transitions("SiteVisits", "WorkflowStatus", [
      ["Included in a frozen DocumentJob snapshot"], ["Snapshot records version and hash"], []),
     ("IncludedInDraft", "Released", ["System"],
      ["Parent document reached Released"], [], []),
-    ("Released", "Archived", ["SystemAdmin", "GeneralManager"],
+    ("Released", "Archived", ["SystemAdministrator", "BusinessAdministrator", "GeneralManager"],
      ["Retention review completed"], ["Moved to archive folder; nothing deleted"], []),
     ("IncludedInDraft", "ReadyForReport", ["System"],
      ["The document draft was cancelled"], ["Reserved number cancelled, never reused"], []),
@@ -1544,16 +1647,63 @@ transitions("Approvals", "Decision", [
     "Void -> Approved (a fresh approval of the new content is required)",
 ], terminal=["Rejected", "Withdrawn", "Void"])
 
+transitions("InvoiceRequests", "FinanceStatus", [
+    ("Draft", "PendingFinanceApproval", ["System"],
+     ["Every line recalculated from stored inputs", "Currency agrees across contract, project and request",
+      "Cumulative quantities within contract plus approved variation, or an authorised override exists",
+      "Tax rule confirmed in writing by the accountant"],
+     ["Calculation trace frozen with the request"], []),
+    ("PendingFinanceApproval", "FinanceApproved", ["FinanceReviewer", "GeneralManager"],
+     ["Approver is not the person who prepared the request",
+      "ContentHash of the source document still matches"],
+     ["Approval recorded with hash and the applied tax rule version"], []),
+    ("PendingFinanceApproval", "Rejected", ["FinanceReviewer", "GeneralManager"],
+     ["Reason recorded"], [], []),
+    ("Rejected", "Draft", ["System"], ["Recalculated"], [], []),
+    ("FinanceApproved", "Void", ["System"],
+     ["A source record or certificate changed after approval"],
+     ["Finance approval voided"], ["Finance approval", "Any accounting posting authorisation"]),
+    ("Void", "Draft", ["System"], ["Recalculated from the current inputs"], [], []),
+], forbidden=[
+    "Draft -> FinanceApproved (finance approval is a separate, recorded decision)",
+    "Any transition to PendingFinanceApproval while the tax treatment is UNDETERMINED (D-08)",
+    "Approval by the person who prepared the request",
+], terminal=[])
+
+transitions("InvoiceRequests", "QuickBooksStatus", [
+    ("NotSent", "Queued", ["System"], ["FinanceStatus = FinanceApproved"], [], []),
+    ("Queued", "SandboxPosted", ["System"],
+     ["Sandbox company configured", "Customer and item resolved by stored immutable identifier, "
+      "never by name"], ["Returned identifier recorded"], []),
+    ("SandboxPosted", "Reconciling", ["System"], ["Posted document read back"], [], []),
+    ("Reconciling", "Posted", ["System"],
+     ["Every line, tax, retention, discount and total matches the local calculation exactly",
+      "QBO_POSTING_ENABLED is TRUE by written authorisation of the owner"],
+     ["Final invoice number recorded"], []),
+    ("Reconciling", "ReconciliationFailed", ["System"],
+     ["Any difference, however small"],
+     ["Raised for a human. Never auto-corrected in either direction"], []),
+    ("ReconciliationFailed", "Queued", ["FinanceReviewer", "GeneralManager"],
+     ["Cause identified and corrected in the source, not in the accounting system"], [], []),
+    ("Queued", "Failed", ["System"], ["Error classified"], ["Retried only if the class is retriable"], []),
+    ("Failed", "Queued", ["System"], ["Retriable class and under the retry cap"], [], []),
+], forbidden=[
+    "NotSent -> Posted (sandbox and reconciliation are mandatory first)",
+    "Reconciling -> Posted while any figure differs from the local calculation",
+    "Any posting while QBO_POSTING_ENABLED is FALSE",
+    "Creating a customer or item by matching on a similar name",
+], terminal=["Posted"])
+
 transitions("Projects", "Status", [
-    ("Draft", "Active", ["SystemAdmin", "GeneralManager"],
+    ("Draft", "Active", ["SystemAdministrator", "BusinessAdministrator", "GeneralManager"],
      ["Client, legal entity, locations, activity rules, approval matrix and template resolved",
       "Residency assignment reviewed or explicitly recorded as unrestricted"],
      ["Project becomes visible to assigned users"], []),
-    ("Active", "Suspended", ["SystemAdmin", "GeneralManager"], ["Reason recorded"],
+    ("Active", "Suspended", ["SystemAdministrator", "BusinessAdministrator", "GeneralManager"], ["Reason recorded"],
      ["No new visits; existing records readable"], []),
-    ("Suspended", "Active", ["SystemAdmin", "GeneralManager"], [], [], []),
+    ("Suspended", "Active", ["SystemAdministrator", "BusinessAdministrator", "GeneralManager"], [], [], []),
     ("Active", "Completed", ["GeneralManager"], ["Closeout reporting complete"], [], []),
-    ("Completed", "Archived", ["SystemAdmin", "GeneralManager"], ["Retention review completed"],
+    ("Completed", "Archived", ["SystemAdministrator", "BusinessAdministrator", "GeneralManager"], ["Retention review completed"],
      ["Read-only"], []),
 ], forbidden=[
     "Draft -> Active while a residency requirement blocks production upload and is unreviewed (D-12)",
@@ -1570,13 +1720,23 @@ SCOPES = {
     "none": "No access. The table is not present in this role's data set at all.",
 }
 
-ROLE_CODES = ["SystemAdmin", "GeneralManager", "TechnicalReviewer", "FinanceReviewer",
-              "ProjectManager", "SiteSupervisor", "FieldUser", "ReadOnlyAuditor"]
+ROLE_CODES = ["SystemAdministrator", "BusinessAdministrator", "GeneralManager",
+              "TechnicalReviewer", "FinanceReviewer", "ProjectManager", "SiteSupervisor",
+              "FieldUser", "ReadOnlyAuditor", "EmergencyAccess"]
+
+# Roles that function ONLY while a valid, unexpired, authorised TemporaryAccessGrant exists.
+# Without a grant they resolve to no access at all.
+GRANT_REQUIRED_ROLES = ["ReadOnlyAuditor", "EmergencyAccess"]
 
 GROUPS = {
-    "config": ["LegalEntities", "Languages", "Roles", "Units", "Disciplines", "ActivityTypes",
-               "DocumentTypes", "DataClassifications", "ResidencyRequirements", "NumberingSeries",
-               "DocumentTemplates", "Materials", "Equipment"],
+    # Technical configuration: vocabularies and system behaviour. No client content.
+    "techconfig": ["Languages", "Roles", "Units", "Disciplines", "DocumentTypes",
+                   "DataClassifications"],
+    # Business configuration: what the company sells, issues and is registered as.
+    "businessconfig": ["LegalEntities", "ActivityTypes", "ResidencyRequirements",
+                       "NumberingSeries", "DocumentTemplates", "Materials", "Equipment"],
+    # Access administration: temporary grants and the recovery plan.
+    "access": ["TemporaryAccessGrants", "SystemRecoveryPlan"],
     "people": ["Users", "Employees"],
     "clients": ["Clients", "Contacts"],
     "projectmaster": ["Projects", "ProjectAssignments", "Locations", "ProjectActivityRules",
@@ -1589,75 +1749,129 @@ GROUPS = {
 }
 
 # read, create, update  (delete is "none" everywhere: rows are deactivated, never destroyed)
+#
+# The owner's role distinction (2026-09-11): a technical administrator does not get business
+# content merely because they administer configuration, and business master-data administration
+# is a separate job from technical administration.
 RULES = {
-    # An administrator configures the system and works the error queue. They do not need to read
-    # client evidence or documents to do that, so they cannot (spec 7.4, least privilege).
-    "SystemAdmin": {
-        "config": ("all", "all", "all"), "people": ("all", "all", "all"),
-        "clients": ("all", "all", "all"), "projectmaster": ("all", "all", "all"),
-        "operational": ("none", "none", "none"), "document": ("none", "none", "none"),
-        "control": ("all", "none", "none"), "financial": ("none", "none", "none"),
+    # Technical configuration, integration monitoring, user provisioning, system health.
+    # No ordinary business-content access of any kind.
+    "SystemAdministrator": {
+        "techconfig": ("all", "all", "all"), "businessconfig": ("all", "none", "none"),
+        "people": ("all", "all", "all"), "clients": ("none", "none", "none"),
+        "projectmaster": ("all", "none", "none"), "operational": ("none", "none", "none"),
+        "document": ("none", "none", "none"), "control": ("all", "none", "none"),
+        "access": ("all", "none", "none"), "financial": ("none", "none", "none"),
     },
+    # Controlled business master-data administration: clients, projects, locations, activity
+    # rules, templates, numbering series. Not evidence, not documents, not money.
+    "BusinessAdministrator": {
+        "techconfig": ("all", "none", "none"), "businessconfig": ("all", "all", "all"),
+        "people": ("all", "none", "none"), "clients": ("all", "all", "all"),
+        "projectmaster": ("all", "all", "all"), "operational": ("none", "none", "none"),
+        "document": ("none", "none", "none"), "control": ("none", "none", "none"),
+        "access": ("none", "none", "none"), "financial": ("none", "none", "none"),
+    },
+    # The system owner: all authorised company projects and documents.
     "GeneralManager": {
-        "config": ("all", "all", "all"), "people": ("all", "all", "all"),
-        "clients": ("all", "all", "all"), "projectmaster": ("all", "all", "all"),
-        "operational": ("all", "none", "all"), "document": ("all", "all", "all"),
-        "control": ("all", "all", "all"), "financial": ("all", "all", "all"),
+        "techconfig": ("all", "all", "all"), "businessconfig": ("all", "all", "all"),
+        "people": ("all", "all", "all"), "clients": ("all", "all", "all"),
+        "projectmaster": ("all", "all", "all"), "operational": ("all", "none", "all"),
+        "document": ("all", "all", "all"), "control": ("all", "all", "all"),
+        "access": ("all", "all", "all"), "financial": ("all", "all", "all"),
     },
     "TechnicalReviewer": {
-        "config": ("all", "none", "none"), "people": ("all", "none", "none"),
-        "clients": ("all", "none", "none"), "projectmaster": ("assigned", "none", "none"),
+        "techconfig": ("all", "none", "none"), "businessconfig": ("all", "none", "none"),
+        "people": ("all", "none", "none"), "clients": ("all", "none", "none"),
+        "projectmaster": ("assigned", "none", "none"),
         "operational": ("assigned", "none", "assigned"), "document": ("assigned", "none", "none"),
-        "control": ("assigned", "all", "all"), "financial": ("none", "none", "none"),
+        "control": ("assigned", "all", "all"), "access": ("none", "none", "none"),
+        "financial": ("none", "none", "none"),
     },
+    # Only the commercial and financial records the role actually requires.
     "FinanceReviewer": {
-        "config": ("all", "none", "none"), "people": ("all", "none", "none"),
-        "clients": ("all", "none", "none"), "projectmaster": ("all", "none", "none"),
-        "operational": ("assigned", "none", "none"), "document": ("all", "none", "none"),
-        "control": ("all", "all", "all"), "financial": ("all", "all", "all"),
+        "techconfig": ("all", "none", "none"), "businessconfig": ("all", "none", "none"),
+        "people": ("all", "none", "none"), "clients": ("all", "none", "none"),
+        "projectmaster": ("all", "none", "none"), "operational": ("assigned", "none", "none"),
+        "document": ("all", "none", "none"), "control": ("all", "all", "all"),
+        "access": ("none", "none", "none"), "financial": ("all", "all", "all"),
     },
     "ProjectManager": {
-        "config": ("all", "none", "none"), "people": ("all", "none", "none"),
-        "clients": ("all", "none", "none"), "projectmaster": ("assigned", "none", "assigned"),
-        "operational": ("assigned", "assigned", "assigned"), "document": ("assigned", "assigned", "none"),
-        "control": ("assigned", "all", "none"), "financial": ("none", "none", "none"),
+        "techconfig": ("all", "none", "none"), "businessconfig": ("all", "none", "none"),
+        "people": ("all", "none", "none"), "clients": ("all", "none", "none"),
+        "projectmaster": ("assigned", "none", "assigned"),
+        "operational": ("assigned", "assigned", "assigned"),
+        "document": ("assigned", "assigned", "none"), "control": ("assigned", "all", "none"),
+        "access": ("none", "none", "none"), "financial": ("none", "none", "none"),
     },
     "SiteSupervisor": {
-        "config": ("all", "none", "none"), "people": ("all", "none", "none"),
-        "clients": ("all", "none", "none"), "projectmaster": ("assigned", "none", "none"),
+        "techconfig": ("all", "none", "none"), "businessconfig": ("all", "none", "none"),
+        "people": ("all", "none", "none"), "clients": ("all", "none", "none"),
+        "projectmaster": ("assigned", "none", "none"),
         "operational": ("assigned", "assigned", "own"), "document": ("none", "none", "none"),
-        "control": ("none", "none", "none"), "financial": ("none", "none", "none"),
+        "control": ("none", "none", "none"), "access": ("none", "none", "none"),
+        "financial": ("none", "none", "none"),
     },
     "FieldUser": {
-        "config": ("all", "none", "none"), "people": ("none", "none", "none"),
-        "clients": ("none", "none", "none"), "projectmaster": ("assigned", "none", "none"),
+        "techconfig": ("all", "none", "none"), "businessconfig": ("all", "none", "none"),
+        "people": ("none", "none", "none"), "clients": ("none", "none", "none"),
+        "projectmaster": ("assigned", "none", "none"),
         "operational": ("own", "assigned", "own"), "document": ("none", "none", "none"),
-        "control": ("none", "none", "none"), "financial": ("none", "none", "none"),
+        "control": ("none", "none", "none"), "access": ("none", "none", "none"),
+        "financial": ("none", "none", "none"),
     },
+    # Time-bound and explicitly authorised. Without an active grant this role reads NOTHING.
     "ReadOnlyAuditor": {
-        "config": ("all", "none", "none"), "people": ("all", "none", "none"),
-        "clients": ("all", "none", "none"), "projectmaster": ("all", "none", "none"),
-        "operational": ("all", "none", "none"), "document": ("all", "none", "none"),
-        "control": ("all", "none", "none"), "financial": ("all", "none", "none"),
+        "techconfig": ("all", "none", "none"), "businessconfig": ("all", "none", "none"),
+        "people": ("all", "none", "none"), "clients": ("all", "none", "none"),
+        "projectmaster": ("all", "none", "none"), "operational": ("all", "none", "none"),
+        "document": ("all", "none", "none"), "control": ("all", "none", "none"),
+        "access": ("all", "none", "none"), "financial": ("all", "none", "none"),
+    },
+    # Break-glass. Restores ADMINISTRATIVE capability when no administrator is available.
+    # It deliberately does NOT open client evidence, documents or financial records: the
+    # emergency is an administrative one, and reading a client's photographs never solves it.
+    "EmergencyAccess": {
+        "techconfig": ("all", "all", "all"), "businessconfig": ("all", "none", "none"),
+        "people": ("all", "all", "all"), "clients": ("none", "none", "none"),
+        "projectmaster": ("all", "none", "none"), "operational": ("none", "none", "none"),
+        "document": ("none", "none", "none"), "control": ("all", "none", "none"),
+        "access": ("all", "none", "none"), "financial": ("none", "none", "none"),
     },
 }
 
 # Deliberate per-table exceptions, each with a stated reason.
 EXCEPTIONS = {
-    ("SystemAdmin", "AuditLog"): ("all", "none", "none",
-        "Append-only for every role. No one may edit or delete the audit trail, including an administrator."),
+    ("SystemAdministrator", "AuditLog"): ("all", "none", "none",
+        "Append-only for every role. No one may edit or delete the audit trail, including an "
+        "administrator."),
     ("GeneralManager", "AuditLog"): ("all", "none", "none", "Append-only for every role."),
     ("FinanceReviewer", "AuditLog"): ("all", "none", "none", "Append-only for every role."),
+    ("ReadOnlyAuditor", "AuditLog"): ("all", "none", "none",
+        "Read-only, and only while a valid time-bound grant exists."),
+    ("EmergencyAccess", "AuditLog"): ("all", "none", "none",
+        "Break-glass may read the audit trail to diagnose, and may never alter it."),
     ("TechnicalReviewer", "AuditLog"): ("none", "none", "none",
         "Not needed for the review task; least privilege."),
-    ("SystemAdmin", "TaxRules"): ("all", "none", "none",
-        "Administrators may see tax configuration to support it, but may not change a financial "
-        "rule: separation of duties (D-08)."),
-    ("SystemAdmin", "Approvals"): ("all", "none", "none",
+    ("SystemAdministrator", "ProjectAssignments"): ("all", "all", "all",
+        "User provisioning is a technical-administration task: placing a person into a project "
+        "is access administration, not business content."),
+    ("SystemAdministrator", "TaxRules"): ("none", "none", "none",
+        "Separation of duties: a technical administrator has no reason to see or change a "
+        "financial rule."),
+    ("SystemAdministrator", "Approvals"): ("all", "none", "none",
         "An administrator must never be able to manufacture an approval."),
-    ("SystemAdmin", "NumberRegister"): ("all", "none", "none",
-        "Administrators must be able to explain a gap in the numbering register without being able "
-        "to read document content."),
+    ("SystemAdministrator", "IntegrationJobs"): ("all", "none", "none",
+        "Integration monitoring and system health are the administrator's job."),
+    ("EmergencyAccess", "Approvals"): ("all", "none", "none",
+        "Break-glass can see that approvals exist and can never create one."),
+    ("EmergencyAccess", "ProjectAssignments"): ("all", "all", "all",
+        "Restoring administrative capability means being able to reinstate an administrator."),
+    ("BusinessAdministrator", "Users"): ("all", "none", "none",
+        "Business administration reads the user register to assign people to projects; creating "
+        "and disabling accounts stays with technical administration."),
+    ("BusinessAdministrator", "AuditLog"): ("none", "none", "none",
+        "Least privilege: business master-data administration does not require the audit trail."),
     ("ProjectManager", "AuditLog"): ("none", "none", "none",
         "Append-only for every role, and a project manager has no need to read it."),
     ("ProjectManager", "IntegrationJobs"): ("assigned", "none", "none",
@@ -1669,8 +1883,6 @@ EXCEPTIONS = {
     ("SiteSupervisor", "Photos"): ("assigned", "assigned", "own",
         "Supervisors see all evidence for their projects so they can avoid duplicate captures, but "
         "may edit only their own."),
-    ("FieldUser", "ActivityTypes"): ("all", "none", "none",
-        "The activity catalogue is not sensitive and is needed to fill the form."),
     ("SiteSupervisor", "Clients"): ("assigned", "none", "none",
         "Client display name only, for the projects they are assigned to."),
 }
@@ -1690,6 +1902,7 @@ for role in ROLE_CODES:
             else:
                 SECURITY["matrix"][role][t] = {"read": r, "create": c, "update": u, "delete": "none"}
 
+SECURITY["grant_required_roles"] = GRANT_REQUIRED_ROLES
 SECURITY["principles"] = [
     "Row-level access derives from ProjectAssignments only. Absence of an assignment grants nothing.",
     "An expired assignment (AssignedTo in the past) grants nothing.",
@@ -1697,9 +1910,19 @@ SECURITY["principles"] = [
     "not merely hidden (SEC-04).",
     "Delete is 'none' for every role on every table. Rows are deactivated or cancelled, never "
     "destroyed, because history is evidence.",
-    "The audit log is append-only for every role including SystemAdmin.",
-    "An administrator can configure the system and diagnose failures without reading client "
-    "evidence or documents: support does not require content access (spec 7.4).",
+    "The audit log is append-only for every role, including both administrator roles and break-glass access.",
+    "A technical administrator can configure the system, provision users and diagnose failures "
+    "without reading client evidence, documents or financial records: support does not require "
+    "content access.",
+    "Business master-data administration is a separate role from technical administration, and "
+    "neither of them opens evidence, documents or money.",
+    "ReadOnlyAuditor and EmergencyAccess function ONLY while a valid, unexpired, authorised "
+    "TemporaryAccessGrant exists. Without a grant they resolve to no access at all.",
+    "Break-glass restores ADMINISTRATIVE capability. It never opens client evidence, documents or "
+    "financial records, because an administrative emergency is not solved by reading a client's "
+    "photographs.",
+    "The system must never become unrecoverable because one administrator is unavailable: either "
+    "two administrator-capable accounts exist, or a documented and tested recovery route does.",
     "View, slice and column visibility are presentation, never enforcement. Every state-changing "
     "action is re-validated server-side against the authoritative record (P-04).",
 ]
@@ -1772,9 +1995,12 @@ def main():
         for role in SECURITY["matrix"]:
             if t not in SECURITY["matrix"][role]:
                 problems.append(f"security matrix missing {role}.{t}")
-    for ent in TRANSITIONS:
-        if ent not in TABLES:
-            problems.append(f"transitions reference unknown table {ent}")
+    for key, spec in TRANSITIONS.items():
+        if spec["entity"] not in TABLES:
+            problems.append(f"transitions reference unknown table {spec['entity']}")
+        cols = [c["name"] for c in TABLES[spec["entity"]]["columns"]]
+        if spec["field"] not in cols:
+            problems.append(f"transitions reference unknown column {key}")
 
     if problems:
         print("MODEL PROBLEMS:", file=sys.stderr)

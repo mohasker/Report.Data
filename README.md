@@ -12,8 +12,9 @@ Implementation repository for the system specified in [`MASTER_SPEC.md`](MASTER_
 | | |
 |---|---|
 | **Phase 0 — Discovery** | **Approved 2026-09-11** subject to owner decisions D-01 … D-15 ([decision record](docs/00-discovery/10-owner-decisions.md)). |
-| **Phase 1 — Data foundation** | **Complete 2026-09-11.** 141 of 141 checks executed and passing. Awaiting owner review of the data dictionary, transition matrix and security model. |
-| **Next phase** | Phase 2 — the multi-project capture and review application. Needs EF-01, EF-03, EF-05, EF-06. |
+| **Phase 1 — Data foundation** | **Completed · Validated Locally · Submitted for Owner Review.** 172 of 172 checks executed and passing. Start with the [Owner Review Pack](docs/OWNER-REVIEW-PACK.md). |
+| **Phase 2A — Plan and synthetic prototype design** | **Completed · Submitted for Owner Review.** Connects nothing. See [`docs/02a-plan/`](docs/02a-plan/00-PHASE-2A-PLAN.md). |
+| **Phase 2B — first external connection** | **Not authorised.** Requires written owner approval plus EF-01, EF-03 and EF-06. |
 | **Production systems touched** | **None.** No Google account, Drive folder, AppSheet app, Make scenario, API connection, QuickBooks company or credential has been created or connected. |
 | **Real data** | **None.** All data in this repository is synthetic and marked as such. |
 | **Tests executed** | Phase 1 validation checks run locally against synthetic data; results recorded in [`17-validation-evidence.md`](docs/01-data-foundation/17-validation-evidence.md). No claim is made about any system that has not been built. |
@@ -29,6 +30,7 @@ Implementation repository for the system specified in [`MASTER_SPEC.md`](MASTER_
 
 | If you are… | Read |
 |---|---|
+| **The owner, deciding whether to approve Phase 1** | **[`docs/OWNER-REVIEW-PACK.md`](docs/OWNER-REVIEW-PACK.md)** — the whole design in about 35 minutes, with a recommendation. |
 | **The owner, reviewing Phase 1** | [`docs/01-data-foundation/00-PHASE-1-SUMMARY.md`](docs/01-data-foundation/00-PHASE-1-SUMMARY.md), then [`17-validation-evidence.md`](docs/01-data-foundation/17-validation-evidence.md) for what was actually executed. |
 | **Looking for the decisions already taken** | [`docs/00-discovery/10-owner-decisions.md`](docs/00-discovery/10-owner-decisions.md) — D-01 … D-15. |
 | **Looking for what is still unknown** | [`docs/01-data-foundation/16-external-facts-register.md`](docs/01-data-foundation/16-external-facts-register.md) — every external fact awaiting confirmation, by the phase it blocks. |
@@ -96,7 +98,7 @@ Directories created in later phases: `prompts/`, `templates/`.
 - **No invented values.** Unknown external values are named configuration variables and are requested only when the next safe step needs them.
 - **No real client data** until Phase 8, under controlled import. Test data is synthetic and clearly marked.
 - **No irreversible external action** — send, post, share, delete — outside the phase that specifically enables it, with its gate evidence recorded.
-- **No claim of "tested"** without a recorded result carrying a date, an executor and an outcome.
+- **No claim of "tested"** without a recorded result carrying a date, an executor and an outcome. Local checks are never reported as integration verification — see [`docs/STATUS-DEFINITIONS.md`](docs/STATUS-DEFINITIONS.md).
 - **One phase in progress at a time.** A phase closes only when its gate evidence exists.
 
 ---
@@ -109,9 +111,10 @@ Standard-library Python 3 only — no installation, no dependency, no network:
 python3 tools/run_validation.py
 ```
 
-It regenerates the schemas and the data dictionary from `model/model.json`, runs every validation
-and test, and rewrites `docs/01-data-foundation/17-validation-evidence.md` with the results —
-passing or failing.
+It regenerates every artifact from `model/model.json`, runs all 172 checks, and rewrites
+`docs/01-data-foundation/17-validation-evidence.md` with the commit tested, the environment, the
+full output, every individual check, the acceptance-criteria mapping, whether regeneration came back
+byte-identical, and an explicit statement of what the checks are **not** evidence of.
 
 ## Approval required to proceed to Phase 2
 

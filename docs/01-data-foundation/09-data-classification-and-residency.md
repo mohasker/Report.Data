@@ -1,6 +1,7 @@
 # Data Classification, Residency and Data Flows
 
 **Document ID:** AH-SYS-P1-009 · **Revision:** 1 · **Date:** 2026-09-11
+**Status:** Completed · Submitted for Owner Review · **Contract review not yet executed**
 **Delivers:** D-15 item 8 · **Implements:** D-12 · **Relates to:** R-04, P-08, BQ-10
 **Evidence:** `17-validation-evidence.md` (GOV-14, GOV-15, SEG-12)
 

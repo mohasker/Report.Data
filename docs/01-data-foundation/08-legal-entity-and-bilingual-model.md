@@ -1,6 +1,7 @@
 # Legal Entity and Bilingual Model
 
 **Document ID:** AH-SYS-P1-008 · **Revision:** 1 · **Date:** 2026-09-11
+**Status:** Completed · Validated Locally · Submitted for Owner Review
 **Delivers:** D-15 items 7 and 10 · **Implements:** D-02, D-11 · **Closes:** C-01
 **Evidence:** `17-validation-evidence.md` (LNG-01 … LNG-13, GOV-03)
 

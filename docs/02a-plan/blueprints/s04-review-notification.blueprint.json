@@ -1,0 +1,38 @@
+{
+  "__specification_only": true,
+  "__not_connected": true,
+  "__authored": "2026-09-11",
+  "__note": "Specification of Scenario 04. Not an export. No mailbox is connected and nothing is sent.",
+  "name": "S04 Review notification",
+  "enabled": false,
+  "settings": {"sequential": true, "maxErrors": 3},
+  "idempotency": {
+    "keyTemplate": "S04:SiteVisit:{{VisitID}}:Notified",
+    "store": "MAKE_DATASTORE_IDEMPOTENCY",
+    "claimBeforeSideEffect": true,
+    "note": "Claimed BEFORE sending. A reviewer must never receive the same notification twice."
+  },
+  "invariants": [
+    "The notification contains a deep link to the record and NO evidence: no photograph, no thumbnail, no public link (SEC-03).",
+    "The recipient is resolved from the approval matrix for this project and stage, honouring any valid delegation.",
+    "This is an internal notification to a company reviewer. It is NOT external delivery to a client, which requires a Released document and a recipient snapshot (Phase 7)."
+  ],
+  "modules": [
+    {"id": 1, "type": "trigger", "name": "Submission passed validation"},
+    {"id": 2, "type": "datastore.get", "name": "Claim idempotency key",
+     "routes": [{"condition": "already claimed", "action": "log DuplicateSuppressed; stop"}]},
+    {"id": 3, "type": "source.read", "name": "Resolve the reviewer",
+     "config": {"order": ["project + stage + document type", "project + stage", "company default for stage"],
+                "delegation": "if a valid, unrevoked, in-window delegation covers this stage and project, notify the delegate and record both identities"}},
+    {"id": 4, "type": "compose", "name": "Build the notification",
+     "config": {"contains": ["project code", "location name", "visit date", "activity count",
+                             "photograph count", "deep link to the record"],
+                "excludes": ["photographs", "thumbnails", "any file link", "client contact details"]}},
+    {"id": 5, "type": "email.send", "name": "Send to the reviewer",
+     "config": {"enabled": false,
+                "note": "Disabled until Phase 3 is authorised. Internal recipient only."},
+     "errorRoute": {"class": "ProviderUnavailable", "retry": "capped exponential backoff"}},
+    {"id": 6, "type": "source.create", "name": "Write IntegrationJobs row",
+     "config": {"records": ["messageId", "timestamp"], "note": "Sanitised summaries only"}}
+  ]
+}

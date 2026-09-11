@@ -1,6 +1,7 @@
 # Approval and Delegation Model
 
 **Document ID:** AH-SYS-P1-010 · **Revision:** 1 · **Date:** 2026-09-11
+**Status:** Completed · Validated Locally · Submitted for Owner Review
 **Delivers:** D-15 items 6 and 14 · **Implements:** D-09 · **Relates to:** ADR-0006, R-07
 **Evidence:** `17-validation-evidence.md` (TRN-11 … TRN-20, GOV-08)
 
@@ -72,7 +73,7 @@ rather than implying the accountable person was present.
 
 1. **Approve their own restricted transaction because an approver is unavailable** (D-09). Every approval route carries `SelfApprovalProhibited = TRUE` (TRN-11), and it is not configurable to `FALSE` for financial stages. The correct answer to an absent approver is a recorded delegation, not a shortcut.
 2. **Approve evidence they submitted.** Enforced as a precondition on the transition, not as a convention.
-3. **Manufacture an approval.** `SystemAdmin` has no create or update access to `Approvals` (GOV-08).
+3. **Manufacture an approval.** Neither administrator role, nor break-glass access, has create or update access to `Approvals` (GOV-08).
 4. **Approve with an expired, revoked or out-of-scope delegation** (TRN-14 … TRN-17).
 5. **Delegate to the person who originated the item being approved** — otherwise delegation becomes a route around rule 2.
 

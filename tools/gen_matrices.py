@@ -37,9 +37,9 @@ def transitions_doc(m):
     w(f"**{len(m['transitions'])} lifecycles · {total_a} permitted transitions · "
       f"{total_f} explicitly forbidden.**")
     w("")
-    for ent, spec in m["transitions"].items():
-        t = m["tables"][ent]
-        w(f"## {ent}.{spec['field']}")
+    for key, spec in m["transitions"].items():
+        t = m["tables"][spec["entity"]]
+        w(f"## {key}")
         w("")
         w(f"{t['description_en']}")
         w("")

@@ -11,8 +11,12 @@
 - An expired assignment (AssignedTo in the past) grants nothing.
 - Field roles have NO access to any financial table: the data is absent from their data set, not merely hidden (SEC-04).
 - Delete is 'none' for every role on every table. Rows are deactivated or cancelled, never destroyed, because history is evidence.
-- The audit log is append-only for every role including SystemAdmin.
-- An administrator can configure the system and diagnose failures without reading client evidence or documents: support does not require content access (spec 7.4).
+- The audit log is append-only for every role, including both administrator roles and break-glass access.
+- A technical administrator can configure the system, provision users and diagnose failures without reading client evidence, documents or financial records: support does not require content access.
+- Business master-data administration is a separate role from technical administration, and neither of them opens evidence, documents or money.
+- ReadOnlyAuditor and EmergencyAccess function ONLY while a valid, unexpired, authorised TemporaryAccessGrant exists. Without a grant they resolve to no access at all.
+- Break-glass restores ADMINISTRATIVE capability. It never opens client evidence, documents or financial records, because an administrative emergency is not solved by reading a client's photographs.
+- The system must never become unrecoverable because one administrator is unavailable: either two administrator-capable accounts exist, or a documented and tested recovery route does.
 - View, slice and column visibility are presentation, never enforcement. Every state-changing action is re-validated server-side against the authoritative record (P-04).
 
 ## Scopes
@@ -32,77 +36,79 @@ evidence.
 
 ### Master tables
 
-| Table | SystemAdmin | GeneralManager | TechnicalReviewer | FinanceReviewer | ProjectManager | SiteSupervisor | FieldUser | ReadOnlyAuditor |
-|---|---|---|---|---|---|---|---|---|
-| `LegalEntities` | ALL/ALL/ALL | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- |
-| `Users` | ALL/ALL/ALL | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | OWN/-/- \* | ALL/-/- |
-| `ActivityTypes` | ALL/ALL/ALL | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- \* | ALL/-/- |
-| `DataClassifications` | ALL/ALL/ALL | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- |
-| `ResidencyRequirements` | ALL/ALL/ALL | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- |
-| `TaxRules` | ALL/-/- \* | ALL/ALL/ALL | — | ALL/ALL/ALL | — | — | — | ALL/-/- |
-| `NumberingSeries` | ALL/ALL/ALL | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- |
-| `DocumentTemplates` | ALL/ALL/ALL | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- |
-| `Clients` | ALL/ALL/ALL | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ASG/-/- \* | — | ALL/-/- |
-| `Contacts` | ALL/ALL/ALL | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | — | ALL/-/- |
-| `Projects` | ALL/ALL/ALL | ALL/ALL/ALL | ASG/-/- | ALL/-/- | ASG/-/ASG | ASG/-/- | ASG/-/- | ALL/-/- |
-| `ProjectAssignments` | ALL/ALL/ALL | ALL/ALL/ALL | ASG/-/- | ALL/-/- | ASG/-/ASG | ASG/-/- | ASG/-/- | ALL/-/- |
-| `Locations` | ALL/ALL/ALL | ALL/ALL/ALL | ASG/-/- | ALL/-/- | ASG/-/ASG | ASG/-/- | ASG/-/- | ALL/-/- |
-| `ProjectActivityRules` | ALL/ALL/ALL | ALL/ALL/ALL | ASG/-/- | ALL/-/- | ASG/-/ASG | ASG/-/- | ASG/-/- | ALL/-/- |
-| `ApprovalMatrix` | ALL/ALL/ALL | ALL/ALL/ALL | ASG/-/- | ALL/-/- | ASG/-/ASG | ASG/-/- | ASG/-/- | ALL/-/- |
-| `ApprovalDelegations` | ALL/ALL/ALL | ALL/ALL/ALL | ASG/-/- | ALL/-/- | ASG/-/ASG | ASG/-/- | ASG/-/- | ALL/-/- |
-| `ResidencyAssignments` | ALL/ALL/ALL | ALL/ALL/ALL | ASG/-/- | ALL/-/- | ASG/-/ASG | ASG/-/- | ASG/-/- | ALL/-/- |
-| `Materials` | ALL/ALL/ALL | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- |
-| `Equipment` | ALL/ALL/ALL | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- |
-| `Employees` | ALL/ALL/ALL | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | — | ALL/-/- |
+| Table | SystemAdministrator | BusinessAdministrator | GeneralManager | TechnicalReviewer | FinanceReviewer | ProjectManager | SiteSupervisor | FieldUser | ReadOnlyAuditor | EmergencyAccess |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `LegalEntities` | ALL/-/- | ALL/ALL/ALL | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- |
+| `Users` | ALL/ALL/ALL | ALL/-/- \* | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | OWN/-/- \* | ALL/-/- | ALL/ALL/ALL |
+| `ActivityTypes` | ALL/-/- | ALL/ALL/ALL | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- |
+| `DataClassifications` | ALL/ALL/ALL | ALL/-/- | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/ALL/ALL |
+| `ResidencyRequirements` | ALL/-/- | ALL/ALL/ALL | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- |
+| `TaxRules` | — \* | — | ALL/ALL/ALL | — | ALL/ALL/ALL | — | — | — | ALL/-/- | — |
+| `NumberingSeries` | ALL/-/- | ALL/ALL/ALL | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- |
+| `DocumentTemplates` | ALL/-/- | ALL/ALL/ALL | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- |
+| `Clients` | — | ALL/ALL/ALL | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ASG/-/- \* | — | ALL/-/- | — |
+| `Contacts` | — | ALL/ALL/ALL | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | — | ALL/-/- | — |
+| `Projects` | ALL/-/- | ALL/ALL/ALL | ALL/ALL/ALL | ASG/-/- | ALL/-/- | ASG/-/ASG | ASG/-/- | ASG/-/- | ALL/-/- | ALL/-/- |
+| `ProjectAssignments` | ALL/ALL/ALL \* | ALL/ALL/ALL | ALL/ALL/ALL | ASG/-/- | ALL/-/- | ASG/-/ASG | ASG/-/- | ASG/-/- | ALL/-/- | ALL/ALL/ALL \* |
+| `Locations` | ALL/-/- | ALL/ALL/ALL | ALL/ALL/ALL | ASG/-/- | ALL/-/- | ASG/-/ASG | ASG/-/- | ASG/-/- | ALL/-/- | ALL/-/- |
+| `ProjectActivityRules` | ALL/-/- | ALL/ALL/ALL | ALL/ALL/ALL | ASG/-/- | ALL/-/- | ASG/-/ASG | ASG/-/- | ASG/-/- | ALL/-/- | ALL/-/- |
+| `ApprovalMatrix` | ALL/-/- | ALL/ALL/ALL | ALL/ALL/ALL | ASG/-/- | ALL/-/- | ASG/-/ASG | ASG/-/- | ASG/-/- | ALL/-/- | ALL/-/- |
+| `ApprovalDelegations` | ALL/-/- | ALL/ALL/ALL | ALL/ALL/ALL | ASG/-/- | ALL/-/- | ASG/-/ASG | ASG/-/- | ASG/-/- | ALL/-/- | ALL/-/- |
+| `ResidencyAssignments` | ALL/-/- | ALL/ALL/ALL | ALL/ALL/ALL | ASG/-/- | ALL/-/- | ASG/-/ASG | ASG/-/- | ASG/-/- | ALL/-/- | ALL/-/- |
+| `Materials` | ALL/-/- | ALL/ALL/ALL | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- |
+| `Equipment` | ALL/-/- | ALL/ALL/ALL | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- |
+| `Employees` | ALL/ALL/ALL | ALL/-/- | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | — | ALL/-/- | ALL/ALL/ALL |
 
 ### Vocabulary tables
 
-| Table | SystemAdmin | GeneralManager | TechnicalReviewer | FinanceReviewer | ProjectManager | SiteSupervisor | FieldUser | ReadOnlyAuditor |
-|---|---|---|---|---|---|---|---|---|
-| `Languages` | ALL/ALL/ALL | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- |
-| `Roles` | ALL/ALL/ALL | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- |
-| `Units` | ALL/ALL/ALL | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- |
-| `Disciplines` | ALL/ALL/ALL | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- |
-| `DocumentTypes` | ALL/ALL/ALL | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- |
+| Table | SystemAdministrator | BusinessAdministrator | GeneralManager | TechnicalReviewer | FinanceReviewer | ProjectManager | SiteSupervisor | FieldUser | ReadOnlyAuditor | EmergencyAccess |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `Languages` | ALL/ALL/ALL | ALL/-/- | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/ALL/ALL |
+| `Roles` | ALL/ALL/ALL | ALL/-/- | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/ALL/ALL |
+| `Units` | ALL/ALL/ALL | ALL/-/- | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/ALL/ALL |
+| `Disciplines` | ALL/ALL/ALL | ALL/-/- | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/ALL/ALL |
+| `DocumentTypes` | ALL/ALL/ALL | ALL/-/- | ALL/ALL/ALL | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/-/- | ALL/ALL/ALL |
 
 ### Operational tables
 
-| Table | SystemAdmin | GeneralManager | TechnicalReviewer | FinanceReviewer | ProjectManager | SiteSupervisor | FieldUser | ReadOnlyAuditor |
-|---|---|---|---|---|---|---|---|---|
-| `SiteVisits` | — | ALL/-/ALL | ASG/-/ASG | ASG/-/- | ASG/ASG/ASG | ASG/ASG/OWN | OWN/ASG/OWN | ALL/-/- |
-| `VisitActivities` | — | ALL/-/ALL | ASG/-/ASG | ASG/-/- | ASG/ASG/ASG | ASG/ASG/OWN | OWN/ASG/OWN | ALL/-/- |
-| `Photos` | — | ALL/-/ALL | ASG/-/ASG | ASG/-/- | ASG/ASG/ASG | ASG/ASG/OWN \* | OWN/ASG/OWN | ALL/-/- |
-| `Snags` | — | ALL/-/ALL | ASG/-/ASG | ASG/-/- | ASG/ASG/ASG | ASG/ASG/OWN | OWN/ASG/OWN | ALL/-/- |
-| `MaterialUsage` | — | ALL/-/ALL | ASG/-/ASG | ASG/-/- | ASG/ASG/ASG | ASG/ASG/OWN | OWN/ASG/OWN | ALL/-/- |
-| `VisitEquipment` | — | ALL/-/ALL | ASG/-/ASG | ASG/-/- | ASG/ASG/ASG | ASG/ASG/OWN | OWN/ASG/OWN | ALL/-/- |
-| `VisitManpower` | — | ALL/-/ALL | ASG/-/ASG | ASG/-/- | ASG/ASG/ASG | ASG/ASG/OWN | OWN/ASG/OWN | ALL/-/- |
+| Table | SystemAdministrator | BusinessAdministrator | GeneralManager | TechnicalReviewer | FinanceReviewer | ProjectManager | SiteSupervisor | FieldUser | ReadOnlyAuditor | EmergencyAccess |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `SiteVisits` | — | — | ALL/-/ALL | ASG/-/ASG | ASG/-/- | ASG/ASG/ASG | ASG/ASG/OWN | OWN/ASG/OWN | ALL/-/- | — |
+| `VisitActivities` | — | — | ALL/-/ALL | ASG/-/ASG | ASG/-/- | ASG/ASG/ASG | ASG/ASG/OWN | OWN/ASG/OWN | ALL/-/- | — |
+| `Photos` | — | — | ALL/-/ALL | ASG/-/ASG | ASG/-/- | ASG/ASG/ASG | ASG/ASG/OWN \* | OWN/ASG/OWN | ALL/-/- | — |
+| `Snags` | — | — | ALL/-/ALL | ASG/-/ASG | ASG/-/- | ASG/ASG/ASG | ASG/ASG/OWN | OWN/ASG/OWN | ALL/-/- | — |
+| `MaterialUsage` | — | — | ALL/-/ALL | ASG/-/ASG | ASG/-/- | ASG/ASG/ASG | ASG/ASG/OWN | OWN/ASG/OWN | ALL/-/- | — |
+| `VisitEquipment` | — | — | ALL/-/ALL | ASG/-/ASG | ASG/-/- | ASG/ASG/ASG | ASG/ASG/OWN | OWN/ASG/OWN | ALL/-/- | — |
+| `VisitManpower` | — | — | ALL/-/ALL | ASG/-/ASG | ASG/-/- | ASG/ASG/ASG | ASG/ASG/OWN | OWN/ASG/OWN | ALL/-/- | — |
 
 ### Document tables
 
-| Table | SystemAdmin | GeneralManager | TechnicalReviewer | FinanceReviewer | ProjectManager | SiteSupervisor | FieldUser | ReadOnlyAuditor |
-|---|---|---|---|---|---|---|---|---|
-| `DocumentJobs` | — | ALL/ALL/ALL | ASG/-/- | ALL/-/- | ASG/ASG/- | — | — | ALL/-/- |
-| `Documents` | — | ALL/ALL/ALL | ASG/-/- | ALL/-/- | ASG/ASG/- | — | — | ALL/-/- |
-| `NumberRegister` | ALL/-/- \* | ALL/ALL/ALL | ASG/-/- | ALL/-/- | ASG/ASG/- | — | — | ALL/-/- |
+| Table | SystemAdministrator | BusinessAdministrator | GeneralManager | TechnicalReviewer | FinanceReviewer | ProjectManager | SiteSupervisor | FieldUser | ReadOnlyAuditor | EmergencyAccess |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `DocumentJobs` | — | — | ALL/ALL/ALL | ASG/-/- | ALL/-/- | ASG/ASG/- | — | — | ALL/-/- | — |
+| `Documents` | — | — | ALL/ALL/ALL | ASG/-/- | ALL/-/- | ASG/ASG/- | — | — | ALL/-/- | — |
+| `NumberRegister` | — | — | ALL/ALL/ALL | ASG/-/- | ALL/-/- | ASG/ASG/- | — | — | ALL/-/- | — |
 
 ### Control tables
 
-| Table | SystemAdmin | GeneralManager | TechnicalReviewer | FinanceReviewer | ProjectManager | SiteSupervisor | FieldUser | ReadOnlyAuditor |
-|---|---|---|---|---|---|---|---|---|
-| `Approvals` | ALL/-/- \* | ALL/ALL/ALL | ASG/ALL/ALL | ALL/ALL/ALL | ASG/ALL/ALL \* | — | — | ALL/-/- |
-| `EntityVersions` | ALL/-/- | ALL/ALL/ALL | ASG/ALL/ALL | ALL/ALL/ALL | ASG/ALL/- | — | — | ALL/-/- |
-| `AuditLog` | ALL/-/- \* | ALL/-/- \* | — \* | ALL/-/- \* | — \* | — | — | ALL/-/- |
-| `IntegrationJobs` | ALL/-/- | ALL/ALL/ALL | ASG/ALL/ALL | ALL/ALL/ALL | ASG/-/- \* | — | — | ALL/-/- |
+| Table | SystemAdministrator | BusinessAdministrator | GeneralManager | TechnicalReviewer | FinanceReviewer | ProjectManager | SiteSupervisor | FieldUser | ReadOnlyAuditor | EmergencyAccess |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `Approvals` | ALL/-/- \* | — | ALL/ALL/ALL | ASG/ALL/ALL | ALL/ALL/ALL | ASG/ALL/ALL \* | — | — | ALL/-/- | ALL/-/- \* |
+| `EntityVersions` | ALL/-/- | — | ALL/ALL/ALL | ASG/ALL/ALL | ALL/ALL/ALL | ASG/ALL/- | — | — | ALL/-/- | ALL/-/- |
+| `AuditLog` | ALL/-/- \* | — \* | ALL/-/- \* | — \* | ALL/-/- \* | — \* | — | — | ALL/-/- \* | ALL/-/- \* |
+| `IntegrationJobs` | ALL/-/- \* | — | ALL/ALL/ALL | ASG/ALL/ALL | ALL/ALL/ALL | ASG/-/- \* | — | — | ALL/-/- | ALL/-/- |
+| `TemporaryAccessGrants` | ALL/-/- | — | ALL/ALL/ALL | — | — | — | — | — | ALL/-/- | ALL/-/- |
+| `SystemRecoveryPlan` | ALL/-/- | — | ALL/ALL/ALL | — | — | — | — | — | ALL/-/- | ALL/-/- |
 
 ### Financial tables
 
-| Table | SystemAdmin | GeneralManager | TechnicalReviewer | FinanceReviewer | ProjectManager | SiteSupervisor | FieldUser | ReadOnlyAuditor |
-|---|---|---|---|---|---|---|---|---|
-| `Contracts` | — | ALL/ALL/ALL | — | ALL/ALL/ALL | — | — | — | ALL/-/- |
-| `WorkOrders` | — | ALL/ALL/ALL | — | ALL/ALL/ALL | — | — | — | ALL/-/- |
-| `BOQItems` | — | ALL/ALL/ALL | — | ALL/ALL/ALL | — | — | — | ALL/-/- |
-| `InvoiceRequests` | — | ALL/ALL/ALL | — | ALL/ALL/ALL | — | — | — | ALL/-/- |
-| `InvoiceLines` | — | ALL/ALL/ALL | — | ALL/ALL/ALL | — | — | — | ALL/-/- |
+| Table | SystemAdministrator | BusinessAdministrator | GeneralManager | TechnicalReviewer | FinanceReviewer | ProjectManager | SiteSupervisor | FieldUser | ReadOnlyAuditor | EmergencyAccess |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `Contracts` | — | — | ALL/ALL/ALL | — | ALL/ALL/ALL | — | — | — | ALL/-/- | — |
+| `WorkOrders` | — | — | ALL/ALL/ALL | — | ALL/ALL/ALL | — | — | — | ALL/-/- | — |
+| `BOQItems` | — | — | ALL/ALL/ALL | — | ALL/ALL/ALL | — | — | — | ALL/-/- | — |
+| `InvoiceRequests` | — | — | ALL/ALL/ALL | — | ALL/ALL/ALL | — | — | — | ALL/-/- | — |
+| `InvoiceLines` | — | — | ALL/ALL/ALL | — | ALL/ALL/ALL | — | — | — | ALL/-/- | — |
 
 Key: `ALL` every row · `ASG` rows in the user's assigned projects · `OWN` rows the user
 created within those projects · `-` denied · `—` no access to the table at all.
@@ -115,10 +121,13 @@ reason is a bug.
 
 | Role and table | Reason |
 |---|---|
-| `SystemAdmin.NumberRegister` | Administrators must be able to explain a gap in the numbering register without being able to read document content. |
-| `SystemAdmin.Approvals` | An administrator must never be able to manufacture an approval. |
-| `SystemAdmin.AuditLog` | Append-only for every role. No one may edit or delete the audit trail, including an administrator. |
-| `SystemAdmin.TaxRules` | Administrators may see tax configuration to support it, but may not change a financial rule: separation of duties (D-08). |
+| `SystemAdministrator.ProjectAssignments` | User provisioning is a technical-administration task: placing a person into a project is access administration, not business content. |
+| `SystemAdministrator.Approvals` | An administrator must never be able to manufacture an approval. |
+| `SystemAdministrator.AuditLog` | Append-only for every role. No one may edit or delete the audit trail, including an administrator. |
+| `SystemAdministrator.IntegrationJobs` | Integration monitoring and system health are the administrator's job. |
+| `SystemAdministrator.TaxRules` | Separation of duties: a technical administrator has no reason to see or change a financial rule. |
+| `BusinessAdministrator.Users` | Business administration reads the user register to assign people to projects; creating and disabling accounts stays with technical administration. |
+| `BusinessAdministrator.AuditLog` | Least privilege: business master-data administration does not require the audit trail. |
 | `GeneralManager.AuditLog` | Append-only for every role. |
 | `TechnicalReviewer.AuditLog` | Not needed for the review task; least privilege. |
 | `FinanceReviewer.AuditLog` | Append-only for every role. |
@@ -127,8 +136,11 @@ reason is a bug.
 | `ProjectManager.IntegrationJobs` | Visibility of failures affecting their own projects, without write access. |
 | `SiteSupervisor.Clients` | Client display name only, for the projects they are assigned to. |
 | `SiteSupervisor.Photos` | Supervisors see all evidence for their projects so they can avoid duplicate captures, but may edit only their own. |
-| `FieldUser.ActivityTypes` | The activity catalogue is not sensitive and is needed to fill the form. |
 | `FieldUser.Users` | A field user may see their own profile only. |
+| `ReadOnlyAuditor.AuditLog` | Read-only, and only while a valid time-bound grant exists. |
+| `EmergencyAccess.ProjectAssignments` | Restoring administrative capability means being able to reinstate an administrator. |
+| `EmergencyAccess.Approvals` | Break-glass can see that approvals exist and can never create one. |
+| `EmergencyAccess.AuditLog` | Break-glass may read the audit trail to diagnose, and may never alter it. |
 
 ## What this matrix does not do
 

@@ -105,3 +105,59 @@ guessed at.
 
 **Status:** Phase 1 complete, awaiting owner review of the data dictionary, the transition matrix
 and the security model. Phase 2 requires EF-01, EF-03, EF-05 and EF-06.
+
+---
+
+## [0.2.0] — 2026-09-11 — Owner review pack, role model, Phase 2A plan
+
+Responds to the owner's Phase 1 review instruction of 2026-09-11. **Phase 1 status corrected to
+Completed, Validated Locally, Submitted for Owner Review — it is not production-verified.** No
+external service was connected and no real data was introduced.
+
+**Added — owner-facing**
+
+- `docs/OWNER-REVIEW-PACK.md` — the whole design in one document: executive summary, entity-relationship diagrams, all 46 tables grouped into nine business domains, the fields that matter, eight status lifecycles as diagrams, a readable role-permission matrix, the segregation, numbering, approval/hash, financial and bilingual models, the five highest residual risks, the decisions still required, and a recommendation of **conditional approval**.
+- `docs/STATUS-DEFINITIONS.md` — the seven acceptance statuses the owner specified, applied consistently across every document header and the version manifest.
+
+**Changed — role model, per the owner's least-privilege decision**
+
+- `SystemAdmin` becomes **`SystemAdministrator`**: technical configuration, integration monitoring, user provisioning and system health, with **no read access to evidence, documents, contracts or financial records**.
+- **`BusinessAdministrator`** added: controlled business master-data administration, also with no access to evidence, documents or money.
+- **`EmergencyAccess`** added as break-glass. It restores *administrative* capability and never opens client content, because an administrative emergency is not solved by reading a client's photographs.
+- `ReadOnlyAuditor` becomes **time-bound**: without a valid grant it reads nothing at all.
+- `TemporaryAccessGrants` added — reason, expiry, authoriser, notification and audit reference all mandatory, with a maximum duration. Each precondition is refused separately so a refusal can say why.
+- `SystemRecoveryPlan` added, carrying a `GoLiveBlocker` that stays TRUE until either a backup administrator or a documented, tested recovery route exists.
+- Two lifecycles declared that were missing: invoice finance status, and accounting synchronisation — the latter forbidding any posting that is not preceded by sandbox posting and exact reconciliation.
+
+**Added — test evidence, expanded to the owner's specification**
+
+`17-validation-evidence.md` now records the commit tested, the exact command, the Python version and
+operating environment, the full console output, every individual check with the evidence it
+produced, a mapping from all fourteen specification acceptance criteria to the checks that bear on
+them, confirmation that regeneration returned byte-identical artifacts, and — most importantly — an
+explicit statement of **what these checks are not evidence of**, platform by platform.
+
+**Added — Phase 2A plan (connects nothing)**
+
+`docs/02a-plan/` — AppSheet workbook and security-filter specification (both **generated from the
+model**, so the app cannot drift from the data foundation), views and slices, actions and workflow,
+the offline and field test plan written against nine user/device profiles, Drive folder-provisioning
+design, Make scenario specifications with three **disabled** blueprints containing no URL, secret or
+account identifier, deployment and rollback checklists, the cost and licensing matrix, and synthetic
+data loading.
+
+**Added — external facts**
+
+- `19-user-and-device-profiles.md` — nine representative profiles (iPhone, Android, weak connectivity, single-project, multi-project, English, Arabic, plus unassigned and expired-assignment negatives) standing in for real people until the owner supplies them (EF-05).
+- `12-appsheet-feature-to-plan-matrix.md` rewritten to revision 2 with all sixteen requirements, the verification method for each, and a twenty-minute verification script. **Verification was attempted on 2026-09-11 and failed**: this environment's network egress policy blocks the vendor's own pricing and documentation pages. No tier is recommended by name, and every cost figure is marked unverified.
+
+**Validation**
+
+172 checks across 11 suites, all passing. The 31 new access-control checks confirm that neither
+administrator role can read business content, that break-glass restores administration without
+opening evidence, that expired and revoked grants stop working immediately, and that a configuration
+with neither a backup administrator nor a documented recovery route is detectable as a go-live
+blocker.
+
+**Status:** Phase 1 and Phase 2A are **Submitted for Owner Review**. Phase 2B — the first build that
+touches a real account — requires written owner approval plus EF-01, EF-03 and EF-06.

@@ -1,6 +1,7 @@
 # Orchestration Contract and Operator Runbook
 
 **Document ID:** AH-SYS-P1-014 · **Revision:** 1 · **Date:** 2026-09-11
+**Status:** Completed · Submitted for Owner Review
 **Implements:** D-05 · **Relates to:** ADR-0003, spec §8 and §12
 **Status:** contract defined in Phase 1. **No scenario is created or connected** (D-14)
 

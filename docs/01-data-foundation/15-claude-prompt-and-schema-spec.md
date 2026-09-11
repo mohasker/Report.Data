@@ -1,6 +1,7 @@
 # AI Prompt and Schema Specification
 
 **Document ID:** AH-SYS-P1-015 · **Revision:** 1 · **Date:** 2026-09-11
+**Status:** Completed · Submitted for Owner Review · **No API call has been made**
 **Implements:** D-06 · **Relates to:** ADR-0004 rev 1, spec §9
 **Status:** specifications and schemas defined. **No API credential exists and no call is made** (D-14)
 

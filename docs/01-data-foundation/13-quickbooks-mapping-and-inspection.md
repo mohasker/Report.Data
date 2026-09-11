@@ -1,6 +1,7 @@
 # QuickBooks Mapping and Compatibility Inspection
 
 **Document ID:** AH-SYS-P1-013 · **Revision:** 1 · **Date:** 2026-09-11
+**Status:** Completed · Submitted for Owner Review · **Inspection not yet executed**
 **Delivers:** D-15 item covering accounting mapping · **Implements:** D-07 · **Relates to:** ADR-0008, R-02
 
 > Al-Haram currently uses QuickBooks Online, so it remains the intended accounting system. What is

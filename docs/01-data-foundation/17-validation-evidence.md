@@ -1,70 +1,215 @@
 # Phase 1 Validation Evidence
 
-**Document ID:** AH-SYS-P1-017 · **Revision:** 1 · **Status:** generated from an executed run
-**Executed:** 2026-09-11 01:10 UTC · **Model version:** 1.0.0 · **Python:** 3.11.15
+**Document ID:** AH-SYS-P1-017 · **Revision:** 2 · **Status:** Validated Locally · **Generated from an executed run**
 
-> Produced by `python3 tools/run_validation.py`. Every result below comes from code that
-> actually ran; nothing here is asserted by hand. Re-run the command to reproduce it.
+> **This is evidence of locally executed checks against synthetic data. It is not evidence that any external platform works.** See section 3.
 
-## What this run does and does not prove
+## 1. Reproduction record
 
-**It proves** that the Phase 1 data foundation is internally consistent: the model, the
-generated schemas and the data dictionary agree; the synthetic data conforms; the rules for
-segregation, evidence, transitions, delegation, hashing, numbering, calculation and
-bilingual handling behave as specified when executed against that data.
+| | |
+|---|---|
+| **Commit tested** | `bf43388b5a9333ccb3cf6c8de90f85519006ef45` |
+| **Commit subject** | Phase 1: specifications, AI contracts, configuration reference and evidence |
+| **Command executed** | `python3 tools/run_validation.py` |
+| **Executed at** | 2026-09-11 07:52:19 UTC |
+| **Python** | 3.11.15 (CPython, GCC 13.3.0) |
+| **Operating system** | Linux 6.18.44-fc-v24 (x86_64) |
+| **Environment** | Ephemeral Linux container, no network access used, no credential present, no external service contacted |
+| **Third-party dependencies** | **None.** Python standard library only |
+| **Model version** | 1.0.0 |
+| **Working tree before the run** | MODIFIED — see below |
 
-**It does not prove** that any built system works. No AppSheet app, Google Drive folder,
-Make scenario, Claude call or QuickBooks connection exists or was contacted. Those are
-Phase 2 and later, and will carry their own recorded evidence (D-14).
+```
+M docs/01-data-foundation/00-PHASE-1-SUMMARY.md
+ M docs/01-data-foundation/01-data-dictionary.md
+ M docs/01-data-foundation/02-key-id-and-hash-strategy.md
+ M docs/01-data-foundation/03-status-transition-matrix.md
+ M docs/01-data-foundation/04-security-model.md
+ M docs/01-data-foundation/05-evidence-rules.md
+ M docs/01-data-foundation/06-naming-and-numbering.md
+ M docs/01-data-foundation/07-migration-and-versioning.md
+ M docs/01-data-foundation/08-legal-entity-and-bilingual-model.md
+ M docs/01-data-foundation/09-data-classification-and-residency.md
+ M docs/01-data-foundation/10-approval-and-delegation-model.md
+ M docs/01-data-foundation/11-deterministic-calculation-spec.md
+ M docs/01-data-foundation/12-appsheet-feature-to-plan-matrix.md
+ M docs/01-data-foundation/13-quickbooks-mapping-and-inspection.md
+ M docs/01-data-foundation/14-orchestration-contract-and-runbook.md
+ M docs/01-data-foundation/15-claude-prompt-and-schema-spec.md
+ M docs/01-data-foundation/16-external-facts-register.md
+ M docs/01-data-foundation/17-validation-evidence.md
+ M model/model.json
+ M schemas/tables/AuditLog.schema.json
+ M schemas/tables/InvoiceRequests.schema.json
+ M seed/roles.csv
+ M seed/synthetic_projects/users.csv
+ M tools/build_model.py
+ M tools/gen_matrices.py
+ M tools/run_validation.py
+ M tools/security.py
+ M tools/seedmap.py
+ M tools/test_governance.py
+ M tools/test_transitions.py
+?? docs/01-data-foundation/19-user-and-device-profiles.md
+?? docs/02a-plan/
+?? docs/OWNER-REVIEW-PACK.md
+?? docs/STATUS-DEFINITIONS.md
+?? schemas/tables/SystemRecoveryPlan.schema.json
+?? schemas/tables/TemporaryAccessGrants.schema.json
+?? seed/synthetic_projects/system_recovery_plan.csv
+?? seed/synthetic_projects/temporary_access_grants.csv
+?? tools/evidence_meta.py
+?? tools/gen_appsheet_workbook.py
+?? tools/test_access_control.py
+```
 
-## Summary — 141 of 141 checks passed
+> The run was executed against a working tree containing uncommitted changes. The commit recorded above is the parent commit, not the exact state tested. Re-run after committing to obtain a clean reproduction record.
 
-| Suite | Checks | Passed | Failed |
-|---|---|---|---|
-| Seed conformance | 3 | 3 | 0 |
-| Configurability and unbounded width | 12 | 12 | 0 |
-| Project segregation | 12 | 12 | 0 |
-| Evidence rules | 14 | 14 | 0 |
-| Status transitions, approvals and delegation | 20 | 20 | 0 |
-| Content hashing and approval binding | 14 | 14 | 0 |
-| Document numbering | 13 | 13 | 0 |
-| Deterministic calculation | 22 | 22 | 0 |
-| Bilingual and right-to-left readiness | 13 | 13 | 0 |
-| Governance and safety rules | 18 | 18 | 0 |
-| **Total** | **141** | **141** | **0** |
 
-> Every check passed. Each is listed below with the evidence it produced, so a reviewer
-> can see what was actually measured rather than taking a summary on trust.
+### Byte-identical regeneration
 
-## Artifact regeneration
+Every generated artifact was hashed (SHA-256) before regeneration, regenerated from `model/model.json`, and hashed again. **52 artifacts** were compared: the canonical model, the data dictionary, the transition matrix, the security matrix and all 48 table schemas.
 
-| Step | Result | Output |
+**Result: all artifacts came back byte-identical.** Regeneration is deterministic, so the committed artifacts are exactly what the model produces.
+
+## 2. Summary
+
+**172 of 172 checks passed.**
+
+| # | Suite | Kind | Checks | Passed | Failed |
+|---|---|---|---|---|---|
+| 1 | Seed conformance | structural | 3 | 3 | 0 |
+| 2 | Configurability and unbounded width | structural | 12 | 12 | 0 |
+| 3 | Project segregation | logic | 12 | 12 | 0 |
+| 4 | Role separation, time-bound access and recoverability | logic | 31 | 31 | 0 |
+| 5 | Evidence rules | logic | 14 | 14 | 0 |
+| 6 | Status transitions, approvals and delegation | structural | 20 | 20 | 0 |
+| 7 | Content hashing and approval binding | logic | 14 | 14 | 0 |
+| 8 | Document numbering | simulation | 13 | 13 | 0 |
+| 9 | Deterministic calculation | logic | 22 | 22 | 0 |
+| 10 | Bilingual and right-to-left readiness | structural | 13 | 13 | 0 |
+| 11 | Governance and safety rules | structural | 18 | 18 | 0 |
+| | **Total** | | **172** | **172** | **0** |
+
+### Console output
+
+```
+========================================================================
+  Seed conformance                                       3 passed   0 failed
+  Configurability and unbounded width                   12 passed   0 failed
+  Project segregation                                   12 passed   0 failed
+  Role separation, time-bound access and recoverability  31 passed   0 failed
+  Evidence rules                                        14 passed   0 failed
+  Status transitions, approvals and delegation          20 passed   0 failed
+  Content hashing and approval binding                  14 passed   0 failed
+  Document numbering                                    13 passed   0 failed
+  Deterministic calculation                             22 passed   0 failed
+  Bilingual and right-to-left readiness                 13 passed   0 failed
+  Governance and safety rules                           18 passed   0 failed
+========================================================================
+  TOTAL 172/172 checks passed
+```
+
+### Artifact regeneration output
+
+```
+$ python3 tools/build_model.py
+wrote /home/user/Report.Data/model/model.json
+  tables      : 46
+  columns     : 829
+  enums       : 26
+  transitions : 82 allowed, 36 explicitly forbidden
+  security    : 10 roles x 46 tables = 460 grants, 20 exceptions
+$ python3 tools/gen_schemas.py
+wrote 46 table schemas to schemas/tables/
+$ python3 tools/gen_data_dictionary.py
+wrote /home/user/Report.Data/docs/01-data-foundation/01-data-dictionary.md (1808 lines)
+$ python3 tools/gen_matrices.py
+wrote docs/01-data-foundation/03-status-transition-matrix.md
+wrote docs/01-data-foundation/04-security-model.md
+$ python3 tools/gen_appsheet_workbook.py
+wrote docs/02a-plan/01-appsheet-workbook.md
+wrote docs/02a-plan/02-security-filter-specification.md
+```
+
+## 3. What these checks are NOT evidence of
+
+Recorded at the owner's instruction. **Local model validation must never be represented as proof that an external platform works.** Nothing below has been tested, because nothing below has been connected (D-14).
+
+| Platform or capability | What remains unproven | Proven in |
 |---|---|---|
-| `build_model.py` | ok | wrote /home/user/Report.Data/model/model.json;   tables      : 44;   columns     : 786;   enums       : 24;   transitions : 68 allowed, 29 explicitly forbidden;   security    : 8 roles x 44 tables = 352 grants, 14 exceptions |
-| `gen_schemas.py` | ok | wrote 44 table schemas to schemas/tables/ |
-| `gen_data_dictionary.py` | ok | wrote /home/user/Report.Data/docs/01-data-foundation/01-data-dictionary.md (1710 lines) |
-| `gen_matrices.py` | ok | wrote docs/01-data-foundation/03-status-transition-matrix.md; wrote docs/01-data-foundation/04-security-model.md |
+| **AppSheet** | That security filters, offline capture, image fidelity, dependent dropdowns or sync behave as designed on the real platform or on real devices. | Phase 2 |
+| **Google Drive** | That folder provisioning is idempotent, that originals survive registration byte-for-byte, or that permissions are least-privilege in practice. | Phase 3 |
+| **Make.com** | That scenarios run, that idempotency keys suppress duplicates in the real data store, or that error routes catch what they are meant to. | Phase 3 |
+| **Claude API** | That prompts return schema-valid output, that injection defences hold against a real model, or what analysis actually costs. | Phase 4 |
+| **Document rendering** | That any template merges, paginates, or renders Arabic and right-to-left text correctly in a PDF. | Phase 5 |
+| **QuickBooks Online** | That the company file supports the required tax codes, classes, currencies or API operations, or that totals reconcile. | Phase 7 |
+| **Mobile offline sync** | That a visit captured offline on a real phone syncs completely, in order, with its photographs. | Phase 2 field test |
+| **Field usability** | That a supervisor can complete a visit faster than the habit it replaces — the single largest risk to the whole system (R-06). | Phase 2 field test |
 
-## Seed conformance
+### How to read each suite
+
+| Suite | Kind | What it does and does not establish |
+|---|---|---|
+| Seed conformance | `structural` | Validates the synthetic data against the canonical model. Says nothing about any platform. |
+| Configurability and unbounded width | `structural` | Scans the model, schemas, security matrix and logic files for hard-coded identifiers, and exercises the rule engines with a fourth project added in memory. |
+| Project segregation | `logic` | Runs the reference access rules against synthetic rows. It proves the RULE is correct. It does NOT prove that AppSheet security filters implement it — that is a Phase 2 integration test on the real platform. |
+| Role separation, time-bound access and recoverability | `logic` | Runs the reference access rules and grant validation. Proves the rule, not its enforcement by any platform. |
+| Evidence rules | `logic` | Runs the effective-rule resolver and completeness evaluator against synthetic visits. Does NOT prove that a mobile form enforces them, on any device, online or offline. |
+| Status transitions, approvals and delegation | `structural` | Asserts the declared transition matrix forbids the dangerous paths and that fixtures sit in reachable states. Does NOT prove a running workflow honours it. |
+| Content hashing and approval binding | `logic` | Executes the canonical serialisation and hashing. This one is genuinely complete: the algorithm here is the algorithm. Its INTEGRATION into a workflow is not tested. |
+| Document numbering | `simulation` | Exercises a reference numbering service whose atomic counter is a SQLite transaction, standing in for the orchestration platform's atomic data-store update. Proves the CONTRACT holds under concurrency. Does NOT prove Make's data store behaves identically — that is a Phase 3 integration test. |
+| Deterministic calculation | `logic` | Executes the calculation engine. The arithmetic and the tax-blocking behaviour are real and complete. Reconciliation against QuickBooks is NOT tested and cannot be until Phase 7. |
+| Bilingual and right-to-left readiness | `structural` | Asserts bilingual structure and Unicode integrity through hashing. Does NOT prove that any template, PDF renderer or mobile keyboard handles Arabic or RTL correctly. |
+| Governance and safety rules | `structural` | Scans the repository and the model for secrets, non-synthetic identities, AI fields in hashes, delete grants and missing attribution. |
+
+**Kinds.** `structural` — an assertion about the shape of the model or the repository. `logic` — executable rules run against synthetic data. `simulation` — a reference implementation standing in for a platform primitive that does not exist yet.
+
+## 4. Acceptance criteria mapping
+
+The fourteen acceptance criteria in `MASTER_SPEC.md` §14, mapped to the checks that bear on them. **No criterion is claimed as met**: Phase 1 can only establish that the rules behind a criterion are correct, never that a built system satisfies it.
+
+| §14 | Criterion | Phase 1 status | Checks | Note |
+|---|---|---|---|---|
+| 1 | Visit with multiple activities and unlimited child photo rows | Rule defined and tested | `SEED-01`, `EVD-05` | The model supports it and fixtures exercise it. The practical limit is a Phase 2 measurement. |
+| 2 | Project-dependent locations function correctly | Rule defined and tested | `SEG-10`, `SEG-11`, `EVD-02` | Rule proven against synthetic data; the dependent dropdown itself is Phase 2. |
+| 3 | No cross-project leakage; multi-project users switch cleanly | Rule defined and tested | `SEG-01`, `SEG-02`, `SEG-03`, `SEG-04`, `SEG-05`, `SEG-06`, `SEG-07`, `SEG-08`, `SEG-09`, `SEG-10`, `SEG-12`, `ACC-02`, `ACC-06`, `ACC-15` | The rule is proven exhaustively. Enforcement by AppSheet security filters is the Phase 2 gate. |
+| 4 | Originals in the correct protected location and unchanged | **Not tested in Phase 1** | `GOV-12`, `GOV-13` | The write-once CONTRACT is represented in the model. Nothing has been stored anywhere. |
+| 5 | Mandatory evidence rules prevent incomplete submission | Rule defined and tested | `EVD-05`, `EVD-06`, `EVD-07`, `EVD-08`, `EVD-09`, `EVD-10`, `EVD-11`, `EVD-12` | The rules are executable and correct. On-device enforcement is Phase 2. |
+| 6 | Reviewers approve/reject visits and individual photographs with comments | Rule defined and tested | `TRN-03`, `TRN-11`, `TRN-19` | Transitions and prohibitions are declared. The review UI is Phase 2. |
+| 7 | Duplicate triggers do not create duplicate jobs or documents | Rule defined and tested | `NUM-01`, `NUM-09`, `TRN-07` | Numbering uniqueness is proven under concurrency in a simulation. Webhook idempotency is Phase 3. |
+| 8 | Claude produces schema-valid analysis and flags uncertainty | **Not tested in Phase 1** | — | Schemas are written; no API call has been made. Phase 4. |
+| 9 | Monthly draft generated from an immutable approved snapshot | Rule defined and tested | `HASH-07`, `HASH-08`, `TRN-05` | Snapshot and hash mechanics are defined and tested. Generation is Phase 5. |
+| 10 | Rendered PDF passes visual inspection | **Not tested in Phase 1** | — | No document has been rendered. Phase 5. |
+| 11 | Editing approved source data invalidates or versions the approval | Rule proven in logic | `HASH-03`, `HASH-04`, `HASH-05`, `HASH-06`, `HASH-07`, `HASH-08`, `TRN-10` | The hashing algorithm is the real one; this is as close to complete as Phase 1 can get. |
+| 12 | No external email or accounting posting without the correct approval | **Not tested in Phase 1** | `TRN-06`, `GOV-05`, `CALC-01` | Neither capability exists. Phase 7. |
+| 13 | Tested failures produce actionable logs and recover without data loss | **Not tested in Phase 1** | `NUM-07`, `NUM-08` | The failure taxonomy and error queue are specified; nothing has failed for real. Phase 3. |
+| 14 | Operator and administrator guides exist | Rule defined and tested | — | The operator runbook outline exists; it is completed in Phase 3 when the scenarios do. |
+
+## 5. Every check executed
+
+Listed in full so a reviewer can see what was measured rather than taking a summary on trust. The evidence column is the value the check actually produced.
+
+### Seed conformance  ·  `structural`  ·  3/3 passed
 
 Every seed file conforms to the canonical model: columns, types, formats, vocabularies, keys, uniqueness, referential integrity and project consistency.
 
-| Check | Result | Description | Evidence |
+| Check | Result | Description | Evidence produced |
 |---|---|---|---|
-| `SEED-01` | PASS | Every seed file validates against the model with no error | 29 files, 196 rows, 0 errors |
+| `SEED-01` | PASS | Every seed file validates against the model with no error | 31 files, 206 rows, 0 errors |
 | `SEED-02` | PASS | Every foreign key resolves within the seeded data | 0 unresolvable-by-design references (tables not built until a later phase) |
 | `SEED-03` | PASS | At least three materially different projects are present | 3 projects with 3 clients, 3 reporting frequencies, 3 billing methods, 2 document languages |
 
-## Configurability and unbounded width
+### Configurability and unbounded width  ·  `structural`  ·  12/12 passed
 
 Adding a project must require only controlled master-data configuration: no modified logic, no cloned application, no duplicated scenario, no rewritten prompt, no changed formula or code (D-01).
 
-| Check | Result | Description | Evidence |
+| Check | Result | Description | Evidence produced |
 |---|---|---|---|
 | `CFG-01` | PASS | No project, client, contract or user identifier appears in any logic file | 10 logic files scanned, no hard-coded identifier |
 | `CFG-02` | PASS | The canonical model names no project, client or contract | identifiers found in model.json: none |
-| `CFG-03` | PASS | No generated schema names a project, client or contract | 44 schemas scanned, none names a project |
-| `CFG-04` | PASS | Row-level security is expressed in roles and assignments, never in projects | 8 roles x 44 tables, no project named |
+| `CFG-03` | PASS | No generated schema names a project, client or contract | 46 schemas scanned, none names a project |
+| `CFG-04` | PASS | Row-level security is expressed in roles and assignments, never in projects | 10 roles x 46 tables, no project named |
 | `CFG-05` | PASS | Every project-varying behaviour is a configuration column on Projects | missing: none |
 | `CFG-06` | PASS | Behaviour that varies per project has a configuration table of its own | present: ['ApprovalMatrix', 'DocumentTemplates', 'Locations', 'NumberingSeries', 'ProjectActivityRules', 'ProjectAssignments', 'ResidencyAssignments'] |
 | `CFG-07` | PASS | A fourth project added as data only is immediately usable, with no code change | USR-0005 now sees 2 projects including PRJ-0004 |
@@ -74,11 +219,11 @@ Adding a project must require only controlled master-data configuration: no modi
 | `CFG-11` | PASS | Nothing in the model encodes a project count or limit | no project-count assumption anywhere in the canonical model |
 | `CFG-12` | PASS | Multi-entity operation is structural, not incidental | 2 legal entities across the fixture |
 
-## Project segregation
+### Project segregation  ·  `logic`  ·  12/12 passed
 
 No data, image, recipient, template, document number or financial record may cross a project boundary (D-15 item 16).
 
-| Check | Result | Description | Evidence |
+| Check | Result | Description | Evidence produced |
 |---|---|---|---|
 | `SEG-01` | PASS | Field and supervisor roles read only their assigned projects | 6 users x 7 tables checked, no leak |
 | `SEG-02` | PASS | A user with no assignment reads nothing at all | rows visible to USR-0011: 0 |
@@ -89,15 +234,53 @@ No data, image, recipient, template, document number or financial record may cro
 | `SEG-07` | PASS | Release recipients resolve only to the project's own authorised contacts | 3 projects, recipients confined to their own client |
 | `SEG-08` | PASS | A project-specific template is not selectable by another project | TPL-0003 is bound to PRJ-0001 and offered to no other project |
 | `SEG-09` | PASS | Project-scoped numbering series are bound to a project | SER-0004 is bound to PRJ-0003; company-wide series carry no project |
-| `SEG-10` | PASS | No foreign key references a row belonging to a different project | 196 rows checked, no cross-project reference |
+| `SEG-10` | PASS | No foreign key references a row belonging to a different project | 206 rows checked, no cross-project reference |
 | `SEG-11` | PASS | A location code reused across projects stays distinct because the ID is the key | codes shared across projects: ['BLK-A', 'SITE']; all LocationIDs unique: True |
 | `SEG-12` | PASS | A residency restriction disables AI for its own project only | AI disabled: ['PRJ-0003']; AI enabled: ['PRJ-0001', 'PRJ-0002'] |
 
-## Evidence rules
+### Role separation, time-bound access and recoverability  ·  `logic`  ·  31/31 passed
+
+A technical administrator gets no business content; business administration is a separate role; auditor and break-glass access are time-bound and authorised; and the system cannot become unrecoverable.
+
+| Check | Result | Description | Evidence produced |
+|---|---|---|---|
+| `ACC-01` | PASS | All ten roles the owner specified exist in the model | SystemAdministrator, BusinessAdministrator, GeneralManager, TechnicalReviewer, FinanceReviewer, ProjectManager, SiteSupervisor, FieldUser, ReadOnlyAuditor, EmergencyAccess |
+| `ACC-02` | PASS | The technical administrator has no read access to evidence, documents, contracts or financial records | tables readable: none (of 11 checked) |
+| `ACC-03` | PASS | The technical administrator can still administer technical configuration | vocabularies, roles, units, disciplines, document types and classifications |
+| `ACC-04` | PASS | The technical administrator can provision users and project assignments | user provisioning is access administration, not business content |
+| `ACC-05` | PASS | The technical administrator can monitor integrations and system health | read-only on both; neither can be altered |
+| `ACC-06` | PASS | The business administrator has no access to evidence, documents or financial records either | tables readable: none |
+| `ACC-07` | PASS | The business administrator can administer clients, projects and business configuration | clients, projects, locations, activity rules, templates, numbering, legal entities |
+| `ACC-08` | PASS | Neither administrator role can create or alter an approval | an administrator must never be able to manufacture an approval |
+| `ACC-09` | PASS | Technical and business administration are genuinely different roles | they differ on 31 of 46 tables |
+| `ACC-10` | PASS | An auditor reads records while an authorised grant is in force | 16 rows readable inside the grant window |
+| `ACC-11` | PASS | The same auditor reads nothing once the grant window closes | 0 rows readable outside the window |
+| `ACC-12` | PASS | With no grant at all, the auditor role resolves to no access | 0 rows readable with the grant register emptied |
+| `ACC-13` | PASS | An auditor can never write anything | 46 tables, no create or update anywhere |
+| `ACC-14` | PASS | Break-glass restores administrative capability | user administration is available under an active emergency grant |
+| `ACC-15` | PASS | Break-glass never opens client evidence, documents or financial records | business tables readable under break-glass: none — an administrative emergency is not solved by reading a client's photographs |
+| `ACC-16` | PASS | Break-glass access ends when the grant expires | no access outside the grant window |
+| `ACC-17` | PASS | A complete emergency grant is accepted | TAG-0003: valid |
+| `ACC-18` | PASS | An emergency grant with no reason is refused | a grant without a stated reason is refused |
+| `ACC-19` | PASS | An emergency grant with no expiry is refused | a grant without an expiry is refused: no grant is open-ended |
+| `ACC-20` | PASS | An emergency grant with no notification sent is refused | break-glass without a sent notification is refused: an unannounced emergency grant is a back door |
+| `ACC-21` | PASS | A self-authorised grant is refused | self-authorised grants are refused |
+| `ACC-22` | PASS | A grant longer than its configured maximum is refused | grant window of 528h exceeds the configured maximum of 24h |
+| `ACC-23` | PASS | A revoked grant stops working immediately | TAG-0004: grant revoked |
+| `ACC-24` | PASS | A TechnicalOnly grant is refused for project-scoped content | break-glass is scoped to technical administration and never opens project content |
+| `ACC-25` | PASS | Every emergency grant carries a notification recipient and an audit reference | grants missing either: none |
+| `ACC-26` | PASS | Every exercised emergency grant is reviewed after use | exercised but unreviewed: none |
+| `ACC-27` | PASS | Administrative control cannot rest on a single account | 2 administrator-capable accounts; documented recovery route: TRUE |
+| `ACC-28` | PASS | The recovery route is documented with a reference and has been tested | reference recorded, last tested 2026-04-15, result Passed |
+| `ACC-29` | PASS | A configuration with neither a backup administrator nor a documented route is detectable as a go-live blocker | the condition is computable from the recovery plan row, so go-live can be blocked on it rather than on someone remembering |
+| `ACC-30` | PASS | The recovery plan stores no credential and no route to obtaining one | the plan records whether a route exists and whether it was tested, nothing more |
+| `ACC-31` | PASS | No real person is assigned to any role | non-synthetic addresses: none — identities remain pending until the owner supplies them |
+
+### Evidence rules  ·  `logic`  ·  14/14 passed
 
 Evidence requirements are configuration, resolved per project, and a blocked submission always says exactly what to fix (C-07).
 
-| Check | Result | Description | Evidence |
+| Check | Result | Description | Evidence produced |
 |---|---|---|---|
 | `EVD-01` | PASS | A project with no override inherits the global activity rule | PRJ-0002 / manual weeding inherits RequiresBeforePhoto from the catalogue |
 | `EVD-02` | PASS | A project override replaces the global rule and says so | PRJ-0001 requires a quantity for irrigation inspection where the global rule does not |
@@ -114,13 +297,13 @@ Evidence requirements are configuration, resolved per project, and a blocked sub
 | `EVD-13` | PASS | A suspected duplicate is flagged and retained, never deleted or merged | 1 suspected duplicate(s), each pointing at the original and still present |
 | `EVD-14` | PASS | Missing GPS never blocks a submission and is recorded as missing, not zero | 6 photographs without GPS, none blocked, none defaulted to 0 |
 
-## Status transitions, approvals and delegation
+### Status transitions, approvals and delegation  ·  `structural`  ·  20/20 passed
 
 Work advances only through declared transitions, and an approval is only ever made by an authorised person acting within scope (D-09).
 
-| Check | Result | Description | Evidence |
+| Check | Result | Description | Evidence produced |
 |---|---|---|---|
-| `TRN-01` | PASS | Every entity with a lifecycle has a declared transition matrix | declared: ['Approvals', 'DocumentJobs', 'Documents', 'NumberRegister', 'Photos', 'Projects', 'SiteVisits', 'Snags', 'VisitActivities'] |
+| `TRN-01` | PASS | Every entity with a lifecycle has a declared transition matrix | 11 lifecycles declared: ['Approvals.Decision', 'DocumentJobs.WorkflowStatus', 'Documents.ReleaseStatus', 'InvoiceRequests.FinanceStatus', 'InvoiceRequests.QuickBooksStatus', 'NumberRegister.State', 'Photos.ReviewerDecision', 'Projects.Status', 'SiteVisits.WorkflowStatus', 'Snags.Status', 'VisitActivities.Status'] |
 | `TRN-02` | PASS | No declared status is orphaned from the transition matrix | every status appears in the matrix |
 | `TRN-03` | PASS | A visit cannot jump from Draft straight to TechnicallyApproved | shortcut absent from the allowed set |
 | `TRN-04` | PASS | A visit cannot be approved without passing validation | shortcut absent |
@@ -141,11 +324,11 @@ Work advances only through declared transitions, and an approval is only ever ma
 | `TRN-19` | PASS | AI is structurally barred from deciding a photograph | Any transition performed by AI or by an automation on AI output (ADR-0004, D-06) Any transition that modifies, replaces  |
 | `TRN-20` | PASS | Every seeded record sits in a state the matrix can produce | 6 visits in valid states |
 
-## Content hashing and approval binding
+### Content hashing and approval binding  ·  `logic`  ·  14/14 passed
 
 An approval is valid only for the exact content it approved, and 'material' has one published definition (C-06).
 
-| Check | Result | Description | Evidence |
+| Check | Result | Description | Evidence produced |
 |---|---|---|---|
 | `HASH-01` | PASS | A hash is a 64-character SHA-256 hex digest | ba097cc630f0edb43f8ea063ac164a44709994776caff1582a6cf41ecdc84a74 |
 | `HASH-02` | PASS | The same content always hashes to the same value | recomputed, identical |
@@ -162,11 +345,11 @@ An approval is valid only for the exact content it approved, and 'material' has 
 | `HASH-13` | PASS | The canonical field set is published and versioned | version 1.0.0, 10 published rules |
 | `HASH-14` | PASS | Every hashable entity declares exactly which fields are material | hashable tables: SiteVisits, VisitActivities, Photos |
 
-## Document numbering
+### Document numbering  ·  `simulation`  ·  13/13 passed
 
 One service, many configurable series, with a reserved to issued or cancelled lifecycle and no silent reuse (D-10, ADR-0005 rev 1).
 
-| Check | Result | Description | Evidence |
+| Check | Result | Description | Evidence produced |
 |---|---|---|---|
 | `NUM-01` | PASS | 200 concurrent reservations produce 200 distinct numbers | issued 200, distinct 200, errors 0 |
 | `NUM-02` | PASS | Numbers follow the configured pattern for their series | first number: AH-TR-2026-001 |
@@ -182,11 +365,11 @@ One service, many configurable series, with a reserved to issued or cancelled li
 | `NUM-12` | PASS | Migration continues the existing manual register instead of restarting it | last manual number 147, next issued AH-TR-2026-148 |
 | `NUM-13` | PASS | A new year starts its own sequence where the series resets per year | 2027 first number: AH-TR-2027-001 |
 
-## Deterministic calculation
+### Deterministic calculation  ·  `logic`  ·  22/22 passed
 
 Every figure is produced by formula from stored inputs, with one rounding policy and a reproducible trace. No figure originates from a language model.
 
-| Check | Result | Description | Evidence |
+| Check | Result | Description | Evidence produced |
 |---|---|---|---|
 | `CALC-01` | PASS | An unconfirmed tax rule yields UNDETERMINED and blocks, never zero | status=BLOCKED_TAX_UNCONFIRMED tax=None net=None |
 | `CALC-02` | PASS | Line amount and subtotal are exact | 1200 x 3.500 = 4200.00 |
@@ -211,11 +394,11 @@ Every figure is produced by formula from stored inputs, with one rounding policy
 | `CALC-21` | PASS | The same inputs always produce the same figures and the same trace | 9 trace steps, byte-identical on repeat |
 | `CALC-22` | PASS | Money is decimal end to end, never floating point | all monetary values are decimal strings |
 
-## Bilingual and right-to-left readiness
+### Bilingual and right-to-left readiness  ·  `structural`  ·  13/13 passed
 
 English and Arabic are supported from Phase 1, with no redesign required to add Arabic documents later (D-11).
 
-| Check | Result | Description | Evidence |
+| Check | Result | Description | Evidence produced |
 |---|---|---|---|
 | `LNG-01` | PASS | Every English text column has an Arabic counterpart | 35 bilingual pairs, none unpaired |
 | `LNG-02` | PASS | Both languages are configured with an explicit text direction | en=LTR, ar=RTL |
@@ -226,25 +409,25 @@ English and Arabic are supported from Phase 1, with no redesign required to add 
 | `LNG-07` | PASS | Arabic text passes through canonical serialisation unchanged | Arabic description preserved verbatim in the canonical string |
 | `LNG-08` | PASS | Arabic text is NFC-normalised without alteration | text is already NFC and is unchanged by normalisation |
 | `LNG-09` | PASS | Arabic-Indic digits in names are preserved as written | غرفة ١٢ مبنى أ retains Arabic-Indic digits |
-| `LNG-10` | PASS | Every controlled vocabulary carries an Arabic label for every value | 24 vocabularies, every value labelled in both languages |
+| `LNG-10` | PASS | Every controlled vocabulary carries an Arabic label for every value | 26 vocabularies, every value labelled in both languages |
 | `LNG-11` | PASS | Seeded reference data is populated in Arabic, not merely capable of it | roles, units, disciplines, activities, document types and classifications all carry Arabic |
 | `LNG-12` | PASS | Supervisors can record descriptions and captions in Arabic | 6 visits and 9 photo captions carry Arabic |
 | `LNG-13` | PASS | Arabic is never written into an English column to satisfy a requirement | English columns contain no Arabic text |
 
-## Governance and safety rules
+### Governance and safety rules  ·  `structural`  ·  18/18 passed
 
 The operating rules the owner approved, expressed as assertions so that weakening one of them fails a check rather than passing unnoticed.
 
-| Check | Result | Description | Evidence |
+| Check | Result | Description | Evidence produced |
 |---|---|---|---|
 | `GOV-01` | PASS | No credential, key, token or live webhook URL exists anywhere in the repository | every file scanned, nothing matching a secret pattern |
 | `GOV-02` | PASS | Every email address is synthetic, or the company's own published address | only @synthetic.example, @pending.example and the published company address appear |
 | `GOV-03` | PASS | Legal identity is an explicit pending placeholder, never a guess (D-02) | LegalNameEN = LEGAL_ENTITY_NAME_PENDING_VERIFICATION |
 | `GOV-04` | PASS | No tax classification is named before written confirmation (D-08) | classification words found: none; treatment = PENDING_ACCOUNTANT_CONFIRMATION |
 | `GOV-05` | PASS | The seeded tax rule is explicitly unconfirmed, so invoicing stays blocked | ConfirmedByAccountant = FALSE |
-| `GOV-06` | PASS | No role may delete any row: history is evidence | 352 grants, every delete denied |
-| `GOV-07` | PASS | The audit log is append-only for every role including SystemAdmin | roles able to alter the audit log: none |
-| `GOV-08` | PASS | An administrator cannot create or alter an approval | SystemAdmin holds read-only access to Approvals |
+| `GOV-06` | PASS | No role may delete any row: history is evidence | 460 grants, every delete denied |
+| `GOV-07` | PASS | The audit log is append-only for every role, administrators and break-glass included | roles able to alter the audit log: none |
+| `GOV-08` | PASS | An administrator cannot create or alter an approval | neither administrator role nor break-glass can create or alter an approval |
 | `GOV-09` | PASS | No advisory AI field is part of any content hash (D-06, C-06) | 5 AI fields, 0 in a hash |
 | `GOV-10` | PASS | No decision or completion field is sourced from AI | AI-sourced decision fields: none |
 | `GOV-11` | PASS | No monetary or measured-quantity field is sourced from AI (invariant I-4) | AI-sourced monetary or quantity fields: none (AIConfidence is advisory metadata, not a measurement) |
@@ -258,10 +441,11 @@ The operating rules the owner approved, expressed as assertions so that weakenin
 
 ---
 
-## Reproducing this run
+## 6. Reproducing this run
 
 ```
+git checkout bf43388b5a9333ccb3cf6c8de90f85519006ef45
 python3 tools/run_validation.py
 ```
 
-No installation, no dependency, no network access and no credential is required.
+No installation, no dependency, no network access and no credential is required. The run regenerates every artifact and rewrites this document; the only file it modifies is this one, which a reviewer can confirm with `git status` immediately afterwards.

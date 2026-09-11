@@ -58,7 +58,68 @@ def role_codes(model, data, user_id, project_id, as_of):
     return codes
 
 
-GLOBAL_ROLES = {"GeneralManager", "ReadOnlyAuditor", "FinanceReviewer", "SystemAdmin"}
+# Roles whose reach is company-wide rather than project-assigned.
+GLOBAL_ROLES = {"GeneralManager", "ReadOnlyAuditor", "FinanceReviewer", "SystemAdministrator",
+                "BusinessAdministrator", "EmergencyAccess"}
+
+# Roles that do nothing at all unless a valid TemporaryAccessGrant is in force.
+GRANT_REQUIRED_ROLES = {"ReadOnlyAuditor", "EmergencyAccess"}
+
+
+def grant_is_valid(grant, at, project_id=None):
+    """Return (valid, reason). Every condition is checked separately so a refusal can say why."""
+    if (grant.get("IsActive") or "TRUE").upper() != "TRUE":
+        return False, "grant inactive"
+    if grant.get("RevokedAt"):
+        return False, "grant revoked"
+    if not grant.get("Reason", "").strip():
+        return False, "a grant without a stated reason is refused"
+    if not grant.get("ValidTo", "").strip():
+        return False, "a grant without an expiry is refused: no grant is open-ended"
+    if not (grant["ValidFrom"] <= at <= grant["ValidTo"]):
+        return False, "outside the grant window"
+    if grant.get("AuthorisedByUserID") == grant.get("UserID"):
+        return False, "self-authorised grants are refused"
+    if grant["GrantKind"] == "Emergency" and not grant.get("NotificationSentAt", "").strip():
+        return False, ("break-glass without a sent notification is refused: an unannounced "
+                       "emergency grant is a back door")
+    if grant.get("MaxDurationHours"):
+        try:
+            from datetime import datetime
+            fmt = "%Y-%m-%dT%H:%M:%SZ"
+            hours = (datetime.strptime(grant["ValidTo"], fmt)
+                     - datetime.strptime(grant["ValidFrom"], fmt)).total_seconds() / 3600
+            if hours > float(grant["MaxDurationHours"]) + 1e-9:
+                return False, (f"grant window of {hours:.0f}h exceeds the configured maximum of "
+                               f"{grant['MaxDurationHours']}h")
+        except ValueError:
+            return False, "unparseable grant window"
+    if project_id and grant["Scope"] == "SpecificProjects":
+        allowed = [p for p in (grant.get("ProjectIDs") or "").replace(",", ";").split(";") if p]
+        if project_id not in allowed:
+            return False, "project not covered by the grant"
+    if project_id and grant["Scope"] == "TechnicalOnly":
+        return False, ("break-glass is scoped to technical administration and never opens "
+                       "project content")
+    return True, "valid"
+
+
+def active_grant(data, user_id, role_code, at, project_id=None):
+    roles = {r["RoleID"]: r["RoleCode"] for r in data.get("Roles", [])}
+    for g in data.get("TemporaryAccessGrants", []):
+        if g.get("UserID") != user_id:
+            continue
+        if roles.get(g.get("RoleID")) != role_code:
+            continue
+        ok, _ = grant_is_valid(g, at, project_id)
+        if ok:
+            return g
+    return None
+
+
+def _as_timestamp(as_of):
+    """Accept a date or a full timestamp; grants are compared at second precision."""
+    return as_of if "T" in as_of else f"{as_of}T12:00:00Z"
 
 
 def owner_of(data, table, row):
@@ -80,6 +141,21 @@ def can(model, data, user_id, table, operation, row=None, as_of=None):
     codes = role_codes(model, data, user_id, project_id, as_of)
     if not codes:
         return False, "no active role for this row"
+
+    # A grant-dependent role contributes nothing without a valid grant in force.
+    refusals = []
+    effective = set()
+    for code in codes:
+        if code in GRANT_REQUIRED_ROLES:
+            if active_grant(data, user_id, code, _as_timestamp(as_of), project_id):
+                effective.add(code)
+            else:
+                refusals.append(f"{code} has no valid access grant in force")
+        else:
+            effective.add(code)
+    if not effective:
+        return False, "; ".join(refusals) or "no effective role"
+    codes = effective
 
     best = ("none", None)
     order = {"none": 0, "own": 1, "assigned": 2, "all": 3}

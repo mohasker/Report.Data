@@ -15,7 +15,7 @@
 - **Invalidates** — approvals that this transition voids. This is the mechanism behind acceptance criterion 11.
 - **Terminal** states have no outgoing transition, which is asserted by check TRN-09.
 
-**9 lifecycles · 68 permitted transitions · 29 explicitly forbidden.**
+**11 lifecycles · 82 permitted transitions · 36 explicitly forbidden.**
 
 ## SiteVisits.WorkflowStatus
 
@@ -35,7 +35,7 @@ One reporting event at a location on a date. The unit of submission and review.
 | `TechnicallyApproved` | `CorrectionRequired` | TechnicalReviewer, GeneralManager | Reason recorded | Approval voided | Approvals for this visit |
 | `ReadyForReport` | `IncludedInDraft` | System | Included in a frozen DocumentJob snapshot | Snapshot records version and hash | — |
 | `IncludedInDraft` | `Released` | System | Parent document reached Released | — | — |
-| `Released` | `Archived` | SystemAdmin, GeneralManager | Retention review completed | Moved to archive folder; nothing deleted | — |
+| `Released` | `Archived` | SystemAdministrator, BusinessAdministrator, GeneralManager | Retention review completed | Moved to archive folder; nothing deleted | — |
 | `IncludedInDraft` | `ReadyForReport` | System | The document draft was cancelled | Reserved number cancelled, never reused | — |
 
 **Explicitly forbidden:**
@@ -201,17 +201,60 @@ Every approval decision, bound to the exact content approved (ADR-0006, D-09).
 
 **Terminal states:** `Rejected`, `Withdrawn`, `Void`
 
+## InvoiceRequests.FinanceStatus
+
+A calculated billing request. Drafts only until Phase 7; never posted from Phase 1 or 6.
+
+| From | To | Roles | Preconditions | Side effects | Invalidates |
+|---|---|---|---|---|---|
+| `Draft` | `PendingFinanceApproval` | System | Every line recalculated from stored inputs; Currency agrees across contract, project and request; Cumulative quantities within contract plus approved variation, or an authorised override exists; Tax rule confirmed in writing by the accountant | Calculation trace frozen with the request | — |
+| `PendingFinanceApproval` | `FinanceApproved` | FinanceReviewer, GeneralManager | Approver is not the person who prepared the request; ContentHash of the source document still matches | Approval recorded with hash and the applied tax rule version | — |
+| `PendingFinanceApproval` | `Rejected` | FinanceReviewer, GeneralManager | Reason recorded | — | — |
+| `Rejected` | `Draft` | System | Recalculated | — | — |
+| `FinanceApproved` | `Void` | System | A source record or certificate changed after approval | Finance approval voided | Finance approval; Any accounting posting authorisation |
+| `Void` | `Draft` | System | Recalculated from the current inputs | — | — |
+
+**Explicitly forbidden:**
+
+- Draft -> FinanceApproved (finance approval is a separate, recorded decision)
+- Any transition to PendingFinanceApproval while the tax treatment is UNDETERMINED (D-08)
+- Approval by the person who prepared the request
+
+## InvoiceRequests.QuickBooksStatus
+
+A calculated billing request. Drafts only until Phase 7; never posted from Phase 1 or 6.
+
+| From | To | Roles | Preconditions | Side effects | Invalidates |
+|---|---|---|---|---|---|
+| `NotSent` | `Queued` | System | FinanceStatus = FinanceApproved | — | — |
+| `Queued` | `SandboxPosted` | System | Sandbox company configured; Customer and item resolved by stored immutable identifier, never by name | Returned identifier recorded | — |
+| `SandboxPosted` | `Reconciling` | System | Posted document read back | — | — |
+| `Reconciling` | `Posted` | System | Every line, tax, retention, discount and total matches the local calculation exactly; QBO_POSTING_ENABLED is TRUE by written authorisation of the owner | Final invoice number recorded | — |
+| `Reconciling` | `ReconciliationFailed` | System | Any difference, however small | Raised for a human. Never auto-corrected in either direction | — |
+| `ReconciliationFailed` | `Queued` | FinanceReviewer, GeneralManager | Cause identified and corrected in the source, not in the accounting system | — | — |
+| `Queued` | `Failed` | System | Error classified | Retried only if the class is retriable | — |
+| `Failed` | `Queued` | System | Retriable class and under the retry cap | — | — |
+
+**Explicitly forbidden:**
+
+- NotSent -> Posted (sandbox and reconciliation are mandatory first)
+- Reconciling -> Posted while any figure differs from the local calculation
+- Any posting while QBO_POSTING_ENABLED is FALSE
+- Creating a customer or item by matching on a similar name
+
+**Terminal states:** `Posted`
+
 ## Projects.Status
 
 A project is pure configuration. Adding one never requires changed logic, a cloned app, duplicated scenarios, rewritten prompts or changed code (D-01).
 
 | From | To | Roles | Preconditions | Side effects | Invalidates |
 |---|---|---|---|---|---|
-| `Draft` | `Active` | SystemAdmin, GeneralManager | Client, legal entity, locations, activity rules, approval matrix and template resolved; Residency assignment reviewed or explicitly recorded as unrestricted | Project becomes visible to assigned users | — |
-| `Active` | `Suspended` | SystemAdmin, GeneralManager | Reason recorded | No new visits; existing records readable | — |
-| `Suspended` | `Active` | SystemAdmin, GeneralManager | — | — | — |
+| `Draft` | `Active` | SystemAdministrator, BusinessAdministrator, GeneralManager | Client, legal entity, locations, activity rules, approval matrix and template resolved; Residency assignment reviewed or explicitly recorded as unrestricted | Project becomes visible to assigned users | — |
+| `Active` | `Suspended` | SystemAdministrator, BusinessAdministrator, GeneralManager | Reason recorded | No new visits; existing records readable | — |
+| `Suspended` | `Active` | SystemAdministrator, BusinessAdministrator, GeneralManager | — | — | — |
 | `Active` | `Completed` | GeneralManager | Closeout reporting complete | — | — |
-| `Completed` | `Archived` | SystemAdmin, GeneralManager | Retention review completed | Read-only | — |
+| `Completed` | `Archived` | SystemAdministrator, BusinessAdministrator, GeneralManager | Retention review completed | Read-only | — |
 
 **Explicitly forbidden:**
 

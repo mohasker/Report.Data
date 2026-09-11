@@ -1,7 +1,7 @@
 # Migration and Versioning Strategy
 
 **Document ID:** AH-SYS-P1-007 · **Revision:** 1 · **Date:** 2026-09-11
-**Relates to:** ADR-0002, R-01, A-17
+**Status:** Completed · Submitted for Owner Review · **Relates to:** ADR-0002, R-01, A-17
 
 ---
 

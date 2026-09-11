@@ -1,8 +1,9 @@
 # Phase 1 — Data Foundation: Summary and Gate Request
 
 **Document ID:** AH-SYS-P1-000 · **Revision:** 1 · **Date:** 2026-09-11
-**Status:** complete, awaiting owner review · **Authorisation:** D-14
-**Evidence:** [`17-validation-evidence.md`](17-validation-evidence.md) — 141 checks executed, 141 passed
+**Status:** Completed · Validated Locally · **Submitted for Owner Review** · **Authorisation:** D-14
+**Evidence:** [`17-validation-evidence.md`](17-validation-evidence.md) — **172 checks executed, 172 passed**
+**Owner-facing summary:** [`../OWNER-REVIEW-PACK.md`](../OWNER-REVIEW-PACK.md)
 
 ---
 
@@ -12,8 +13,8 @@ Recorded honestly, per operating rule 1.
 
 | | |
 |---|---|
-| **Built** | A canonical model of 44 tables and 763 columns, with every schema and the data dictionary generated from it; reference implementations of row-level security, evidence rules, content hashing, document numbering and deterministic calculation; synthetic data for three materially different projects; nine executable check suites; sixteen specifications |
-| **Executed** | `python3 tools/run_validation.py` — 141 checks across 10 suites, all passing, on this machine, on 2026-09-11 |
+| **Built** | A canonical model of 46 tables and 829 columns, with every schema and the data dictionary generated from it; reference implementations of row-level security, evidence rules, content hashing, document numbering and deterministic calculation; synthetic data for three materially different projects; ten executable check suites; nineteen specifications; and the owner review pack |
+| **Executed** | `python3 tools/run_validation.py` — 172 checks across 11 suites, all passing. Full reproduction record, including what the checks are **not** evidence of, in `17-validation-evidence.md` |
 | **Not done, deliberately** | No Google account connected · no capture application built or connected · no orchestration scenario created · no AI credential created or call made · no accounting system connected · no real photograph, client, project, employee or financial record loaded · no email sent · no invoice or accounting transaction created · no external document published or shared |
 
 Every one of those exclusions is a line in D-14, and every one holds.
@@ -40,7 +41,8 @@ their own gates and their own recorded evidence.
 | Document numbering | 13 | 200 concurrent reservations yield 200 distinct numbers; a cancelled number is never reused; migration continues the existing manual register |
 | Deterministic calculation | 22 | An unconfirmed tax rule blocks and never yields zero; over-certification is rejected without an authorised override; a currency mismatch is rejected and never converted |
 | Bilingual readiness | 13 | Every English column has an Arabic counterpart; Arabic survives hashing unchanged; nothing is transliterated |
-| Governance | 18 | No secret anywhere; no role can delete; the audit log is append-only for everyone including the administrator; no AI field reaches a hash or a monetary path |
+| Role separation and recoverability | 31 | Neither administrator reads evidence, documents or money; auditor and break-glass access expire; break-glass restores administration without opening content; the system cannot rest on one administrator |
+| Governance | 18 | No secret anywhere; no role can delete; the audit log is append-only for everyone including administrators and break-glass; no AI field reaches a hash or a monetary path |
 
 ## 3. How each of your fifteen decisions landed
 

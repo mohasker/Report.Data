@@ -1,6 +1,7 @@
 # Evidence Rules
 
 **Document ID:** AH-SYS-P1-005 · **Revision:** 1 · **Date:** 2026-09-11
+**Status:** Completed · Validated Locally · Submitted for Owner Review
 **Delivers:** D-15 item 4 (project-specific activity and evidence rules) · **Closes:** C-07, C-08
 **Executable statement:** `tools/evidence.py` · **Evidence:** `17-validation-evidence.md` (EVD-01 … EVD-14)
 

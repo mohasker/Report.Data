@@ -1,7 +1,7 @@
 # External Facts Register
 
 **Document ID:** AH-SYS-P1-016 · **Revision:** 1 · **Date:** 2026-09-11
-**Delivers:** D-15 item 17 — every external fact still awaiting confirmation, categorised by the phase it blocks
+**Status:** Live register · **Delivers:** D-15 item 17 — every external fact still awaiting confirmation, categorised by the phase it blocks
 
 > Each entry is a value or answer that **cannot be invented** (operating rule 2). Each names who can
 > supply it, what it blocks, and what happens meanwhile. Nothing here blocks Phase 1, which is
@@ -19,9 +19,9 @@ was assumed.
 | # | Fact | Who supplies it | Meanwhile |
 |---|---|---|---|
 | **EF-01** | The owning Google Workspace account, confirmation that the tenant is paid Workspace, and the Shared Drive that will hold operational storage (D-03, BQ-01) | Owner | The folder and permission model is designed; nothing is provisioned |
-| **EF-03** | Capture platform plan and entitlements, verified from current official vendor information, using the requirements matrix in `12-appsheet-feature-to-plan-matrix.md` (D-04, BQ-02) | Owner, from the vendor | The matrix states what must be true; no plan or price is assumed |
-| **EF-05** | Real supervisors and their actual devices for the Phase 2 field test, including both platforms if both are used (A-05, A-15) | Owner | Offline behaviour is claimed nowhere |
-| **EF-06** | A named system administrator, and an alternate (A-19) | Owner | The role exists in the model with no one assigned |
+| **EF-03** | Capture platform plan and entitlements. **The matrix is complete and the verification was attempted on 2026-09-11 and failed**: the build environment's egress policy blocks the vendor's own pricing and documentation pages. A twenty-minute verification script for the owner is in `12-appsheet-feature-to-plan-matrix.md` §5 (D-04, BQ-02) | Owner, on an unrestricted network | Sixteen requirements stated with the method to verify each; **three are pipeline-blocking**. No tier is recommended by name |
+| **EF-05** | Real supervisors, their actual devices and OS versions for the Phase 2 field test (A-05, A-15) | Owner | **Nine representative profiles are defined** in `19-user-and-device-profiles.md`, and the offline test plan in `../02a-plan/05-offline-test-plan.md` is written against them. Offline behaviour is claimed nowhere |
+| **EF-06** | A named system administrator **and** a backup — or approval of a documented recovery route instead (A-19, owner decision of 2026-09-11) | Owner | Both administrator roles, break-glass and the recovery plan exist with **no identity assigned**. `SystemRecoveryPlan.GoLiveBlocker` stays TRUE until one exists |
 | **EF-07** | Named delegates for technical, finance and release approval (D-09, BQ-07) | Owner | The GM is the sole approver; delegation is modelled and tested with synthetic delegations |
 | **EF-13** | Working calendar, weekend days, public-holiday handling, and the monthly evidence cut-off day (OQ-01, OQ-02) | Owner | Configuration columns exist and are unset |
 | **EF-14** | Whether gallery upload is permitted or capture is camera-only (OQ-05) | Owner | Both are supported by the model; policy decides |
@@ -88,3 +88,7 @@ was assumed.
 | Phase 7 | 4 | |
 
 **23 outstanding external facts. None blocks Phase 1, and none has been guessed at.**
+
+Two changed status on 2026-09-11: **EF-03** now has a complete requirements matrix and a failed
+verification attempt recorded honestly, and **EF-05** now has nine representative profiles standing
+in for real people until the owner supplies them.

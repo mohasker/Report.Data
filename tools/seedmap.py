@@ -29,4 +29,6 @@ SEED_FILES = [
     ("seed/synthetic_projects/visit_activities.csv", "VisitActivities"),
     ("seed/synthetic_projects/photos.csv", "Photos"),
     ("seed/synthetic_projects/snags.csv", "Snags"),
+    ("seed/synthetic_projects/temporary_access_grants.csv", "TemporaryAccessGrants"),
+    ("seed/synthetic_projects/system_recovery_plan.csv", "SystemRecoveryPlan"),
 ]
