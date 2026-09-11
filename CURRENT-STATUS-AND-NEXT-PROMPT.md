@@ -3,7 +3,7 @@
 **Document ID:** AH-SYS-HAND-003 · **Version:** 1.2 · **Date:** 2026-09-11
 **Branch:** `claude/dazzling-gauss-neihya`
 **Mirror branch:** `claude/alharam-field-reporting-spec-afq1fr` — fast-forwarded to the same commit, so either name resolves to this work
-**Validated commit:** `a668f3f8d3ddf03588f16620984c960ccf86ed9b`
+**Validated commit:** `dist/DELIVERY-RECEIPT.md` → `SOURCE_COMMIT_SHA` — **not repeated here**, so it cannot go stale
 **Package commit:** see `HANDOFF-MANIFEST.json` → `package_commit`
 
 ---
@@ -97,6 +97,31 @@ Phase 1 data foundation. **Phase 2B — the first external connection — is not
 
 ---
 
+## 3b. Scope freeze — owner instruction, 2026-09-11
+
+**Phase 2B is not authorised to start, and implementation is paused.** Recorded verbatim in effect:
+
+- **The 41 Phase 2B test scripts (AH-SYS-P2A-026) remain planning artefacts.** Nothing in them may
+  be executed.
+- **The disabled Make blueprints are not to be written yet.** Their design depends on the actual
+  entitlement result and on `CAP-GATE`, and a blueprint written now would encode assumptions the
+  real-device test may disprove. This overrides the earlier listing of blueprints as available work.
+- **The only prepared-but-not-executed work now authorised** is the Google Admin Console entitlement
+  checklist and the synthetic `CAP-GATE` prototype and protocol — **prepared for the owner's
+  participation, never run without it.**
+- `CAP-GATE` is to be **extended** to measure the nine points in
+  `docs/02a-plan/19-real-device-test-protocol.md` §4c *(to be written when that preparation is
+  authorised to begin)*: total time against posting straight to WhatsApp; whether images must be
+  selected a second time; actual files versus links; image order and captions; temporary phone
+  storage before capture, after capture, after synchronisation and after safe cleanup; whether
+  images are duplicated across the gallery, the application cache and WhatsApp storage; weak-network
+  and offline behaviour; proof that the upload completed **before** any local cleanup; and behaviour
+  after assignment or access is revoked.
+- **Acceptance target, as the owner stated it:** no second selection, no missing evidence, and
+  normal operation close enough to WhatsApp that supervisors will actually use it.
+
+---
+
 ## 4. The exact allowed next task
 
 **In this order:**
@@ -111,8 +136,8 @@ Phase 1 data foundation. **Phase 2B — the first external connection — is not
      is the owner's answer, not more drafting;
    - ~~writing the **Phase 2B test scripts**~~ — **done**, AH-SYS-P2A-026: 41 platform-neutral
      scripts, not executed, waiting on a platform that is not authorised;
-   - writing the **disabled Make blueprints** for the capture-once actions, following the existing
-     pattern in `docs/02a-plan/blueprints/`;
+   - ~~writing the **disabled Make blueprints**~~ — **withdrawn by the owner on 2026-09-11**, see
+     §3b. Not to be written before the entitlement result and `CAP-GATE`;
    - extending the check suites where a rule is specified but not yet tested.
 
 **Nothing in that list requires an external connection, a credential, a purchase, or real data.**
@@ -140,6 +165,8 @@ package:**
   automating WhatsApp Web, or scraping any group.
 - Representing local validation as evidence that any external platform works.
 - Pushing to any branch other than `claude/dazzling-gauss-neihya` and its mirror `claude/alharam-field-reporting-spec-afq1fr`.
+- Starting Phase 2B, executing any of the 41 platform test scripts, or writing a Make blueprint —
+  see §3b.
   The mirror is only ever **fast-forwarded** to the working branch — never developed on, never
   force-pushed.
 

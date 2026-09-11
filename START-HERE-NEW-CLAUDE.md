@@ -4,7 +4,7 @@
 
 **Package version:** 1.2 · **Date:** 2026-09-11
 **Repository:** `mohasker/Report.Data` · **Branch:** `claude/dazzling-gauss-neihya`
-**Validated commit:** `a668f3f8d3ddf03588f16620984c960ccf86ed9b`
+**Validated commit:** recorded in `dist/DELIVERY-RECEIPT.md` → `SOURCE_COMMIT_SHA`. **Deliberately not repeated here** — a SHA written into a tracked file is stale the moment the next commit lands
 **Mirror branch:** `claude/alharam-field-reporting-spec-afq1fr` — kept at the same commit, so either name resolves to this work; §16
 **Package commit:** recorded in `HANDOFF-MANIFEST.json` → `package_commit`
 
@@ -479,7 +479,7 @@ and no others; in particular, never say "working", "done", "tested" or "ready" w
 | Repository | `mohasker/Report.Data` |
 | **Branch — develop and push here, and nowhere else** | **`claude/dazzling-gauss-neihya`** |
 | **Mirror branch** | `claude/alharam-field-reporting-spec-afq1fr` — the name used by every earlier handoff package, **fast-forwarded to the same commit** so that following the old package never lands you on stale work. It is a mirror, not a second line of development: develop on the branch above and mirror afterwards |
-| **Validated commit** | **`a668f3f8d3ddf03588f16620984c960ccf86ed9b`** — the commit the 240-check run in §17 was executed against |
+| **Validated commit** | **One source of truth: `dist/DELIVERY-RECEIPT.md` → `SOURCE_COMMIT_SHA`,** which is written by the build that validated it. A SHA is never hard-coded into a tracked document, because committing that document changes HEAD and makes the value it just recorded wrong |
 | **Package commit** | See `HANDOFF-MANIFEST.json` → `package_commit`. It adds only this handoff package to the validated commit |
 | Default branch | Do **not** push to it |
 
@@ -524,6 +524,12 @@ every check, compares the regenerated files against what is on disk, and rewrite
 **A note on reproducing it.** Run it on a clean tree. The evidence document records the commit it
 tested and the working-tree state; running it against uncommitted changes correctly reports
 "byte-identical regeneration: NO", which is the tool working, not a failure.
+
+**And a note on the commit it names.** `docs/01-data-foundation/17-validation-evidence.md` is written
+*by* the run, so committing it necessarily produces a commit later than the one it reports. That
+one-step lag is structural and is **not** a mismatch. The statement that a specific commit was
+validated comes from `dist/DELIVERY-RECEIPT.md`, where the build clones that exact commit, validates
+it off-tree, and records the result without writing to a tracked file.
 
 ---
 

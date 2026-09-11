@@ -8,10 +8,10 @@
 
 | | |
 |---|---|
-| **Commit tested** | `9356c7e7641c5e3a11498d698f4ae708d3e6b2df` |
-| **Commit subject** | Keep the earlier branch as a fast-forwarded mirror |
+| **Commit tested** | `9ed7e495a97a92c1485ac449359096a5b40b3bf7` |
+| **Commit subject** | The Phase 2B platform test scripts, written before any platform exists |
 | **Command executed** | `python3 tools/run_validation.py` |
-| **Executed at** | 2026-09-11 20:41:52 UTC |
+| **Executed at** | 2026-09-11 22:55:29 UTC |
 | **Python** | 3.11.15 (CPython, GCC 13.3.0) |
 | **Operating system** | Linux 6.18.44-fc-v24 (x86_64) |
 | **Environment** | Ephemeral Linux container. This run made no network call, used no credential and contacted no external service |
@@ -20,11 +20,8 @@
 | **Working tree before the run** | MODIFIED — see below |
 
 ```
-M CHANGELOG.md
- M CURRENT-STATUS-AND-NEXT-PROMPT.md
+M CURRENT-STATUS-AND-NEXT-PROMPT.md
  M START-HERE-NEW-CLAUDE.md
- M docs/VERSION-MANIFEST.md
-?? docs/02a-plan/26-phase-2b-platform-test-scripts.md
 ```
 
 > The run was executed against a working tree containing uncommitted changes. The commit recorded above is the parent commit, not the exact state tested. Re-run after committing to obtain a clean reproduction record.
@@ -510,7 +507,7 @@ The operating rules the owner approved, expressed as assertions so that weakenin
 ## 6. Reproducing this run
 
 ```
-git checkout 9356c7e7641c5e3a11498d698f4ae708d3e6b2df
+git checkout 9ed7e495a97a92c1485ac449359096a5b40b3bf7
 python3 tools/run_validation.py
 ```
 
