@@ -1,14 +1,19 @@
 # ADR-0008 — Defer accounting integration to Phase 7
 
-**Status:** Proposed · **Date:** 2026-09-10 · **Relates to:** BQ-05, BQ-06, R-02, R-24, R-25
+**Status:** Accepted (rev 1, amended by D-07 and D-08) · **Date:** 2026-09-10 · rev 1 2026-09-11
+**Relates to:** BQ-05, BQ-06, D-07, D-08, R-02, R-24, R-25
 
 ## Context
-§4 names QuickBooks Online as the accounting source of truth. Two facts make immediate integration
-unwise. First, QuickBooks Online is sold and supported by region, and Qatar is not among its
-principal supported markets — so it is not yet established that a properly supported company file
-exists for the Qatari entity (BQ-05). Second, the tax treatment actually applied to these contracts
-has not been confirmed by the company's accountant, and §11 forbids assuming a tax position in
-either direction (BQ-06).
+§4 names QuickBooks Online as the accounting source of truth, and **Al-Haram currently uses
+QuickBooks Online** (D-07). QBO therefore remains the intended accounting system; the question is
+not *whether* but *what is actually available*.
+
+Two facts still make immediate integration unwise. First, it is not established that every required
+integration, tax setting, project feature, class, currency or API operation is available for the
+**current company configuration** — that must be inspected, not assumed (D-07). Second, the tax
+treatment applied to these contracts has not been confirmed by the accountant, and no classification
+may be named until it is: "zero-rated", "exempt", "out of scope" and "no tax configured" are not
+interchangeable (D-08).
 
 Building an accounting integration on either unknown would mean building on invented information,
 which operating rule 2 forbids — and errors in this area are financial and legal, not cosmetic.
@@ -25,7 +30,8 @@ which operating rule 2 forbids — and errors in this area are financial and leg
 - Phase 6 builds contracts, BOQ, certificates and **deterministic financial calculation** with a stored trace, producing invoice **drafts only**. This layer is deliberately independent of the accounting product, so the posting target can change without redesign.
 - Phase 7 adds posting, in a **sandbox company first**, with finance approval and reconciliation to the last decimal before anything is marked synchronised.
 - **Production posting stays disabled until the owner authorises it in writing**, after sandbox evidence exists.
-- If BQ-05 establishes that QuickBooks Online is not properly usable for the Qatari entity, the accounting target is chosen explicitly at that point. Because the calculation layer is independent, that decision changes the integration, not the system.
+- Phase 1 defines the **QuickBooks mapping fields** and the **compatibility inspection checklist** — customers, items, tax codes, classes/projects, currencies, terms, numbering and the required API operations — without connecting anything (D-07).
+- The inspection checklist is a **gate before the financial-integration phase**. Where it finds a gap, the gap changes the integration, not the system, because the calculation layer is independent of the accounting product.
 
 ## Consequences
 **Positive.** No work is built on an unconfirmed platform or an unconfirmed tax position. The
@@ -37,5 +43,6 @@ answer.
 wasted under any outcome of BQ-05.
 
 ## Revisit if
-BQ-05 confirms a fully supported company file and sandbox, and the owner chooses to accelerate —
-which changes the schedule, not the sequence: calculation still precedes posting.
+The inspection checklist confirms full capability and a sandbox is available, and the owner chooses
+to accelerate — which changes the schedule, not the sequence: deterministic calculation still
+precedes any posting.

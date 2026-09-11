@@ -1,6 +1,7 @@
 # ADR-0007 — One document generation path: Google Docs template → PDF
 
-**Status:** Proposed · **Date:** 2026-09-10 · **Relates to:** C-05, S-02, §10, P-10
+**Status:** Accepted (rev 1, amended by D-11) · **Date:** 2026-09-10 · rev 1 2026-09-11
+**Relates to:** C-05, S-02, D-11, §10, P-10
 
 ## Context
 §3 and §16 refer to "Word/Google Docs and PDF" output. Producing a natively styled `.docx` and
@@ -25,8 +26,13 @@ Templates are editable by the owner without a developer. Revision control fits n
 **Negative.** Exported `.docx` styling fidelity is whatever the export produces, not what a native
 Word toolchain would author. Complex layouts must be verified against the §10 checklist — which is
 required regardless.
-**Neutral.** Arabic and right-to-left layout risk (P-10) applies to any path and is handled by
-scoping Arabic output separately (BQ-09).
+**Neutral.** Arabic and right-to-left layout risk (P-10) applies to any generation path.
+
+**Amended by D-11.** Templates are keyed by document type **and language**, and the merge path must
+carry right-to-left capability from the start — bilingual placeholders, Unicode throughout, no
+transliteration of Arabic names, and per-language approved template records. An Arabic template is
+then a new controlled template, not a new mechanism. Only the authoring and visual inspection of the
+Arabic template set is deferred to Phase 5b.
 
 ## Revisit if
 A client contractually requires native Word documents with specific styling that export cannot

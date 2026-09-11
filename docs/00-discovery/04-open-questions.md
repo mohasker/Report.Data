@@ -1,6 +1,28 @@
 # Blocking Questions and Open Questions
 
-**Document ID:** AH-SYS-P0-004 · **Revision:** 0 · **Status:** awaiting owner decisions
+**Document ID:** AH-SYS-P0-004 · **Revision:** 1 · **Status:** all ten answered, decided in principle, or converted to a Phase 1 deliverable on 2026-09-11
+
+> **Revision 1.** The owner's decisions are recorded in [`10-owner-decisions.md`](10-owner-decisions.md)
+> and summarised in the disposition table below. **The question text is retained unchanged** — the
+> record of what was asked, and what was decided, is more useful than a tidied document.
+>
+> | # | Disposition | What is still outstanding |
+> |---|---|---|
+> | BQ-01 | Decided in principle (D-03) | Owning account and Shared Drive ID — before production deployment |
+> | BQ-02 | Converted to a Phase 1 deliverable (D-04): feature-to-plan requirements matrix | Entitlements and pricing verified from official Google information — before purchase |
+> | BQ-03 | Decided (D-05) | Organisation and plan — before Phase 3 |
+> | BQ-04 | Decided in principle (D-06), with the correction that AI may pre-analyse **submitted** evidence to assist the reviewer | Monthly spend cap value — before Phase 4 |
+> | BQ-05 | **Answered (D-07): QuickBooks Online is in use** | Compatibility inspection checklist — gate before the financial-integration phase |
+> | BQ-06 | Open, and correctly so (D-08). **No classification may be named** — "zero-rated", "exempt", "out of scope" and "no tax configured" are not interchangeable | Accountant's written confirmation — before production invoicing |
+> | BQ-07 | Decided (D-09): GM as final approver; delegation modelled from the start; no self-approval of a restricted transaction | Delegate identity — before go-live |
+> | BQ-08 | Decided (D-10): sequences by entity, type, year, scope, client requirement and revision, with reserved → issued → cancelled states | Review of the existing manual register — before Phase 5 issue |
+> | BQ-09 | Decided (D-11): **bilingual EN/AR architecture from Phase 1**; English first for reports; Arabic template production deferred | Which clients require Arabic documents — before Phase 5b |
+> | BQ-10 | Converted to a Phase 1 model plus a contract-review checklist (D-12) | Contract review — blocks production upload for an affected project, not the design |
+>
+> Two recommendations below were **corrected by the owner** and are superseded where they differ
+> from the decision record: the BQ-06 suggestion to configure a "zero-rate" rule (D-08 forbids
+> naming any classification), and the BQ-09 characterisation of Arabic as roughly doubling the work
+> (D-11: bilingual capability is architectural and delivered in Phase 1).
 
 Ten blocking questions, prioritised (§18 allows a maximum of ten). Each carries a **recommendation**
 so a decision can be made quickly: *approving the recommendation is a complete answer.*

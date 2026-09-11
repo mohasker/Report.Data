@@ -11,10 +11,11 @@ Implementation repository for the system specified in [`MASTER_SPEC.md`](MASTER_
 
 | | |
 |---|---|
-| **Current phase** | **Phase 0 — Discovery.** Complete and awaiting owner approval. |
-| **Next phase** | Phase 1 — Data foundation. **Does not start until Phase 0 is approved and BQ-01 … BQ-10 are answered.** |
-| **Production systems touched** | **None.** No Google account, Drive folder, AppSheet app, Make scenario, API connection or credential has been created or connected. |
-| **Tests executed** | **None.** No test result is claimed anywhere in this repository. |
+| **Phase 0 — Discovery** | **Approved 2026-09-11** subject to owner decisions D-01 … D-15 ([decision record](docs/00-discovery/10-owner-decisions.md)). |
+| **Current phase** | **Phase 1 — Data foundation.** Authorised within the limits of D-14. |
+| **Production systems touched** | **None.** No Google account, Drive folder, AppSheet app, Make scenario, API connection, QuickBooks company or credential has been created or connected. |
+| **Real data** | **None.** All data in this repository is synthetic and marked as such. |
+| **Tests executed** | Phase 1 validation checks run locally against synthetic data; results recorded in [`17-validation-evidence.md`](docs/01-data-foundation/17-validation-evidence.md). No claim is made about any system that has not been built. |
 
 > **Read this before quoting anything from this repository.**
 > Everything here is design and decision documentation. Nothing in it asserts that a system exists,
@@ -27,7 +28,10 @@ Implementation repository for the system specified in [`MASTER_SPEC.md`](MASTER_
 
 | If you are… | Read |
 |---|---|
-| **The owner, deciding whether to proceed** | [`docs/00-discovery/00-DISCOVERY-SUMMARY.md`](docs/00-discovery/00-DISCOVERY-SUMMARY.md) — the eight required discovery outputs, then [`04-open-questions.md`](docs/00-discovery/04-open-questions.md) for the ten decisions needed. Each carries a recommendation you can simply approve. |
+| **The owner, reviewing Phase 1** | [`docs/01-data-foundation/00-PHASE-1-SUMMARY.md`](docs/01-data-foundation/00-PHASE-1-SUMMARY.md), then [`17-validation-evidence.md`](docs/01-data-foundation/17-validation-evidence.md) for what was actually executed. |
+| **Looking for the decisions already taken** | [`docs/00-discovery/10-owner-decisions.md`](docs/00-discovery/10-owner-decisions.md) — D-01 … D-15. |
+| **Looking for what is still unknown** | [`docs/01-data-foundation/16-external-facts-register.md`](docs/01-data-foundation/16-external-facts-register.md) — every external fact awaiting confirmation, by the phase it blocks. |
+| **Reviewing the original discovery** | [`docs/00-discovery/00-DISCOVERY-SUMMARY.md`](docs/00-discovery/00-DISCOVERY-SUMMARY.md) — the eight required discovery outputs. |
 | **Deciding scope and budget** | [`01-mvp-boundary.md`](docs/00-discovery/01-mvp-boundary.md) — what is in, what is deferred, and why. |
 | **Reviewing the technical approach** | [`02-architecture.md`](docs/00-discovery/02-architecture.md) and the [ADRs](docs/00-discovery/adr/). |
 | **Assessing risk** | [`05-risk-and-controls-register.md`](docs/00-discovery/05-risk-and-controls-register.md) and [`06-spec-conflicts-and-platform-limits.md`](docs/00-discovery/06-spec-conflicts-and-platform-limits.md). |
@@ -56,15 +60,28 @@ docs/
     08-phase-1-artifact-manifest.md
     09-configuration-register.md
                                 Every external value as a NAMED VARIABLE. No values.
+    10-owner-decisions.md       Owner decisions D-01 … D-15 (governs the Phase 0 docs)
     adr/                        ADR-0001 … ADR-0008
+  01-data-foundation/           Phase 1: data dictionary, key/hash strategy, transition
+                                matrix, security model, evidence rules, numbering, legal
+                                entity + bilingual model, residency model, approval and
+                                delegation, calculation spec, AppSheet plan matrix,
+                                QuickBooks mapping, orchestration contract, prompt specs,
+                                external-facts register, validation evidence
+model/model.json                Canonical model — the single source of truth for Phase 1
+schemas/                        Table schemas generated from the model + AI output contracts
+seed/                           Controlled vocabularies + synthetic project data
+config/                         Named configuration variables. No values, ever.
+tools/                          Stdlib-only generators, validators and tests
 ```
 
-Directories created in later phases: `schemas/`, `seed/`, `config/`, `prompts/`, `templates/`, `tests/`.
+Directories created in later phases: `prompts/`, `templates/`.
 
 ---
 
 ## The four principles the design is built to protect
 
+0. **Unbounded width.** The platform is multi-project, multi-client and multi-entity from the first version. Adding a project is master-data configuration — never modified logic, a cloned app, duplicated scenarios, rewritten prompts or changed code.
 1. **Segregation.** Every row carries a project. Every user's access derives from their assignments, enforced by security filters *and* re-validated server-side — never by view visibility alone.
 2. **Evidence immutability.** The original photograph is written once and never altered, annotated or deleted. Everything else is a derivative, stored separately, with its own record.
 3. **Approval binds to content.** An approval records the exact content hash it approved. Change the content and the approval is void, along with everything downstream of it.
@@ -83,8 +100,20 @@ Directories created in later phases: `schemas/`, `seed/`, `config/`, `prompts/`,
 
 ---
 
-## Approval required to proceed
+## Running the Phase 1 checks
 
-Phase 1 begins when the owner records a decision in
-[`00-DISCOVERY-SUMMARY.md`](docs/00-discovery/00-DISCOVERY-SUMMARY.md) and answers the ten blocking
-questions in [`04-open-questions.md`](docs/00-discovery/04-open-questions.md).
+Standard-library Python 3 only — no installation, no dependency, no network:
+
+```
+python3 tools/run_validation.py
+```
+
+It regenerates the schemas and the data dictionary from `model/model.json`, runs every validation
+and test, and rewrites `docs/01-data-foundation/17-validation-evidence.md` with the results —
+passing or failing.
+
+## Approval required to proceed to Phase 2
+
+Phase 2 begins when the owner reviews the Phase 1 exit criteria in
+[`08-phase-1-artifact-manifest.md`](docs/00-discovery/08-phase-1-artifact-manifest.md) and records
+approval.

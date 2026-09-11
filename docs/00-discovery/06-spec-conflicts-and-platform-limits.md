@@ -1,6 +1,9 @@
 # Specification Conflicts, Platform Limitations, and Simplification Opportunities
 
-**Document ID:** AH-SYS-P0-006 · **Revision:** 0 · **Status:** draft for owner approval
+**Document ID:** AH-SYS-P0-006 · **Revision:** 1 · **Status:** approved 2026-09-11
+
+> **Revision 1.** C-01, C-02, C-05, C-09 and S-03 are updated by owner decisions D-02, D-13, D-11,
+> D-08 and D-07. Resolutions that the owner changed are shown as changed, not silently rewritten.
 
 The specification asked for contradictions, missing decisions, security risks, platform limitations
 and opportunities to simplify. This document records them. Each item states **what the specification
@@ -17,9 +20,15 @@ used in this workspace gives "W.L.L." for the same company.
 **Problem:** the legal entity name appears on invoices, completion certificates and contractual
 correspondence. Only one form is correct, and the wrong one on a certificate submitted to a
 government client is a documentation defect.
-**Resolution:** the owner confirms the exact legal name, CR number and address as they appear on the
-commercial registration. It is stored **once** as controlled reference data and referenced by every
-template — never retyped per document. Tracked as **A-06**.
+**Resolution (D-02).** The conflict is **not** resolved by choosing one of the two forms. Phase 1
+creates `LegalEntities` master data carrying EN and AR legal names, CR number, establishment/card
+number, registered address, country, currency, tax registration status, approved logo, official
+email, telephone and WhatsApp, authorised signatories, document footer details, effective date and
+version. Synthetic data uses `LEGAL_ENTITY_NAME_PENDING_VERIFICATION`. The verified name is taken
+from the **current Commercial Registration** before any production invoice, certificate, quotation or
+external report is generated. It is stored once and referenced by every template — never retyped per
+document. The design is also multi-entity from the start, so a second registered entity is
+configuration rather than a rebuild.
 
 ## C-02 — "Preserve original photographs unchanged" vs. how mobile platforms deliver images
 **Spec:** operating rule 9 — never overwrite, resize, enhance, annotate or delete the original
@@ -28,12 +37,18 @@ evidence file. §5.10 requires `OriginalChecksum`, `OriginalWidth/Height`, `Orig
 file the camera sensor produced. Upload-quality settings, platform image pickers and EXIF handling
 can all mean the file that arrives is already a re-encoding. The rule as literally written may be
 unachievable end-to-end, and claiming it without testing would violate operating rule 1.
-**Resolution:**
-1. Configure the highest available image-upload fidelity.
-2. **Test on real iOS and Android devices in Phase 2 and record the actual result** — this is the only way to know.
-3. Define the enforceable guarantee precisely: **"the file as first received by the system is stored write-once and is never thereafter modified, moved destructively, annotated or deleted, and its checksum is recorded at registration and re-verified."**
-4. State that definition openly in the administrator runbook rather than implying a stronger guarantee than the platform can deliver.
-5. If byte-for-byte camera fidelity turns out to be contractually necessary for a client, evaluate a separate raw-upload path — as scope, not as a claim.
+**Resolution — approved wording (D-13):**
+
+> **The file as first received by the controlled system must be stored write-once and must never
+> thereafter be altered or overwritten.**
+
+With it:
+1. Preserve the original received file, and record its **checksum, MIME type, size, received timestamp, source record and uploader**.
+2. Store every resized, annotated, compressed or report-ready version **separately**, as a derivative with its own record.
+3. Configure the highest available image-upload fidelity.
+4. **Never describe a file as the original device image** unless real-device testing proves no upstream re-encoding occurred. **iOS and Android testing is required before any immutability claim.**
+5. State the definition openly in the administrator runbook rather than implying a stronger guarantee than the platform delivers.
+6. If byte-for-byte camera fidelity proves contractually necessary for a client, evaluate a separate raw-upload path — as scope, not as a claim.
 Tracked as **R-03**.
 
 ## C-03 — Checksums are required, but the capture layer cannot compute them
@@ -65,8 +80,12 @@ Doc from a template, are different mechanisms with different fidelity and differ
 Building both doubles template maintenance and doubles the visual-inspection burden.
 **Resolution — simplification:** generate the editable draft as a **Google Doc from a controlled
 Google Docs template**, and export the PDF from it. Where a client requires a `.docx`, export one
-from the same approved Doc. One template, one merge path, one inspection pass. Revisit only if a
-client contractually requires native Word with specific styling.
+from the same approved Doc. One template, one merge path, one inspection pass.
+
+**Amended by D-11:** templates are keyed by document type **and language**, and the merge path must
+carry right-to-left capability from the start, so an Arabic template is a new controlled template
+rather than a new mechanism. Revisit only if a client contractually requires native Word with
+specific styling.
 
 ## C-06 — "Approval invalidated by material edit" needs a definition of *material*
 **Spec:** §5.18 — any material edit after approval invalidates downstream approvals.
@@ -106,10 +125,11 @@ is a real coordinate and would silently place the work off the coast of Africa. 
 **Problem:** if a project and its client disagree on currency, or an invoice mixes currencies, the
 behaviour is undefined — and undefined behaviour in a financial path is the worst kind.
 **Resolution:** MVP rule — **an invoice request must be single-currency, and the currency must come
-from the contract.** Any mismatch between contract, project and client currency is a validation
-failure that stops the job with a specific message. No conversion is performed anywhere in the
-system, and no exchange rate is stored, until a real multi-currency contract exists and a rate
-source is approved.
+from the contract.** Any mismatch between contract, project, client and legal entity currency is a
+validation failure that stops the job with a specific message. No conversion is performed anywhere
+in the system, and no exchange rate is stored, until a real multi-currency contract exists and a
+rate source is approved. The synthetic seed data deliberately contains one currency mismatch so the
+rule is tested rather than assumed (validated in Phase 1).
 
 ## C-10 — Retention policy is required but never defined
 **Spec:** §2 lists retention policy as project configuration; §16 requires a backup policy.
@@ -149,7 +169,7 @@ approval, a send or a posting.
 | **P-06** | **Language models are non-deterministic and can be truncated.** | Identical input can produce differing output. | Strict schemas with validation before storage; advisory-only fields; `PromptVersion` and `AIModel` recorded for reproducibility; never in the arithmetic path (**I-4**). |
 | **P-07** | **Vision analysis cost scales with image size.** | Full-resolution originals are expensive to analyse at volume. | Analyse **downscaled derivatives**, never originals — which also protects rule 9, since originals are never opened for processing. |
 | **P-08** | **Google Workspace has no Qatar data region.** | Evidence and reports are processed outside Qatar. | **BQ-10** raised in Phase 0, before storage design is fixed (**R-04**). |
-| **P-09** | **QuickBooks Online is region-bound.** | Qatar is not a principal supported market. | Invoicing deferred; **BQ-05** answered by the accountant before Phase 6 design; calculation module kept independent of the accounting product (**R-02**). |
+| **P-09** | **QuickBooks Online capability varies by region, edition and company configuration.** QBO is in use (D-07); what is unverified is whether every required tax setting, project/class feature, currency and API operation is available for this company file. | A gap would change the integration, not the system. | Integration kept modular; QuickBooks mapping fields defined in Phase 1; **compatibility inspection checklist** executed as a gate before the financial-integration phase; calculation layer independent of the accounting product (**R-02**). |
 | **P-10** | **Right-to-left and mixed-direction text is genuinely hard to render**, particularly inside table cells and headers, and PDF export can differ from on-screen appearance. | Arabic output carries real layout risk. | English-first (**BQ-09**); Arabic treated as separate scope with its own template set and its own visual-inspection matrix. |
 | **P-11** | **Drive permits duplicate filenames in the same folder.** | Name-based lookup is unreliable and silently wrong. | Address every file by **file ID**; provision folders idempotently by parent + exact name; sanitise and collision-check generated names. |
 | **P-12** | **Personal Drive storage dies with the account.** | The evidence archive would be hostage to one person's employment. | Shared Drive owned by the company (ADR-0001, **BQ-01**, **R-32**). |
@@ -164,7 +184,7 @@ Each of these reduces build and maintenance cost **without weakening a control**
 |---|---|---|---|
 | **S-01** | **One document type in the MVP** — the Monthly Technical Report. | Template, QA, numbering and inspection work for eight other document types. | Daily/weekly reports wait. The engine is identical, so adding them later is template work, not development. |
 | **S-02** | **Google Docs template as the single generation path** (C-05). | An entire second document toolchain and a second visual-inspection pass. | Native `.docx` styling fidelity is exported rather than authored. |
-| **S-03** | **English-only client documents in the MVP** (**BQ-09**). | Roughly half the template, QA and rendering work, and the RTL risk in P-10. | Arabic-preferring clients wait for Phase 5b. |
+| **S-03** | **English is the first generated-report language** (**D-11**) — **not** an English-only architecture. | Authoring and visual inspection of the Arabic template set, deferred to Phase 5b. | None architecturally: bilingual data, labels, language preference, Unicode and RTL template capability are delivered in Phase 1, so Arabic is later template work rather than a redesign. The earlier claim that Arabic "doubles the work" is withdrawn — it applies to templates, not to the system. |
 | **S-04** | **Manual send throughout the MVP.** | Scenario 11, its idempotency design, recipient-snapshot delivery logic and the mailbox-reconciliation problem. | A person presses send — which is also the strongest possible control against the highest-consequence irreversible action. |
 | **S-05** | **Defer Materials, Equipment and Manpower tables** to Phase 5b–6. | Six tables, their forms, their rules and their permissions. | Cost control arrives later. The schema is designed in Phase 1 so adding them is additive, never a migration. |
 | **S-06** | **Defer OwlAgent entirely** (C-12). | An integration with no defined requirement. | No loss — every capability it would offer exists in the app's dashboards. |

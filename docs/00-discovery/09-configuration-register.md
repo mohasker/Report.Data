@@ -1,6 +1,6 @@
 # Configuration Register
 
-**Document ID:** AH-SYS-P0-009 · **Revision:** 0 · **Status:** draft
+**Document ID:** AH-SYS-P0-009 · **Revision:** 1 · **Status:** live register, updated 2026-09-11 for D-02, D-08, D-10, D-11, D-12
 
 Every external value the system needs, expressed as a **named variable** (operating rule 3).
 
@@ -61,7 +61,9 @@ Every external value the system needs, expressed as a **named variable** (operat
 | `CLAUDE_MONTHLY_SPEND_CAP` | BUSINESS | Hard monthly cap authorised by the owner | GM | Phase 4 | ☐ |
 | `CLAUDE_MODEL_EVIDENCE` / `CLAUDE_MODEL_NARRATIVE` | ID | Models used, recorded on every DocumentJob for reproducibility | Architect | Phase 4 | ☐ |
 | `CLAUDE_MAX_OUTPUT_TOKENS` | BUSINESS | Per-call output cap (cost control) | Architect | Phase 4 | ☐ |
-| `AI_ANALYSIS_ENABLED_PER_PROJECT` | BUSINESS | Per-project flag to disable AI analysis where a contract makes it problematic (BQ-10, R-04) | Administrator | Phase 4 | ☐ |
+| `AI_ANALYSIS_ENABLED_PER_PROJECT` | BUSINESS | Per-project flag to disable AI analysis where a contract or residency rule makes it problematic (D-12, R-04). Disabling it removes assistance, never a control | Administrator | Phase 4 | ☐ |
+| `DATA_CLASSIFICATION_RULES` | BUSINESS | Classification of photographs, personal data, contracts, financial data and government/client records (D-12) | Administrator | Phase 1 | ☐ |
+| `RESIDENCY_REQUIREMENTS` | BUSINESS | Residency and approved-storage rules assignable per client, contract and project (D-12) | GM | Before production upload | ☐ |
 
 ### QuickBooks Online — Phase 7
 
@@ -81,14 +83,14 @@ Every external value the system needs, expressed as a **named variable** (operat
 
 | Variable | Kind | Description | Owner | Needed by | Status |
 |---|---|---|---|---|---|
-| `COMPANY_LEGAL_NAME` | BUSINESS | Exact legal name as registered — resolves conflict **C-01** | GM | Phase 1 | ☐ |
+| `LEGAL_ENTITY_REGISTER` | BUSINESS | **Replaces `COMPANY_LEGAL_NAME` (D-02).** `LegalEntities` master data: EN/AR legal names, CR number, establishment/card number, registered address, country, currency, tax registration status, logo, official email, telephone and WhatsApp, authorised signatories, footer details, effective date, version. Synthetic data uses `LEGAL_ENTITY_NAME_PENDING_VERIFICATION` | GM | Before production documents | ☐ |
 | `COMPANY_CODE` | BUSINESS | Code used in document numbers (BQ-08) | GM | Phase 5 | ☐ |
 | `COMPANY_CR_NUMBER` | BUSINESS | Commercial registration number for documents | GM | Phase 5 | ☐ |
 | `COMPANY_ADDRESS_BLOCK` | BUSINESS | Registered address as printed on documents | GM | Phase 5 | ☐ |
 | `COMPANY_LOGO_FILE_ID` | ID | Approved logo, correct aspect ratio (§10) | GM | Phase 5 | ☐ |
-| `DOCUMENT_NUMBER_FORMATS` | BUSINESS | Format per document type (BQ-08) | GM | Phase 5 | ☐ |
-| `DOCUMENT_SERIES_START_NUMBERS` | BUSINESS | Starting number per series, continuing existing manual numbering (A-18) | GM | Phase 5 | ☐ |
-| `DEFAULT_DOCUMENT_LANGUAGE` | BUSINESS | Client-document language (BQ-09) | GM | Phase 5 | ☐ |
+| `NUMBERING_SERIES_REGISTER` | BUSINESS | **Replaces a single format list (D-10).** One configurable series per legal entity × document type × year × scope × optional client requirement, each with its format, reset rule and revision handling | GM | Phase 5 | ☐ |
+| `DOCUMENT_SERIES_START_NUMBERS` | BUSINESS | Starting number per series, continuing the existing manual register, with that register's migration recorded (A-18, D-10) | GM | Phase 5 | ☐ |
+| `DEFAULT_DOCUMENT_LANGUAGE` | BUSINESS | Default generated-report language per project (D-11). Bilingual EN/AR capability is architectural from Phase 1; this value selects the default, not the capability | GM | Phase 5 | ☐ |
 | `CONFIDENTIALITY_MARKING` | BUSINESS | Marking applied to client documents where applicable | GM | Phase 5 | ☐ |
 
 ### Operational policy
@@ -97,7 +99,7 @@ Every external value the system needs, expressed as a **named variable** (operat
 |---|---|---|---|---|---|
 | `DEFAULT_CURRENCY` | BUSINESS | System default, overridden by contract (A-08) | GM | Phase 6 | ☐ |
 | `ROUNDING_POLICY` | BUSINESS | Decimal places, direction, and where rounding is applied (R-23) | Architect | Phase 6 | ☐ |
-| `TAX_RULES` | BUSINESS | Named tax rules including the zero-rate rule (BQ-06) | Accountant | Phase 6 | ☐ |
+| `TAX_RULES` | BUSINESS | Configurable tax rules (D-08). **No classification may be named** — "zero-rated", "exempt", "out of scope" and "no tax configured" are distinct and non-interchangeable. Seeded with an obviously synthetic placeholder; the applied rule **and its version** are preserved on every invoice calculation | Accountant | Before production invoicing | ☐ |
 | `DEFAULT_PAYMENT_TERMS_DAYS` | BUSINESS | Default, overridden per contract | GM | Phase 6 | ☐ |
 | `WORKING_CALENDAR` | BUSINESS | Working days, weekend, public holidays (OQ-01) | Administrator | Phase 2 | ☐ |
 | `REPORTING_CUTOFF_DAY` | BUSINESS | Latest day evidence may be added to a period (OQ-02) | GM | Phase 2 | ☐ |

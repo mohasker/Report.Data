@@ -1,11 +1,15 @@
 # Phase 0 — Discovery Output
 
 **Document ID:** AH-SYS-P0-000
-**Revision:** 0 (draft for owner approval)
-**Date:** 2026-09-10
+**Revision:** 1
+**Date:** 2026-09-10 (rev 0) · 2026-09-11 (rev 1)
 **Prepared by:** Implementation agent (Claude Code)
-**Approval required from:** General Manager / owner
-**Status:** AWAITING OWNER APPROVAL — no production mutation has been performed
+**Approved by:** General Manager (system owner), 2026-09-11
+**Status:** APPROVED. Phase 1 authorised. No production mutation has been performed.
+
+> **Revision 1** incorporates the owner's decisions D-01 … D-15, recorded in
+> [`10-owner-decisions.md`](10-owner-decisions.md). Where this document and that record differ,
+> the decision record governs.
 
 This document answers, in order, the eight outputs required by §18 of `MASTER_SPEC.md`.
 Supporting detail lives in the numbered companion documents in this folder.
@@ -21,7 +25,7 @@ Recorded honestly, per operating rule 1:
 | Inspected the target repository `mohasker/Report.Data` | Empty. No commits, no remote branches, no prior files. Nothing to preserve. |
 | Inspected available Al-Haram knowledge sources in this workspace | One internal knowledge skill found (company profile, service lines, client types, technical standards, reporting style). Used as *unverified input*, not as fact. |
 | Inspected Google Workspace / Drive / AppSheet / Make / Claude / QuickBooks accounts | **NOT DONE.** No credentials or account access were provided, and none were requested in chat. All such values remain named configuration variables — see `09-configuration-register.md`. |
-| Created production connections, apps, sheets, folders, scenarios | **NOT DONE — deliberately.** §15 Phase 0 requires owner approval first. |
+| Created production connections, apps, sheets, folders, scenarios | **NOT DONE — deliberately.** §15 Phase 0 requires owner approval first, and Phase 1 authorisation (D-14) explicitly excludes every production connection. |
 | Executed any test | **NOT DONE.** No test result is claimed anywhere in this repository. |
 
 Everything in this repository at revision 0 is **documentation and decisions**. No external system
@@ -60,7 +64,17 @@ ISO 9001 / 14001 / 45001 document-control obligations get stronger rather than w
 
 Full detail and rationale: `01-mvp-boundary.md`.
 
-**IN — the MVP is "one governed month, end to end, on three projects."**
+**The platform is multi-project and multi-client from the first version** (D-01). It is designed to
+carry dozens or hundreds of current and future projects. Adding a project is controlled master-data
+configuration — never modified logic, a cloned application, duplicated scenarios, rewritten prompts,
+changed formulas or source code, and never a separate system per project.
+
+**Three synthetic projects are test fixtures, not a boundary.** They exist to prove segregation and
+configurability across different clients, contacts, locations, disciplines, activity rules, assigned
+users, approval routes, templates, numbering series, reporting frequencies and billing
+configurations. The number three is a property of the test data, not of the system.
+
+**IN — the MVP proves one governed month, end to end, across the full multi-project core.**
 
 - Master data: Users, Roles, ProjectAssignments, Clients, Contacts, Projects, Locations (hierarchical), ActivityTypes, Units.
 - Field capture: SiteVisit → VisitActivities → Photos, with per-activity evidence rules, draft/submit separation, and offline capture.
@@ -76,13 +90,13 @@ Full detail and rationale: `01-mvp-boundary.md`.
 
 | Deferred | Moves to | Why |
 |---|---|---|
+| **Arabic document template production** (not bilingual capability) | 5b | Bilingual data, labels, language preference, Unicode and RTL template capability are **architectural requirements delivered in Phase 1** (D-11). Only the production and visual inspection of Arabic templates is deferred. |
 | Contracts, BOQ, cumulative quantity control | Phase 6 | Needs real contract/BOQ data and a confirmed certification process; wrong here is expensive. |
 | Completion certificates | Phase 6 | Depends on approved BOQ quantities. |
 | Invoice drafts, tax, retention, advance recovery | Phase 6 | Blocked on tax and accounting decisions (BQ-05, BQ-06). |
-| QuickBooks posting | Phase 7 | Blocked on whether a QBO company file usable from Qatar exists at all (BQ-05). |
+| QuickBooks posting | Phase 7 | QBO is in use (D-07), but no assumption is made that every required tax setting, project feature, class, currency or API operation is available for the current company configuration. Integration stays modular; a compatibility inspection gates the financial phase. |
 | Outbound client email release | Phase 7 | Highest-consequence irreversible action; needs release approval workflow proven first. |
 | Daily/weekly reports, quotations, inspection reports, transmittals | Phase 8+ | Same engine, more templates. Cheap once the engine is proven; noise before then. |
-| Arabic and bilingual document output | Phase 5b, gated by BQ-09 | Doubles template, QA and PDF-rendering work. Needs a policy decision, not a guess. |
 | OwlAgent conversational interface | Post-MVP, optional | Convenience layer; must never be a system of record or a critical trigger. |
 | WhatsApp as an input channel | Not planned | Operating rules 12–13. AppSheet is the field-input channel. |
 
@@ -129,11 +143,11 @@ marked with the phase at which it must be confirmed or it becomes a blocker.
 | A-03 | A Make.com organisation with **Data Stores, error handlers and scheduled scenarios** will be available. | Phase 3 |
 | A-04 | A Claude API workspace with a **hard monthly spend cap** will be provided. | Phase 4 |
 | A-05 | Field users have **company-managed or personally-owned smartphones with a working camera**, and each has an individual sign-in identity. Shared accounts are not acceptable — they destroy attribution. | Phase 2 |
-| A-06 | The company's **legal name, CR number, logo and contact block** used on client documents will be supplied by the owner as controlled reference data. The spec says "L.L.C." while another internal source says "W.L.L." — see conflict C-01. | Phase 1 |
-| A-07 | **No VAT is currently charged** on these Qatar contracts. The system will still be built tax-rule-driven with a zero-rate configuration, so a future tax regime is a configuration change, not a rebuild. Must be confirmed by the company's accountant, not assumed. | Phase 6 |
+| A-06 | **Superseded by D-02.** Legal identity is not an assumption but configurable `LegalEntities` master data, built in Phase 1 with the placeholder `LEGAL_ENTITY_NAME_PENDING_VERIFICATION`. The verified legal name comes from the current Commercial Registration before any production document is generated. | Before production documents |
+| A-07 | **Superseded by D-08.** No tax classification is assumed or named. `TaxRules` is configurable master data seeded with a clearly synthetic placeholder rule. "Zero-rated", "exempt", "out of scope" and "no tax configured" are not interchangeable, and none is applied until the accountant confirms the classification in writing. The rule and its version are preserved on every invoice calculation. | Before production invoicing |
 | A-08 | Default currency is **QAR**, and MVP projects are single-currency. Multi-currency is validated-and-rejected in the MVP rather than silently mishandled. | Phase 6 |
 | A-09 | Reporting frequency for the MVP pilot is **monthly**, calendar-month aligned, with an agreed cut-off day. | Phase 2 |
-| A-10 | MVP document language is **English**, with Arabic field labels in the app. Arabic document output is a separate, later, explicitly-approved scope. | Phase 5 |
+| A-10 | **Amended by D-11.** English is the first generated-report language; **bilingual EN/AR capability is architectural from Phase 1** — bilingual master data and descriptions, user language preference, Unicode throughout, RTL template capability, per-language approved templates. Only Arabic template production is deferred. | Phase 1 (capability) / Phase 5b (templates) |
 | A-11 | Photographic evidence is **client-confidential but not classified**, and may be stored in Google's cloud under the company's Workspace tenant. Government clients may impose stricter terms — see R-04 and BQ-10. | Phase 1 |
 | A-12 | The General Manager may act as sole technical approver during the MVP, with the approval matrix designed to support delegation later without redesign. | Phase 2 |
 | A-13 | Three **synthetic** pilot projects (different clients, disciplines, locations, users, templates, approval routes) are acceptable for proving segregation before any real client data is entered. | Phase 2 |
@@ -142,27 +156,27 @@ marked with the phase at which it must be confirmed or it becomes a blocker.
 
 ---
 
-## 5. Blocking questions (maximum ten, prioritised)
+## 5. Blocking questions — disposition after owner decisions
 
-Full text, options and consequences: `04-open-questions.md`.
+All ten were answered, decided in principle, or converted into a Phase 1 deliverable on 2026-09-11.
+Full text: [`04-open-questions.md`](04-open-questions.md). Decisions: [`10-owner-decisions.md`](10-owner-decisions.md).
 
-Each question carries a **recommended answer**. Approving the recommendation is a valid response —
-you do not need to compose an alternative unless you disagree.
-
-| # | Priority | Question | Recommended answer |
+| # | Subject | Disposition | Still outstanding |
 |---|---|---|---|
-| **BQ-01** | Blocks everything | Which Google account owns the system, and is it a **paid Workspace** tenant with Shared Drive capability? | Create a dedicated Workspace account (e.g. a `system`/`operations` mailbox on the company domain) as the technical owner, and host everything on a **Shared Drive**, not in a personal My Drive. |
-| **BQ-02** | Blocks Phase 2 | Which **AppSheet plan**, and how many named users in year one? | License the tier that includes webhooks + API for the ~5–10 office/review users; keep field users on the minimum viable tier. Verify current tiers and pricing with Google directly — this document does not state prices. |
-| **BQ-03** | Blocks Phase 3 | Is a **Make.com** organisation available, and on which plan? If not, do we fall back to Google Apps Script? | Use Make. It gives visual error routes, data stores and operational visibility a non-developer can supervise — which matters when the company has one technical decision-maker. |
-| **BQ-04** | Blocks Phase 4 | **Claude API** workspace and the monthly spend cap you will authorise. | Provision a dedicated workspace with a hard monthly cap and per-project usage tracking. Analyse only reviewer-approved evidence, on downscaled derivatives, to keep cost proportional to output. |
-| **BQ-05** | Blocks Phases 6–7 | Does a **QuickBooks Online company file** exist and is it usable and supported for a Qatar-registered entity? Is a sandbox available? | Confirm with the accountant before any accounting design work. If QBO is not properly supported for the Qatari entity, stop and choose the accounting target explicitly (see R-02) rather than building against an unsupported product. |
-| **BQ-06** | Blocks Phase 6 | Confirm the **tax treatment** actually applied to these contracts today (VAT / withholding / none), from the accountant. | Configure a named zero-rate tax rule now; never hard-code "no tax". Written confirmation from the accountant to be filed against A-07. |
-| **BQ-07** | Blocks Phase 2 | Who are the **named approvers** — technical reviewer, finance reviewer, releaser — with their email addresses and per-project routing? | GM as sole technical approver and releaser for the MVP; nominate at least one delegate before go-live so absence does not stop billing. |
-| **BQ-08** | Blocks Phase 5 | What is the **document numbering scheme**, the company code, and what series are already in use in existing manual documents? | Adopt one central numbering service with a documented format and a recorded starting number per series that continues, and never collides with, existing manual numbering. |
-| **BQ-09** | Blocks Phase 5 | **Language policy** for client-facing documents: English only, Arabic only, or bilingual — and for which clients? | English for the MVP. Treat Arabic/bilingual output as a separately approved scope; it roughly doubles template, QA and rendering effort and needs its own testing. |
-| **BQ-10** | Blocks Phase 1 sign-off | Do any client contracts (particularly **government/MOEHE**) restrict where evidence and reports may be stored or processed, or require data to stay in Qatar? | Owner to check the contracts. Google Workspace does not offer a Qatar data region; if a contract requires local residency, that changes the storage design and must be known now, not after go-live. |
+| BQ-01 | Google ownership and storage | **Decided in principle** (D-03): company Workspace account, company Shared Drive preferred, never a personal Drive, nothing connected in Phase 1. | Owning account and Shared Drive ID — before production deployment. |
+| BQ-02 | AppSheet plan | **Converted to a Phase 1 deliverable** (D-04): a feature-to-plan requirements matrix recommending the lowest plan that satisfies verified requirements, with Phase 1 kept platform-neutral enough to identify anything AppSheet cannot safely or economically support. | Entitlements and pricing verified from official Google information — before purchase. |
+| BQ-03 | Make.com | **Decided** (D-05): primary orchestration layer, with idempotency, correlation IDs, visible failure records, retry limits, a manual-review queue, environment separation, clear connection ownership and a non-developer runbook. | Organisation and plan — before Phase 3. |
+| BQ-04 | Claude API | **Decided in principle** (D-06), with the correction that AI may pre-analyse **submitted** evidence to assist the reviewer while only **human-approved** evidence may generate an official report. | Monthly spend cap value — before Phase 4. |
+| BQ-05 | QuickBooks | **Answered** (D-07): QBO is the accounting system in use. No assumption is made about available tax settings, project features, classes, currencies or API operations for the current company configuration. | Compatibility inspection checklist executed — gate before the financial-integration phase. |
+| BQ-06 | Tax treatment | **Open, and correctly so** (D-08). No classification is named or assumed. | Accountant's written confirmation — blocks production invoicing, not Phase 1. |
+| BQ-07 | Approvers | **Decided** (D-09): GM is final technical, financial and release approver; delegation and temporary delegation are modelled from the initial architecture; no user may approve their own restricted transaction because an approver is unavailable. | Delegate identity — before go-live. |
+| BQ-08 | Document numbering | **Decided** (D-10): sequences separated by legal entity, document type, year, scope, optional client requirement and revision, with a reserved → issued → cancelled lifecycle and migration from the existing manual register. | Review of the existing manual register — before Phase 5 issue. |
+| BQ-09 | Language | **Decided** (D-11): bilingual EN/AR architecture from Phase 1; English first for generated reports; Arabic template production deferred. | Which clients require Arabic documents — before Phase 5b. |
+| BQ-10 | Data residency | **Converted to a Phase 1 model plus a contract-review checklist** (D-12): data classification and residency requirements assignable per client, contract and project. | Contract review — blocks production upload for an affected project, not the generic design. |
 
----
+**No blocking question prevents Phase 1.** Every unresolved external fact is carried forward in
+`docs/01-data-foundation/16-external-facts-register.md`, categorised by the phase it blocks
+(deliverable 17 of D-15).
 
 ## 6. Phase-by-phase implementation plan
 
@@ -195,8 +209,8 @@ The seven that could genuinely force a redesign:
 | # | Risk | Why it can change the design |
 |---|---|---|
 | **R-01** | **Google Sheets hits its practical concurrency/volume ceiling.** The Photos table grows fastest — several rows per visit, per location, per day, across dozens of projects. | Forces migration to AppSheet Database or Cloud SQL. Mitigated in advance by ADR-0002: keep all access behind a defined table contract so migration is a swap, not a rewrite, and define the trigger threshold before it is reached. |
-| **R-02** | **QuickBooks Online may not be properly supported for a Qatar-registered entity.** | Phases 6–7 change target. This is why invoicing is deferred and BQ-05 is asked before any accounting work begins. |
-| **R-03** | **AppSheet image handling may not preserve the camera's original file byte-for-byte** (upload quality settings, EXIF handling). This directly touches operating rule 9. | See conflict C-02. May require defining "original" as *"the file as first received by the system, thereafter never altered"*, or adding a separate raw-upload path. Must be tested on real devices before any immutability claim is made. |
+| **R-02** | **QuickBooks Online capability for the current company configuration is unverified.** QBO is in use (D-07), but the availability of required tax settings, project/class features, currencies and API operations is not established. | Phases 6–7 scope. Integration stays modular and the deterministic calculation layer stays independent of the accounting product, so a gap changes the integration rather than the system. A compatibility inspection gates the financial phase. |
+| **R-03** | **AppSheet image handling may not preserve the camera's original file byte-for-byte** (upload quality settings, EXIF handling). This directly touches operating rule 9. | See conflict C-02. The enforceable definition is **approved** (D-13): *the file as first received by the controlled system is stored write-once and never thereafter altered or overwritten*, with checksum, MIME type, size, received timestamp, source record and uploader recorded, and derivatives stored separately. No file may be described as the original device image without iOS and Android testing proving no upstream re-encoding. |
 | **R-04** | **Data residency / confidentiality obligations in government contracts.** No Qatar data region exists in Google Workspace. | Could force a different storage location or an on-premise archive. Asked as BQ-10 now, because discovering it after go-live is far more expensive. |
 | **R-05** | **Document numbering collisions.** Spreadsheets cannot guarantee atomic increments under concurrency, and legacy manual numbering already exists. | Forces a single atomic numbering service (ADR-0005) and a recorded starting number per series. A duplicate invoice or certificate number in front of a government client is a serious credibility failure. |
 | **R-06** | **Adoption risk — the real one.** If supervisors find the app slower than sending photos to WhatsApp, the pipeline starves and everything downstream is worthless. | Drives the whole UX design: minimum fields, dependent dropdowns, offline capture, no typing where a choice will do. Measured explicitly in Phase 2 with real supervisors on real phones, and treated as an acceptance concern, not a training problem. |
@@ -206,7 +220,8 @@ The seven that could genuinely force a redesign:
 
 ## 8. Exact artifacts to be created in Phase 1
 
-Full manifest with content definitions: `08-phase-1-artifact-manifest.md`.
+Full manifest with content definitions: [`08-phase-1-artifact-manifest.md`](08-phase-1-artifact-manifest.md),
+**revision 1**, which incorporates the seventeen additional deliverables required by D-15.
 Phase 1 is **documentation, schema definition and seed data only** — still no production system, no
 connections, no credentials.
 
@@ -258,12 +273,13 @@ scenario, no API connection, no credential, no real client or project data.
 
 ## Approval
 
-Phase 1 does not begin until the owner records a decision here.
-
 | Decision | Name | Date | Notes |
 |---|---|---|---|
-| ☐ Approved as written | | | |
-| ☐ Approved with changes | | | |
-| ☐ Not approved | | | |
+| ☑ **Approved with changes** | General Manager (system owner) | 2026-09-11 | Approved subject to decisions D-01 … D-15, recorded in [`10-owner-decisions.md`](10-owner-decisions.md). Phase 1 authorised within the limits of D-14. |
 
-**Answers required with approval:** BQ-01 … BQ-10 (see `04-open-questions.md`).
+**Phase 1 authorisation (D-14).** Authorised: repository artifacts, schemas, synthetic data,
+specifications, validation rules, security models, state-transition models, prompt schemas,
+documentation. **Not authorised:** connecting production Google accounts; connecting AppSheet
+production data; creating production Make scenarios; creating or using Claude API credentials;
+connecting QuickBooks; uploading real client or project photographs; sending email or messages;
+creating invoices or accounting transactions; publishing or sharing external documents.

@@ -1,16 +1,28 @@
 # MVP Boundary
 
-**Document ID:** AH-SYS-P0-001 · **Revision:** 0 · **Status:** draft for owner approval
+**Document ID:** AH-SYS-P0-001 · **Revision:** 1 · **Status:** approved 2026-09-11 (D-01 … D-15)
 
-## The MVP in one sentence
+## The platform, and the MVP within it
 
-> **One governed month, end to end, on three projects:** a supervisor captures evidence in the
-> field, a reviewer approves it, and the system produces an approved, release-controlled Monthly
-> Technical Report from a frozen snapshot of that approved evidence — with nothing leaving the
-> company automatically.
+**The platform is multi-project and multi-client from the first version** (D-01). It is built to
+carry dozens or hundreds of current and future projects, each with its own client, contacts,
+locations, disciplines, activity and evidence rules, assigned users, approval route, templates,
+numbering series, reporting frequency and billing configuration. Adding a project is controlled
+master-data configuration. It never requires modified application logic, a cloned application,
+duplicated scenarios, rewritten prompts, changed formulas or source code, and never a separate
+system per project.
 
-If that works reliably for three projects, it works for thirty. If it does not, no amount of
-invoicing automation on top of it is worth anything.
+**The MVP is a depth boundary, not a width boundary.** It is the first slice of the pipeline proven
+end to end:
+
+> A supervisor captures evidence in the field, a reviewer approves it, and the system produces an
+> approved, release-controlled Monthly Technical Report from a frozen snapshot of that approved
+> evidence — with nothing leaving the company automatically.
+
+**Three synthetic projects are test fixtures, not a limit.** They exist to make segregation and
+configurability failures visible, by differing from each other in every dimension that the
+configuration model claims to support. A fourth project added as data only, with no change to logic,
+is the standing proof that the width is unbounded (Phase 2 gate, requirement 14).
 
 ## Why this boundary and not a smaller or larger one
 
@@ -22,17 +34,24 @@ converts into a document that a client accepts. The report is therefore in the M
 invoicing before those answers exist means building against guesses — which operating rule 2
 forbids outright.
 
-**Multi-project from the first line.** Requirement 14 is not a "later" item. Retrofitting project
-segregation into a single-project app is a rewrite, not a refactor. Every table carries `ProjectID`
-from the beginning, and segregation is proven with three synthetic projects before any real client
-data is entered.
+**Multi-project from the first line, at unlimited width.** Requirement 14 is not a "later" item.
+Retrofitting project segregation into a single-project app is a rewrite, not a refactor. Every
+operational table carries `ProjectID` from the beginning; every access decision derives from
+`ProjectAssignments`; every project-varying behaviour — locations, activity and evidence rules,
+templates, approval routes, numbering series, reporting frequency, billing, residency rules — is a
+configuration row rather than a branch in logic. Segregation is proven against synthetic projects
+before any real client data is entered (D-12).
 
 ## In scope
 
 ### Master data (fully configuration-driven)
-Users · Roles · ProjectAssignments · Clients · Contacts · Projects · Locations (hierarchical,
-project-filtered) · ActivityTypes (with per-activity evidence and quantity rules) · Units ·
-DocumentTemplates (Monthly Technical Report only).
+LegalEntities (D-02) · Users · Roles · ProjectAssignments (many-to-many) · Clients · Contacts ·
+Projects · Locations (hierarchical, project-filtered) · ActivityTypes with per-project overrides ·
+Units · DocumentTemplates per type, language and project · NumberingSeries · ApprovalMatrix with
+delegation (D-09) · TaxRules (placeholder only, D-08) · DataClassifications and
+ResidencyRequirements (D-12) · Languages.
+
+All master data is bilingual EN/AR where it is ever displayed or printed (D-11).
 
 ### Field capture
 - SiteVisit → VisitActivities → Photos, three levels, unlimited child rows within platform limits.
@@ -70,9 +89,12 @@ stored as advisory only, never auto-approving evidence.
 Report narrative drafting (§9.2) and report QA (§9.3) inside Scenario 06.
 
 ### Documents
-**Monthly Technical Report only.** Frozen input manifest · controlled template · editable draft +
-PDF · content hash · revision control · technical approval · release with recipient snapshot.
-Release moves files to `07_Released_Documents`. **Sending is manual in the MVP.**
+**Monthly Technical Report is the only document type produced in the MVP** — the document engine
+itself is type-driven and adding a type is configuration. Frozen input manifest · controlled
+template selected by type, language and project · editable draft + PDF · content hash · revision
+control · technical approval · release with recipient snapshot · numbers issued by the configurable
+numbering service (D-10). Release moves files to `07_Released_Documents`. **Sending is manual in the
+MVP.**
 
 ### Audit
 AuditLog on every state transition. IntegrationJobs on every external call. Correlation IDs
@@ -88,7 +110,7 @@ end-to-end.
 | QuickBooks Online integration of any kind | 7 | Blocked on BQ-05; irreversible accounting effects. |
 | Automated outbound email to clients | 7 | Highest-consequence irreversible action. Manual send until the release gate is proven. |
 | Daily, weekly, inspection, corrective-action reports; quotations; transmittals | 8+ | Same engine, additional templates. Add once the engine is trusted. |
-| Arabic / bilingual document output | 5b, gated by BQ-09 | Roughly doubles template, QA and PDF-rendering effort; needs its own test matrix. |
+| Arabic **document template production** — not bilingual capability | 5b | Bilingual data, labels, language preference, Unicode and RTL template capability are delivered in Phase 1 (D-11). What is deferred is authoring and visually inspecting the Arabic template set, which is template work with its own test matrix. |
 | Materials, MaterialUsage, Equipment, Manpower tables | 5b–6 | Valuable for cost control, not required to produce an accepted report. Schema is designed in Phase 1 so adding them later is additive. |
 | Client acknowledgement / client portal | Post-MVP | Client-facing surface increases risk before internal process is stable. |
 | OwlAgent conversational interface | Post-MVP, optional | Convenience only. Never a system of record, never the sole trigger for a critical workflow. |
@@ -103,7 +125,7 @@ The §14 criteria, mapped to what the MVP can honestly demonstrate:
 |---|---|---|
 | 1 Multi-activity visit with multiple photos | Yes | Recorded test with a visit containing ≥3 activities and ≥20 photos. |
 | 2 Project-dependent locations | Yes | Recorded test across the three synthetic projects. |
-| 3 No cross-project leakage | Yes — **the critical one** | Security test: an assigned-to-Project-A user attempts to read Project B data through views, search, deep link and API. Result recorded either way. |
+| 3 No cross-project leakage | Yes — **the critical one** | Security test: an assigned-to-Project-A user attempts to read Project B data through views, search, deep link and API. Extended per D-15 item 16 to prove that no data, image, recipient, template, document number or financial record crosses a project boundary. Result recorded either way. |
 | 4 Originals correct and unchanged | Yes | Checksum comparison before/after registration, recorded. |
 | 5 Evidence rules block incomplete submission | Yes | Negative tests per activity rule, recorded. |
 | 6 Visit- and photo-level approve/reject with comments | Yes | Recorded test including return-for-correction. |

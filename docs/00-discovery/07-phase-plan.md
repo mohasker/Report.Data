@@ -1,6 +1,6 @@
 # Phase Plan
 
-**Document ID:** AH-SYS-P0-007 · **Revision:** 0 · **Status:** draft for owner approval
+**Document ID:** AH-SYS-P0-007 · **Revision:** 1 · **Status:** approved 2026-09-11; Phase 1 authorised within the limits of D-14
 
 **Working rule (§18):** one phase in progress at a time. A phase closes only when its gate evidence
 exists and is recorded. No phase claims a test result that was not executed (operating rule 1).
@@ -11,7 +11,7 @@ answered would be inventing information.
 
 ---
 
-## Phase 0 — Discovery and decision record — *in progress*
+## Phase 0 — Discovery and decision record — **CLOSED 2026-09-11**
 
 **Delivers:** this document set — discovery summary, MVP boundary, architecture, assumptions and
 dependencies, blocking questions, risk and controls register, specification conflicts and platform
@@ -19,28 +19,41 @@ limits, ADRs, Phase 1 artifact manifest, configuration register.
 
 **Does not deliver:** any account, connection, app, sheet, folder, scenario or credential.
 
-**Gate:** owner approves the discovery output **and answers BQ-01 … BQ-10.**
+**Gate: PASSED.** The owner approved the discovery output on 2026-09-11 subject to decisions
+D-01 … D-15 ([`10-owner-decisions.md`](10-owner-decisions.md)), and all ten blocking questions were
+answered, decided in principle, or converted into Phase 1 deliverables.
 
 ---
 
-## Phase 1 — Data foundation
+## Phase 1 — Data foundation — *in progress*
 
-**Delivers:** data dictionary · key/ID/hash strategy · status-transition matrix · security model ·
-evidence rules · naming and numbering specification · migration and versioning policy · machine-
-readable table schemas · seed lookup data · three synthetic project datasets · configuration
-reference.
+**Delivers:** the full multi-project, multi-client, multi-entity, bilingual data foundation — data
+dictionary · key/ID/hash strategy · status-transition matrix · role and row-level security matrix ·
+evidence rules · legal-entity model · data classification and residency model · approval and
+delegation model · naming and numbering specification · deterministic calculation specification ·
+AppSheet feature-to-plan requirements matrix · QuickBooks mapping and inspection checklist ·
+orchestration contract and operator runbook outline · Claude prompt and schema specifications ·
+migration and versioning policy · machine-readable table schemas · seed lookup data · synthetic
+datasets for at least three materially different projects · configuration reference · external-facts
+register · executed validation evidence.
 
-**Still no production system.** Phase 1 is design and data definition. Documents and schema files
-only.
+**Authorisation (D-14).** Phase 1 may create repository artifacts, schemas, synthetic data,
+specifications, validation rules, security models, state-transition models, prompt schemas and
+documentation. Phase 1 may **not** connect production Google accounts, connect AppSheet production
+data, create production Make scenarios, create or use Claude API credentials, connect QuickBooks,
+upload real client or project photographs, send email or messages, create invoices or accounting
+transactions, or publish or share external documents.
 
-**Gate evidence:**
+**Gate evidence — executed, not asserted:**
 - Data dictionary reviewed field by field with the owner or the nominated administrator.
 - Status-transition matrix approved, including which transitions void which approvals.
-- The three synthetic projects modelled end to end on paper, proving the model has no project-specific logic in it.
-- Security model reviewed: every role × every table × every operation, with justification for each grant.
+- Synthetic projects modelled end to end, proving the model contains **no project-specific logic**.
+- Security model reviewed: every role × every table × every operation, with a justification for each grant.
 - Canonical `ContentHash` field list agreed (resolves C-06).
+- **Machine-checked validation run** covering schema conformance, referential integrity, segregation (no data, image, recipient, template, document number or financial record crossing a project boundary), numbering concurrency and uniqueness, deterministic calculation cases, and bilingual/Unicode integrity — with results recorded in the validation evidence document.
 
-**Depends on:** BQ-01, and A-06/A-14/A-17 confirmed.
+**Depends on:** nothing external. Phase 1 runs entirely on local fixtures and synthetic data (D-03,
+D-12, D-14).
 
 ---
 
@@ -53,7 +66,7 @@ decisions, snags, dashboards, security filters, project assignments.
 **Gate evidence — this is the most important gate in the project:**
 1. **Segregation test, recorded.** A user assigned to Project A attempts to reach Project B data through views, search, a deep link and the API. The result is recorded whether it passes or fails.
 2. **Evidence-rule tests, recorded.** Each required-photo, required-quantity and required-caption rule blocks an incomplete submission.
-3. **Configurability proof.** A fourth synthetic project is added **as data only**, with no change to any logic. This is the direct test of requirement 14.
+3. **Configurability proof.** A further project is added **as data only**, with no change to any logic, and a second legal entity is configured the same way. This is the direct test of requirement 14 and of D-01: the platform's width is unbounded, and three is a property of the test data only.
 4. **Real-device field test, recorded.** Real supervisors, their own phones, both platforms if used, camera capture, multiple photos, weak network, offline capture and delayed sync, Arabic and English text entry. Offline behaviour is documented **from this test**, never from expectation (A-15).
 5. **Adoption signal (R-06).** Time to complete a typical visit, measured with a real supervisor. If it is slower than the habit it replaces, the form is simplified before the phase closes.
 6. **Image fidelity test (C-02 / R-03).** Compare the stored file against the source on both platforms and record exactly what is preserved.
