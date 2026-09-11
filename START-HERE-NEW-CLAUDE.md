@@ -4,7 +4,7 @@
 
 **Package version:** 1.0 · **Date:** 2026-09-11
 **Repository:** `mohasker/Report.Data` · **Branch:** `claude/alharam-field-reporting-spec-afq1fr`
-**Validated commit:** `cde17537966bac6083f21469338493f737a412c7`
+**Validated commit:** `20af0a20c9770d9e782219b5a4186c3f4914800f`
 **Package commit:** recorded in `HANDOFF-MANIFEST.json` → `package_commit`
 
 > **Read this file completely before running anything.** It is written to be self-contained: it
@@ -439,7 +439,7 @@ and no others; in particular, never say "working", "done", "tested" or "ready" w
 |---|---|
 | Repository | `mohasker/Report.Data` |
 | **Branch — develop and push here, and nowhere else** | **`claude/alharam-field-reporting-spec-afq1fr`** |
-| **Validated commit** | **`cde17537966bac6083f21469338493f737a412c7`** — the commit the 219-check run in §17 was executed against |
+| **Validated commit** | **`20af0a20c9770d9e782219b5a4186c3f4914800f`** — the commit the 219-check run in §17 was executed against |
 | **Package commit** | See `HANDOFF-MANIFEST.json` → `package_commit`. It adds only this handoff package to the validated commit |
 | Default branch | Do **not** push to it |
 
