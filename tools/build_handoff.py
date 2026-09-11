@@ -91,10 +91,16 @@ def main():
 
     files = tree_files()
 
+    pdf = os.path.join(DIST, "OWNER-REVIEW-PACK.pdf")
     zip_path = os.path.join(DIST, ZIP_NAME)
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
         for rel in files:
             z.write(os.path.join(ROOT, rel), rel)
+        # The rendered review pack is a build output, so it is not tracked in the
+        # repository; it belongs in the archive all the same.
+        if os.path.exists(pdf):
+            z.write(pdf, "docs/OWNER-REVIEW-PACK.pdf")
+            files = sorted(files + ["docs/OWNER-REVIEW-PACK.pdf (rendered; not tracked in git)"])
 
     bundle_path = os.path.join(DIST, BUNDLE_NAME)
     bundle_out, bundle_rc = sh("git", "bundle", "create", bundle_path, "--all")
@@ -105,8 +111,6 @@ def main():
         if os.path.exists(src):
             with open(src, "rb") as a, open(os.path.join(DIST, rel), "wb") as b:
                 b.write(a.read())
-
-    pdf = os.path.join(DIST, "OWNER-REVIEW-PACK.pdf")
 
     checksums = {}
     for rel in PRIMARY:
