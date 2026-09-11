@@ -1,0 +1,10 @@
+DocumentTypeCode,NameEN,NameAR,RequiresTechnicalApproval,RequiresFinanceApproval,RequiresReleaseApproval,IsExternallyIssued,BuiltInPhase,IsActive
+MonthlyTechnicalReport,Monthly technical report,تقرير فني شهري,TRUE,FALSE,TRUE,TRUE,5,TRUE
+DailyReport,Daily report,تقرير يومي,TRUE,FALSE,FALSE,FALSE,8,TRUE
+WeeklyReport,Weekly report,تقرير أسبوعي,TRUE,FALSE,TRUE,TRUE,8,TRUE
+InspectionReport,Inspection report,تقرير معاينة,TRUE,FALSE,TRUE,TRUE,8,TRUE
+CorrectiveActionReport,Corrective action report,تقرير إجراء تصحيحي,TRUE,FALSE,TRUE,TRUE,8,TRUE
+Quotation,Quotation,عرض سعر,TRUE,TRUE,TRUE,TRUE,8,TRUE
+CompletionCertificate,Completion certificate,شهادة إنجاز,TRUE,TRUE,TRUE,TRUE,6,TRUE
+InvoiceCover,Invoice cover,غلاف فاتورة,TRUE,TRUE,TRUE,TRUE,7,TRUE
+Transmittal,Transmittal,كتاب إحالة,FALSE,FALSE,TRUE,TRUE,8,TRUE

@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/ResidencyRequirements.schema.json",
+  "title": "ResidencyRequirements",
+  "description": "Storage and processing restrictions that may be assigned to a client, contract or project (D-12).",
+  "x-description-ar": "متطلبات مكان تخزين ومعالجة البيانات",
+  "x-category": "master",
+  "x-scope": "global",
+  "x-sensitivity": "internal",
+  "x-built-in-phase": 1,
+  "x-primary-key": "ResidencyRequirementID",
+  "x-content-hash-fields": [],
+  "x-unique-together": [],
+  "x-at-least-one": [],
+  "x-notes": [],
+  "type": "object",
+  "properties": {
+    "ResidencyRequirementID": {
+      "type": "string"
+    },
+    "RuleCode": {
+      "type": "string",
+      "enum": [
+        "NoRestriction",
+        "RegionRestricted",
+        "CountryRestricted",
+        "NoThirdPartyAI",
+        "NoCloudStorage"
+      ],
+      "x-enum": "ResidencyRuleCode",
+      "x-source": "config"
+    },
+    "NameEN": {
+      "type": "string",
+      "x-source": "config",
+      "x-bilingual-pair": "NameAR"
+    },
+    "NameAR": {
+      "type": "string",
+      "x-source": "config",
+      "x-language": "ar"
+    },
+    "AllowedRegions": {
+      "type": "string",
+      "x-source": "config",
+      "description": "Comma-separated region or country codes where storage is permitted."
+    },
+    "BlocksProductionUpload": {
+      "type": "boolean",
+      "x-source": "config",
+      "description": "TRUE blocks production upload for the affected project only, not the system (D-12)."
+    },
+    "BlocksThirdPartyAI": {
+      "type": "boolean",
+      "x-source": "config",
+      "description": "TRUE disables AI analysis for the affected project."
+    },
+    "SourceClauseReference": {
+      "type": "string",
+      "x-source": "user",
+      "description": "Where in the contract the restriction comes from. No contract text is stored."
+    },
+    "IsActive": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "Soft delete. Rows are never hard-deleted; history is evidence."
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "ResidencyRequirementID",
+    "RuleCode",
+    "NameEN",
+    "NameAR",
+    "BlocksProductionUpload",
+    "BlocksThirdPartyAI",
+    "IsActive",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

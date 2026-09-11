@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/Contacts.schema.json",
+  "title": "Contacts",
+  "description": "Client contacts. Only an authorised recipient may receive a released document.",
+  "x-description-ar": "جهات الاتصال لدى العملاء",
+  "x-category": "master",
+  "x-scope": "global",
+  "x-sensitivity": "personal",
+  "x-built-in-phase": 1,
+  "x-primary-key": "ContactID",
+  "x-content-hash-fields": [],
+  "x-unique-together": [],
+  "x-at-least-one": [
+    [
+      "NameEN",
+      "NameAR"
+    ]
+  ],
+  "x-notes": [],
+  "type": "object",
+  "properties": {
+    "ContactID": {
+      "type": "string"
+    },
+    "ClientID": {
+      "type": "string",
+      "x-references": "Clients.ClientID",
+      "x-source": "user",
+      "description": "References Clients.ClientID"
+    },
+    "NameEN": {
+      "type": "string",
+      "x-source": "user",
+      "x-bilingual-pair": "NameAR"
+    },
+    "NameAR": {
+      "type": "string",
+      "x-source": "user",
+      "x-language": "ar"
+    },
+    "PositionEN": {
+      "type": "string",
+      "x-source": "user",
+      "x-bilingual-pair": "PositionAR"
+    },
+    "PositionAR": {
+      "type": "string",
+      "x-source": "user",
+      "x-language": "ar"
+    },
+    "Email": {
+      "type": "string",
+      "x-sensitivity": "personal",
+      "x-source": "user"
+    },
+    "Mobile": {
+      "type": "string",
+      "x-sensitivity": "personal",
+      "x-source": "user"
+    },
+    "PreferredLanguage": {
+      "type": "string",
+      "enum": [
+        "en",
+        "ar"
+      ],
+      "x-enum": "Language",
+      "x-source": "user"
+    },
+    "IsAuthorizedRecipient": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "Only TRUE contacts may appear in a release recipient snapshot."
+    },
+    "Status": {
+      "type": "string",
+      "x-source": "user",
+      "description": "Validation: Active|Inactive"
+    },
+    "IsActive": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "Soft delete. Rows are never hard-deleted; history is evidence."
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "ContactID",
+    "ClientID",
+    "PreferredLanguage",
+    "IsAuthorizedRecipient",
+    "Status",
+    "IsActive",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/IntegrationJobs.schema.json",
+  "title": "IntegrationJobs",
+  "description": "One row per external call attempt, with idempotency and failure classification.",
+  "x-description-ar": "سجل عمليات التكامل الخارجي",
+  "x-category": "control",
+  "x-scope": "global",
+  "x-sensitivity": "internal",
+  "x-built-in-phase": 3,
+  "x-primary-key": "IntegrationJobID",
+  "x-content-hash-fields": [],
+  "x-unique-together": [
+    [
+      "IdempotencyKey",
+      "AttemptNumber"
+    ]
+  ],
+  "x-at-least-one": [],
+  "x-notes": [],
+  "type": "object",
+  "properties": {
+    "IntegrationJobID": {
+      "type": "string"
+    },
+    "SystemName": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "OperationName": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "IdempotencyKey": {
+      "type": "string",
+      "x-source": "system",
+      "description": "{Scenario}:{EntityType}:{EntityID}:{TargetState}. Claimed BEFORE any side effect."
+    },
+    "CorrelationID": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "EntityType": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "EntityID": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "ProjectID": {
+      "type": "string",
+      "x-references": "Projects.ProjectID",
+      "x-source": "system",
+      "description": "References Projects.ProjectID"
+    },
+    "AttemptNumber": {
+      "type": "integer",
+      "x-source": "system"
+    },
+    "StartedAt": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "FinishedAt": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "Status": {
+      "type": "string",
+      "enum": [
+        "Pending",
+        "InProgress",
+        "Succeeded",
+        "Failed",
+        "DeadLettered",
+        "DuplicateSuppressed"
+      ],
+      "x-enum": "IntegrationStatus",
+      "x-source": "system"
+    },
+    "SanitizedRequestSummary": {
+      "type": "string",
+      "x-source": "system",
+      "description": "Summary only. Never a payload, a credential or a token."
+    },
+    "SanitizedResponseSummary": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "ErrorClass": {
+      "type": "string",
+      "enum": [
+        "Validation",
+        "Authentication",
+        "Authorization",
+        "RateLimit",
+        "Network",
+        "ProviderUnavailable",
+        "FileMissing",
+        "SchemaMismatch",
+        "Duplicate",
+        "Conflict",
+        "Unknown"
+      ],
+      "x-enum": "FailureClass",
+      "x-source": "system"
+    },
+    "ErrorCode": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "RetryAfter": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "IsRetriable": {
+      "type": "boolean",
+      "x-source": "system",
+      "description": "Derived from ErrorClass. Validation and authorisation failures are never retried."
+    }
+  },
+  "required": [
+    "IntegrationJobID",
+    "SystemName",
+    "OperationName",
+    "IdempotencyKey",
+    "CorrelationID",
+    "EntityType",
+    "EntityID",
+    "AttemptNumber",
+    "StartedAt",
+    "Status",
+    "IsRetriable"
+  ],
+  "additionalProperties": false
+}

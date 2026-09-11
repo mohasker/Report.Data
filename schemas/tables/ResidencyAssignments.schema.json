@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/ResidencyAssignments.schema.json",
+  "title": "ResidencyAssignments",
+  "description": "Binds a residency requirement to a client, contract or project (D-12).",
+  "x-description-ar": "ربط متطلبات الإقامة بالبيانات",
+  "x-category": "master",
+  "x-scope": "project",
+  "x-sensitivity": "internal",
+  "x-built-in-phase": 1,
+  "x-primary-key": "ResidencyAssignmentID",
+  "x-content-hash-fields": [],
+  "x-unique-together": [],
+  "x-at-least-one": [],
+  "x-notes": [],
+  "type": "object",
+  "properties": {
+    "ResidencyAssignmentID": {
+      "type": "string"
+    },
+    "ResidencyRequirementID": {
+      "type": "string",
+      "x-references": "ResidencyRequirements.ResidencyRequirementID",
+      "x-source": "user",
+      "description": "References ResidencyRequirements.ResidencyRequirementID"
+    },
+    "AppliesToKind": {
+      "type": "string",
+      "x-source": "user",
+      "description": "Validation: Client|Contract|Project"
+    },
+    "ClientID": {
+      "type": "string",
+      "x-references": "Clients.ClientID",
+      "x-source": "user",
+      "description": "References Clients.ClientID"
+    },
+    "ContractID": {
+      "type": "string",
+      "x-references": "Contracts.ContractID",
+      "x-source": "user",
+      "description": "References Contracts.ContractID"
+    },
+    "ProjectID": {
+      "type": "string",
+      "x-references": "Projects.ProjectID",
+      "x-source": "user",
+      "description": "References Projects.ProjectID"
+    },
+    "EffectiveFrom": {
+      "type": "string",
+      "x-source": "user"
+    },
+    "EffectiveTo": {
+      "type": "string",
+      "x-source": "user"
+    },
+    "VerifiedFromContract": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "FALSE means the contract has not yet been reviewed — production upload stays blocked."
+    },
+    "IsActive": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "Soft delete. Rows are never hard-deleted; history is evidence."
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "ResidencyAssignmentID",
+    "ResidencyRequirementID",
+    "AppliesToKind",
+    "EffectiveFrom",
+    "VerifiedFromContract",
+    "IsActive",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

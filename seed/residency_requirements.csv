@@ -1,0 +1,5 @@
+ResidencyRequirementID,RuleCode,NameEN,NameAR,AllowedRegions,BlocksProductionUpload,BlocksThirdPartyAI,SourceClauseReference,IsActive
+RES-0001,NoRestriction,No restriction recorded,بدون قيود مسجلة,,FALSE,FALSE,,TRUE
+RES-0002,NoThirdPartyAI,No third-party AI processing,بدون معالجة ذكاء اصطناعي خارجية,,FALSE,TRUE,SYNTHETIC-CLAUSE-REF,TRUE
+RES-0003,CountryRestricted,Data must remain in the contracting country,يجب بقاء البيانات داخل دولة التعاقد,QA,TRUE,TRUE,SYNTHETIC-CLAUSE-REF,TRUE
+RES-0004,RegionRestricted,Data must remain in an approved region,يجب بقاء البيانات داخل منطقة معتمدة,QA;AE;SA,FALSE,FALSE,SYNTHETIC-CLAUSE-REF,TRUE

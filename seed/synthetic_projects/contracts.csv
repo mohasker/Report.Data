@@ -1,0 +1,4 @@
+ContractID,LegalEntityID,ClientID,ProjectID,ContractNumber,EffectiveDate,ExpiryDate,Currency,PaymentTermsDays,RetentionPercent,AdvanceAmount,AdvanceRecoveryPercent,TaxRuleID,BillingFrequency,BillingMethod,ContractValue,Status,Version,IsActive
+CNT-0001,LE-0001,CLI-0001,PRJ-0001,SYN-CNT-0001,2026-01-01,2026-12-31,QAR,60,5.0000,0.000,0.0000,TAX-PLACEHOLDER-001,Monthly,MeasuredBOQ,500000.000,Active,1,TRUE
+CNT-0002,LE-0001,CLI-0002,PRJ-0002,SYN-CNT-0002,2026-02-01,2027-01-31,QAR,45,10.0000,60000.000,20.0000,TAX-PLACEHOLDER-001,Monthly,MonthlyFixed,720000.000,Active,1,TRUE
+CNT-0003,LE-0001,CLI-0003,PRJ-0003,SYN-CNT-0003,2026-03-01,2026-06-30,QAR,30,0.0000,0.000,0.0000,TAX-PLACEHOLDER-001,OnCompletion,OnCompletion,85000.000,Active,1,TRUE

@@ -1,0 +1,13 @@
+UserID,Email,FullNameEN,FullNameAR,Mobile,RoleID,EmployeeID,DefaultProjectID,Language,IsActive
+USR-0001,gm@synthetic.example,Synthetic General Manager,المدير العام الاصطناعي,+974 31000001,ROLE-GM,SYN-EMP-001,,en,TRUE
+USR-0002,admin@synthetic.example,Synthetic System Administrator,مدير النظام الاصطناعي,+974 31000002,ROLE-SYSADMIN,SYN-EMP-002,,en,TRUE
+USR-0003,reviewer1@synthetic.example,Synthetic Technical Reviewer,المراجع الفني الاصطناعي,+974 31000003,ROLE-TECHREV,SYN-EMP-003,PRJ-0001,en,TRUE
+USR-0004,pm1@synthetic.example,Synthetic Project Manager,مدير المشروع الاصطناعي,+974 31000004,ROLE-PM,SYN-EMP-004,PRJ-0001,en,TRUE
+USR-0005,sup1@synthetic.example,Synthetic Supervisor One,مشرف اصطناعي ١,+974 31000005,ROLE-SUPERVISOR,SYN-EMP-005,PRJ-0001,ar,TRUE
+USR-0006,sup2@synthetic.example,Synthetic Supervisor Two,مشرف اصطناعي ٢,+974 31000006,ROLE-SUPERVISOR,SYN-EMP-006,PRJ-0002,ar,TRUE
+USR-0007,sup3@synthetic.example,Synthetic Supervisor Three,مشرف اصطناعي ٣,+974 31000007,ROLE-SUPERVISOR,SYN-EMP-007,PRJ-0002,ar,TRUE
+USR-0008,field1@synthetic.example,Synthetic Field User,مستخدم ميداني اصطناعي,+974 31000008,ROLE-FIELD,SYN-EMP-008,PRJ-0001,ar,TRUE
+USR-0009,finance@synthetic.example,Synthetic Finance Reviewer,المراجع المالي الاصطناعي,+974 31000009,ROLE-FINREV,SYN-EMP-009,,en,TRUE
+USR-0010,auditor@synthetic.example,Synthetic Auditor,المدقق الاصطناعي,+974 31000010,ROLE-AUDITOR,SYN-EMP-010,,en,TRUE
+USR-0011,unassigned@synthetic.example,Synthetic Unassigned User,مستخدم غير مسند,+974 31000011,ROLE-FIELD,SYN-EMP-011,,en,TRUE
+USR-0012,sup4@synthetic.example,Synthetic Supervisor Four (expired),مشرف اصطناعي ٤ منتهي,+974 31000012,ROLE-SUPERVISOR,SYN-EMP-012,,en,TRUE

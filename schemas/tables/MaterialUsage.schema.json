@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/MaterialUsage.schema.json",
+  "title": "MaterialUsage",
+  "description": "Material consumed against a visit activity. Never creates an accounting transaction (spec 5.12).",
+  "x-description-ar": "استهلاك المواد",
+  "x-category": "operational",
+  "x-scope": "project",
+  "x-sensitivity": "internal",
+  "x-built-in-phase": 5,
+  "x-primary-key": "MaterialUsageID",
+  "x-content-hash-fields": [],
+  "x-unique-together": [],
+  "x-at-least-one": [],
+  "x-notes": [],
+  "type": "object",
+  "properties": {
+    "MaterialUsageID": {
+      "type": "string"
+    },
+    "VisitActivityID": {
+      "type": "string",
+      "x-references": "VisitActivities.VisitActivityID",
+      "x-source": "user",
+      "description": "References VisitActivities.VisitActivityID"
+    },
+    "ProjectID": {
+      "type": "string",
+      "x-references": "Projects.ProjectID",
+      "x-source": "system",
+      "description": "References Projects.ProjectID"
+    },
+    "MaterialID": {
+      "type": "string",
+      "x-references": "Materials.MaterialID",
+      "x-source": "user",
+      "description": "References Materials.MaterialID"
+    },
+    "Quantity": {
+      "type": "string",
+      "x-decimal-scale": 3,
+      "x-storage": "decimal string; never a float (spec 11)",
+      "x-source": "user",
+      "description": "Validation: >= 0"
+    },
+    "UnitID": {
+      "type": "string",
+      "x-references": "Units.UnitID",
+      "x-source": "user",
+      "description": "References Units.UnitID"
+    },
+    "Remarks": {
+      "type": "string",
+      "x-source": "user"
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "MaterialUsageID",
+    "VisitActivityID",
+    "ProjectID",
+    "MaterialID",
+    "Quantity",
+    "UnitID",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/VisitActivities.schema.json",
+  "title": "VisitActivities",
+  "description": "What was actually done during a visit. One row per activity.",
+  "x-description-ar": "أنشطة الزيارة",
+  "x-category": "operational",
+  "x-scope": "project",
+  "x-sensitivity": "confidential",
+  "x-built-in-phase": 1,
+  "x-primary-key": "VisitActivityID",
+  "x-content-hash-fields": [
+    "VisitID",
+    "ActivityTypeID",
+    "DescriptionEN",
+    "DescriptionAR",
+    "Quantity",
+    "UnitID",
+    "PercentComplete",
+    "SupervisorConfirmation"
+  ],
+  "x-unique-together": [],
+  "x-at-least-one": [],
+  "x-notes": [],
+  "type": "object",
+  "properties": {
+    "VisitActivityID": {
+      "type": "string"
+    },
+    "VisitID": {
+      "type": "string",
+      "x-references": "SiteVisits.VisitID",
+      "x-source": "system",
+      "x-in-content-hash": true,
+      "description": "References SiteVisits.VisitID"
+    },
+    "ProjectID": {
+      "type": "string",
+      "x-references": "Projects.ProjectID",
+      "x-source": "system",
+      "description": "Denormalised for row-level security; must equal the parent visit's project. References Projects.ProjectID"
+    },
+    "ActivityTypeID": {
+      "type": "string",
+      "x-references": "ActivityTypes.ActivityTypeID",
+      "x-source": "user",
+      "x-in-content-hash": true,
+      "description": "Validation: Must be permitted for the project by ProjectActivityRules References ActivityTypes.ActivityTypeID"
+    },
+    "DescriptionEN": {
+      "type": "string",
+      "x-source": "user",
+      "x-bilingual-pair": "DescriptionAR",
+      "x-in-content-hash": true
+    },
+    "DescriptionAR": {
+      "type": "string",
+      "x-source": "user",
+      "x-language": "ar",
+      "x-in-content-hash": true
+    },
+    "Quantity": {
+      "type": "string",
+      "x-decimal-scale": 3,
+      "x-storage": "decimal string; never a float (spec 11)",
+      "x-source": "user",
+      "x-in-content-hash": true,
+      "description": "Validation: Numeric, >= 0, present only where the effective rule requires it"
+    },
+    "UnitID": {
+      "type": "string",
+      "x-references": "Units.UnitID",
+      "x-source": "user",
+      "x-in-content-hash": true,
+      "description": "References Units.UnitID"
+    },
+    "PercentComplete": {
+      "type": "integer",
+      "x-source": "user",
+      "x-in-content-hash": true,
+      "description": "Entered by a human. NEVER inferred by AI (spec 5.9, ADR-0004). Validation: 0-100"
+    },
+    "EvidenceStatus": {
+      "type": "string",
+      "x-source": "system",
+      "description": "Computed from the effective evidence rule, not typed. Validation: Incomplete|Complete|Waived"
+    },
+    "SupervisorConfirmation": {
+      "type": "boolean",
+      "x-source": "user",
+      "x-in-content-hash": true,
+      "description": "An authorised human confirmation. One of the only two bases for a completion statement, the other being approved evidence (operating rule 11)."
+    },
+    "TechnicalReviewerComment": {
+      "type": "string",
+      "x-source": "user"
+    },
+    "Status": {
+      "type": "string",
+      "enum": [
+        "Draft",
+        "Submitted",
+        "UnderReview",
+        "Approved",
+        "Rejected",
+        "CorrectionRequired",
+        "Cancelled"
+      ],
+      "x-enum": "VisitActivityStatus",
+      "x-source": "system"
+    },
+    "EntityVersion": {
+      "type": "integer",
+      "x-source": "system",
+      "description": "Incremented on every material change. Referenced by Approvals."
+    },
+    "ContentHash": {
+      "type": "string",
+      "x-source": "system",
+      "description": "SHA-256 over the canonical serialisation of the fields listed in content_hash_fields."
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "VisitActivityID",
+    "VisitID",
+    "ProjectID",
+    "ActivityTypeID",
+    "EvidenceStatus",
+    "SupervisorConfirmation",
+    "Status",
+    "EntityVersion",
+    "ContentHash",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

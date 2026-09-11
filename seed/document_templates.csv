@@ -1,0 +1,5 @@
+TemplateID,DocumentTypeCode,TemplateNameEN,TemplateNameAR,LanguageCode,TextDirection,ProjectID,DisciplineID,LegalEntityID,StorageFileKey,Version,EffectiveFrom,EffectiveTo,ApprovedByUserID,Status,IsActive
+TPL-0001,MonthlyTechnicalReport,Monthly technical report (English),التقرير الفني الشهري (إنجليزي),en,LTR,,,LE-0001,,1,2026-01-01,,,Draft,TRUE
+TPL-0002,MonthlyTechnicalReport,Monthly technical report (Arabic),التقرير الفني الشهري (عربي),ar,RTL,,,LE-0001,,1,2026-01-01,,,Draft,TRUE
+TPL-0003,MonthlyTechnicalReport,Landscape monthly report (English),تقرير تنسيق الحدائق الشهري (إنجليزي),en,LTR,PRJ-0001,DIS-LAND,LE-0001,,1,2026-01-01,,,Draft,TRUE
+TPL-0004,CompletionCertificate,Completion certificate (English),شهادة الإنجاز (إنجليزي),en,LTR,,,LE-0001,,1,2026-01-01,,,Draft,TRUE

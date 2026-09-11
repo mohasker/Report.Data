@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/DataClassifications.schema.json",
+  "title": "DataClassifications",
+  "description": "Sensitivity classes applied to records and files, driving residency and sharing rules (D-12).",
+  "x-description-ar": "تصنيفات حساسية البيانات",
+  "x-category": "master",
+  "x-scope": "global",
+  "x-sensitivity": "internal",
+  "x-built-in-phase": 1,
+  "x-primary-key": "ClassificationCode",
+  "x-content-hash-fields": [],
+  "x-unique-together": [],
+  "x-at-least-one": [],
+  "x-notes": [],
+  "type": "object",
+  "properties": {
+    "ClassificationCode": {
+      "type": "string",
+      "enum": [
+        "Public",
+        "Internal",
+        "ClientConfidential",
+        "Personal",
+        "Financial",
+        "GovernmentRestricted"
+      ],
+      "x-enum": "DataClassificationCode"
+    },
+    "NameEN": {
+      "type": "string",
+      "x-source": "config",
+      "x-bilingual-pair": "NameAR"
+    },
+    "NameAR": {
+      "type": "string",
+      "x-source": "config",
+      "x-language": "ar"
+    },
+    "Description": {
+      "type": "string",
+      "x-source": "config"
+    },
+    "MayLeaveTenant": {
+      "type": "boolean",
+      "x-source": "config",
+      "description": "Whether data of this class may be sent to any third-party processor."
+    },
+    "MayBeSharedExternally": {
+      "type": "boolean",
+      "x-source": "config"
+    },
+    "DefaultRetentionDays": {
+      "type": "integer",
+      "x-source": "config",
+      "description": "Expiry flags for review. Nothing is ever auto-deleted (C-10)."
+    },
+    "IsActive": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "Soft delete. Rows are never hard-deleted; history is evidence."
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "ClassificationCode",
+    "NameEN",
+    "NameAR",
+    "Description",
+    "MayLeaveTenant",
+    "MayBeSharedExternally",
+    "IsActive",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

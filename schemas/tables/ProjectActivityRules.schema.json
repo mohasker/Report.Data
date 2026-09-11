@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/ProjectActivityRules.schema.json",
+  "title": "ProjectActivityRules",
+  "description": "Per-project overrides of the global activity and evidence rules (D-15 item 4). A project that needs a different rule gets a row, never a code change.",
+  "x-description-ar": "قواعد الأنشطة والأدلة الخاصة بالمشروع",
+  "x-category": "master",
+  "x-scope": "project",
+  "x-sensitivity": "internal",
+  "x-built-in-phase": 1,
+  "x-primary-key": "ProjectActivityRuleID",
+  "x-content-hash-fields": [],
+  "x-unique-together": [
+    [
+      "ProjectID",
+      "ActivityTypeID"
+    ]
+  ],
+  "x-at-least-one": [],
+  "x-notes": [],
+  "type": "object",
+  "properties": {
+    "ProjectActivityRuleID": {
+      "type": "string"
+    },
+    "ProjectID": {
+      "type": "string",
+      "x-references": "Projects.ProjectID",
+      "x-source": "user",
+      "description": "References Projects.ProjectID"
+    },
+    "ActivityTypeID": {
+      "type": "string",
+      "x-references": "ActivityTypes.ActivityTypeID",
+      "x-source": "user",
+      "description": "References ActivityTypes.ActivityTypeID"
+    },
+    "IsPermitted": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "FALSE removes the activity from this project's form without deleting history."
+    },
+    "RequiresBeforePhoto": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "Null inherits the global rule."
+    },
+    "RequiresAfterPhoto": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "Null inherits the global rule."
+    },
+    "RequiresQuantity": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "Null inherits the global rule."
+    },
+    "QuantityUnitID": {
+      "type": "string",
+      "x-references": "Units.UnitID",
+      "x-source": "user",
+      "description": "References Units.UnitID"
+    },
+    "MinPhotos": {
+      "type": "integer",
+      "x-source": "user"
+    },
+    "RequiresCaption": {
+      "type": "boolean",
+      "x-source": "user"
+    },
+    "BOQItemHint": {
+      "type": "string",
+      "x-sensitivity": "financial",
+      "x-source": "user",
+      "description": "Optional link to the billing item, used from Phase 6."
+    },
+    "IsActive": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "Soft delete. Rows are never hard-deleted; history is evidence."
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "ProjectActivityRuleID",
+    "ProjectID",
+    "ActivityTypeID",
+    "IsPermitted",
+    "IsActive",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

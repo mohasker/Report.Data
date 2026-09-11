@@ -1,0 +1,2 @@
+TaxRuleID,TaxRuleCode,NameEN,NameAR,TreatmentLabel,RatePercent,AppliesToCountry,EffectiveFrom,EffectiveTo,ConfirmedByAccountant,ConfirmationReference,IsActive
+TAX-PLACEHOLDER-001,PENDING_ACCOUNTANT_CONFIRMATION,Pending accountant confirmation,بانتظار تأكيد المحاسب,PENDING_ACCOUNTANT_CONFIRMATION,,QA,2026-01-01,,FALSE,,TRUE

@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/EntityVersions.schema.json",
+  "title": "EntityVersions",
+  "description": "Immutable version history of hashable entities. Supports proving what a decision applied to.",
+  "x-description-ar": "سجل نسخ السجلات",
+  "x-category": "control",
+  "x-scope": "project",
+  "x-sensitivity": "internal",
+  "x-built-in-phase": 1,
+  "x-primary-key": "VersionID",
+  "x-content-hash-fields": [],
+  "x-unique-together": [
+    [
+      "EntityType",
+      "EntityID",
+      "VersionNumber"
+    ]
+  ],
+  "x-at-least-one": [],
+  "x-notes": [],
+  "type": "object",
+  "properties": {
+    "VersionID": {
+      "type": "string"
+    },
+    "EntityType": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "EntityID": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "ProjectID": {
+      "type": "string",
+      "x-references": "Projects.ProjectID",
+      "x-source": "system",
+      "description": "References Projects.ProjectID"
+    },
+    "VersionNumber": {
+      "type": "integer",
+      "x-source": "system"
+    },
+    "ContentHash": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "CanonicalFieldSetVersion": {
+      "type": "string",
+      "x-source": "system",
+      "description": "Which canonical field list produced this hash. Changing the list is a migration."
+    },
+    "ChangedByUserID": {
+      "type": "string",
+      "x-references": "Users.UserID",
+      "x-source": "system",
+      "description": "References Users.UserID"
+    },
+    "ChangedAt": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "ChangeSummary": {
+      "type": "string",
+      "x-source": "system",
+      "description": "Which hashed fields changed. Never the full payload."
+    },
+    "InvalidatedApprovalIDs": {
+      "type": "string",
+      "x-source": "system",
+      "description": "Approvals voided by this change, recorded at the moment it happened."
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "VersionID",
+    "EntityType",
+    "EntityID",
+    "VersionNumber",
+    "ContentHash",
+    "CanonicalFieldSetVersion",
+    "ChangedByUserID",
+    "ChangedAt",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

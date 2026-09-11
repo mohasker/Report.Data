@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/Clients.schema.json",
+  "title": "Clients",
+  "description": "Clients the company works for. Bilingual names preserved exactly (D-11).",
+  "x-description-ar": "العملاء",
+  "x-category": "master",
+  "x-scope": "global",
+  "x-sensitivity": "confidential",
+  "x-built-in-phase": 1,
+  "x-primary-key": "ClientID",
+  "x-content-hash-fields": [],
+  "x-unique-together": [],
+  "x-at-least-one": [
+    [
+      "LegalNameEN",
+      "LegalNameAR"
+    ],
+    [
+      "DisplayNameEN",
+      "DisplayNameAR"
+    ]
+  ],
+  "x-notes": [
+    "A client registered only in Arabic is normal in Qatar. Forcing an English legal name would invite a transliteration that is not the client's legal name (D-11)."
+  ],
+  "type": "object",
+  "properties": {
+    "ClientID": {
+      "type": "string"
+    },
+    "LegalNameEN": {
+      "type": "string",
+      "x-source": "user",
+      "x-bilingual-pair": "LegalNameAR",
+      "description": "Not required: a client may be registered only in Arabic. At least one legal name must be present (D-11)."
+    },
+    "LegalNameAR": {
+      "type": "string",
+      "x-source": "user",
+      "x-language": "ar",
+      "description": "Some clients are known only by an Arabic legal name; it is stored exactly as given and is never transliterated to fill an English column."
+    },
+    "DisplayNameEN": {
+      "type": "string",
+      "x-source": "user",
+      "x-bilingual-pair": "DisplayNameAR"
+    },
+    "DisplayNameAR": {
+      "type": "string",
+      "x-source": "user",
+      "x-language": "ar"
+    },
+    "ClientKind": {
+      "type": "string",
+      "x-source": "user",
+      "description": "Validation: Government|SemiGovernment|Private|MainContractor"
+    },
+    "BillingAddressEN": {
+      "type": "string",
+      "x-sensitivity": "financial",
+      "x-source": "user",
+      "x-bilingual-pair": "BillingAddressAR"
+    },
+    "BillingAddressAR": {
+      "type": "string",
+      "x-sensitivity": "financial",
+      "x-source": "user",
+      "x-language": "ar"
+    },
+    "TaxRegistrationNumber": {
+      "type": "string",
+      "x-sensitivity": "financial",
+      "x-source": "user",
+      "description": "Hidden from field roles (spec 7.4)."
+    },
+    "PrimaryContactID": {
+      "type": "string",
+      "x-references": "Contacts.ContactID",
+      "x-source": "user",
+      "description": "References Contacts.ContactID"
+    },
+    "PaymentTermsDays": {
+      "type": "integer",
+      "x-sensitivity": "financial",
+      "x-source": "user"
+    },
+    "Currency": {
+      "type": "string",
+      "x-sensitivity": "financial",
+      "x-source": "user",
+      "description": "Validation: ISO 4217"
+    },
+    "DefaultClassificationCode": {
+      "type": "string",
+      "enum": [
+        "Public",
+        "Internal",
+        "ClientConfidential",
+        "Personal",
+        "Financial",
+        "GovernmentRestricted"
+      ],
+      "x-enum": "DataClassificationCode",
+      "x-source": "user",
+      "description": "Baseline classification for this client's records (D-12)."
+    },
+    "QuickBooksCustomerID": {
+      "type": "string",
+      "x-sensitivity": "financial",
+      "x-source": "integration",
+      "description": "Immutable accounting identifier. Never name-matched (spec 8 scenario 10)."
+    },
+    "Status": {
+      "type": "string",
+      "x-source": "user",
+      "description": "Validation: Active|Suspended|Closed"
+    },
+    "IsActive": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "Soft delete. Rows are never hard-deleted; history is evidence."
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "ClientID",
+    "ClientKind",
+    "Status",
+    "IsActive",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

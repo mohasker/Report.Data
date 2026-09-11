@@ -1,0 +1,1815 @@
+#!/usr/bin/env python3
+"""Author the canonical Phase 1 model and write model/model.json.
+
+model/model.json is the single source of truth for Phase 1. The table schemas and
+the data dictionary are generated from it, so they cannot drift apart. This script
+is the authoring convenience: it expresses the model compactly and emits the JSON.
+
+Run:  python3 tools/build_model.py
+"""
+import json, os, sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+MODEL_VERSION = "1.0.0"
+
+# --------------------------------------------------------------------------
+# helpers
+# --------------------------------------------------------------------------
+TABLES = {}
+ENUMS = {}
+
+
+def enum(name, description, values):
+    """values: list of (code, label_en, label_ar, description)"""
+    ENUMS[name] = {
+        "description": description,
+        "values": [
+            {"code": c, "label_en": e, "label_ar": a, "description": d}
+            for (c, e, a, d) in values
+        ],
+    }
+
+
+def col(name, type_, req=False, **kw):
+    c = {"name": name, "type": type_, "required": req}
+    c.update(kw)
+    return c
+
+
+def table(name, category, scope, sensitivity, phase, desc_en, desc_ar, pk, columns,
+          content_hash=None, notes=None, unique_together=None, at_least_one=None):
+    TABLES[name] = {
+        "name": name,
+        "category": category,          # master | operational | document | financial | control | vocabulary
+        "scope": scope,                # global | project | entity
+        "sensitivity": sensitivity,    # internal | confidential | financial | personal
+        "phase": phase,                # phase in which the table is BUILT (designed now regardless)
+        "description_en": desc_en,
+        "description_ar": desc_ar,
+        "primary_key": pk,
+        "columns": columns,
+        "content_hash_fields": content_hash or [],
+        "unique_together": unique_together or [],
+        "at_least_one": at_least_one or [],
+        "notes": notes or [],
+    }
+
+
+AUDIT = [
+    col("CreatedAt", "datetime", True, src="system", note="UTC. Set once on insert."),
+    col("CreatedBy", "email", True, src="system", note="USEREMAIL() or the service identity."),
+    col("UpdatedAt", "datetime", True, src="system", note="UTC. Excluded from ContentHash."),
+    col("UpdatedBy", "email", True, src="system"),
+]
+ACTIVE = [col("IsActive", "bool", True, default="TRUE", src="user",
+              note="Soft delete. Rows are never hard-deleted; history is evidence.")]
+VERSIONED = [
+    col("EntityVersion", "int", True, default="1", src="system",
+        note="Incremented on every material change. Referenced by Approvals."),
+    col("ContentHash", "checksum", True, src="system",
+        note="SHA-256 over the canonical serialisation of the fields listed in content_hash_fields."),
+]
+
+# --------------------------------------------------------------------------
+# enums
+# --------------------------------------------------------------------------
+enum("Language", "Interface and document languages supported from Phase 1 (D-11).", [
+    ("en", "English", "الإنجليزية", "Left-to-right. First generated-report language."),
+    ("ar", "Arabic", "العربية", "Right-to-left. Capability is architectural from Phase 1."),
+])
+
+enum("ProjectStatus", "Lifecycle of a project. Adding or activating a project is configuration only (D-01).", [
+    ("Draft", "Draft", "مسودة", "Being configured. Not visible to field users."),
+    ("Active", "Active", "نشط", "Accepting site visits."),
+    ("Suspended", "Suspended", "موقوف", "No new visits; existing records remain readable."),
+    ("Completed", "Completed", "منجز", "Work finished; reporting may continue until closeout."),
+    ("Archived", "Archived", "مؤرشف", "Read-only. Retained per the residency and retention rules."),
+])
+
+enum("ReportingFrequency", "Per-project reporting cadence.", [
+    ("Daily", "Daily", "يومي", ""),
+    ("Weekly", "Weekly", "أسبوعي", ""),
+    ("Monthly", "Monthly", "شهري", "MVP default."),
+    ("Quarterly", "Quarterly", "ربع سنوي", ""),
+    ("OnCompletion", "On completion", "عند الإنجاز", "One-off work orders."),
+    ("OnDemand", "On demand", "عند الطلب", ""),
+])
+
+enum("BillingMethod", "How a project is billed. Configuration, never logic.", [
+    ("MonthlyFixed", "Monthly fixed", "مقطوع شهري", "Recurring maintenance contract."),
+    ("MeasuredBOQ", "Measured against BOQ", "بالكميات المنفذة", "Quantities certified per period."),
+    ("LumpSumMilestone", "Lump sum by milestone", "مقطوع بالمراحل", ""),
+    ("OnCompletion", "On completion", "عند الإنجاز", "One-off work order."),
+    ("TimeAndMaterial", "Time and material", "بالوقت والمواد", ""),
+])
+
+enum("WorkflowStatus", "SiteVisit lifecycle. Transitions are restricted (see transitions).", [
+    ("Draft", "Draft", "مسودة", "Editable by the submitter. Not visible to reviewers."),
+    ("Submitted", "Submitted", "مُرسل", "Handed to server-side validation."),
+    ("ValidationFailed", "Validation failed", "فشل التحقق", "Specific correctable errors recorded."),
+    ("UnderTechnicalReview", "Under technical review", "قيد المراجعة الفنية", "In a reviewer queue."),
+    ("CorrectionRequired", "Correction required", "يتطلب تصحيح", "Returned to the submitter with a reason."),
+    ("TechnicallyApproved", "Technically approved", "معتمد فنياً", "Evidence may now be used in a report."),
+    ("ReadyForReport", "Ready for report", "جاهز للتقرير", "Eligible for a document job snapshot."),
+    ("IncludedInDraft", "Included in draft", "مُدرج في مسودة", "Frozen into at least one document snapshot."),
+    ("Released", "Released", "صادر", "Part of a released document."),
+    ("Archived", "Archived", "مؤرشف", "Read-only."),
+    ("Cancelled", "Cancelled", "ملغي", "Cancelled with a recorded reason. Never deleted."),
+])
+
+enum("VisitActivityStatus", "Activity-level lifecycle inside a visit.", [
+    ("Draft", "Draft", "مسودة", ""),
+    ("Submitted", "Submitted", "مُرسل", ""),
+    ("UnderReview", "Under review", "قيد المراجعة", ""),
+    ("Approved", "Approved", "معتمد", "Approved by the technical reviewer."),
+    ("Rejected", "Rejected", "مرفوض", "Excluded from reporting, retained as a record."),
+    ("CorrectionRequired", "Correction required", "يتطلب تصحيح", ""),
+    ("Cancelled", "Cancelled", "ملغي", ""),
+])
+
+enum("EvidenceStage", "What a photograph is evidence of (spec 5.10).", [
+    ("Before", "Before", "قبل", ""),
+    ("During", "During", "أثناء", ""),
+    ("After", "After", "بعد", ""),
+    ("Observation", "Observation", "ملاحظة", "Caption mandatory."),
+    ("Snag", "Snag", "ملاحظة عدم مطابقة", "Caption mandatory."),
+    ("Material", "Material", "مواد", "Caption mandatory."),
+    ("Equipment", "Equipment", "معدات", ""),
+    ("Safety", "Safety", "السلامة", "Caption mandatory."),
+    ("Other", "Other", "أخرى", ""),
+])
+
+enum("ReviewerDecision", "Per-photograph reviewer decision. Only a human sets this (D-06).", [
+    ("Pending", "Pending", "قيد الانتظار", "Default. Never set by AI."),
+    ("Approved", "Approved", "معتمد", "May appear in an official report."),
+    ("Rejected", "Rejected", "مرفوض", "Retained as a record, excluded from reporting."),
+    ("Excluded", "Excluded", "مستبعد", "Valid evidence deliberately left out of this report."),
+])
+
+enum("AIAnalysisStatus", "State of the advisory AI analysis for one photograph.", [
+    ("NotRequested", "Not requested", "لم يُطلب", ""),
+    ("Queued", "Queued", "في الطابور", ""),
+    ("Completed", "Completed", "مكتمل", "Advisory observation stored."),
+    ("Failed", "Failed", "فشل", "Recorded with a failure class. Never blocks review."),
+    ("SchemaInvalid", "Schema invalid", "مخرجات غير مطابقة", "Response rejected before storage."),
+    ("Skipped", "Skipped", "متخطى", "Ineligible (for example a duplicate)."),
+    ("Disabled", "Disabled for project", "معطل للمشروع", "Residency or contract rule (D-12)."),
+])
+
+enum("SnagSeverity", "Snag severity.", [
+    ("Low", "Low", "منخفضة", ""), ("Medium", "Medium", "متوسطة", ""),
+    ("High", "High", "عالية", ""), ("Critical", "Critical", "حرجة", ""),
+])
+
+enum("SnagStatus", "Snag lifecycle.", [
+    ("Open", "Open", "مفتوح", ""), ("Assigned", "Assigned", "مُسند", ""),
+    ("InProgress", "In progress", "قيد التنفيذ", ""),
+    ("PendingVerification", "Pending verification", "بانتظار التحقق", ""),
+    ("Closed", "Closed", "مغلق", "Requires closure evidence and a verifier."),
+    ("Rejected", "Rejected", "مرفوض", ""), ("Deferred", "Deferred", "مؤجل", ""),
+])
+
+enum("DocumentTypeCode", "Controlled document types. Each has its own numbering series (D-10).", [
+    ("DailyReport", "Daily report", "تقرير يومي", ""),
+    ("WeeklyReport", "Weekly report", "تقرير أسبوعي", ""),
+    ("MonthlyTechnicalReport", "Monthly technical report", "تقرير فني شهري", "Only type produced in the MVP."),
+    ("InspectionReport", "Inspection report", "تقرير معاينة", ""),
+    ("CorrectiveActionReport", "Corrective action report", "تقرير إجراء تصحيحي", ""),
+    ("Quotation", "Quotation", "عرض سعر", ""),
+    ("CompletionCertificate", "Completion certificate", "شهادة إنجاز", ""),
+    ("InvoiceCover", "Invoice cover", "غلاف فاتورة", "Numbering aligned to the accounting process (D-10)."),
+    ("Transmittal", "Transmittal", "كتاب إحالة", ""),
+])
+
+enum("JobStatus", "DocumentJob lifecycle.", [
+    ("Requested", "Requested", "مطلوب", ""),
+    ("Validating", "Validating inputs", "تحقق من المدخلات", ""),
+    ("InputValidationFailed", "Input validation failed", "فشل تحقق المدخلات", "Specific gaps recorded."),
+    ("SnapshotFrozen", "Snapshot frozen", "لقطة مجمدة", "Included record IDs and versions fixed."),
+    ("Generating", "Generating", "قيد الإنشاء", ""),
+    ("Generated", "Generated", "تم الإنشاء", ""),
+    ("Failed", "Failed", "فشل", ""),
+    ("Cancelled", "Cancelled", "ملغي", "Any reserved number is cancelled, never reused (D-10)."),
+])
+
+enum("DocumentStatus", "Document lifecycle. Release is the only externally visible state.", [
+    ("Draft", "Draft", "مسودة", ""),
+    ("PendingTechnicalApproval", "Pending technical approval", "بانتظار الاعتماد الفني", ""),
+    ("TechnicallyApproved", "Technically approved", "معتمد فنياً", "Revision locked."),
+    ("RevisionRequired", "Revision required", "يتطلب مراجعة", "Content changed; approval void."),
+    ("PendingRelease", "Pending release", "بانتظار الإصدار", ""),
+    ("Released", "Released", "صادر", "Recipient snapshot recorded."),
+    ("Superseded", "Superseded", "مُستبدل", "Replaced by a later revision."),
+    ("Cancelled", "Cancelled", "ملغي", ""),
+])
+
+enum("ApprovalStage", "Approval gates. Each is routed by the approval matrix (D-09).", [
+    ("EvidenceReview", "Evidence review", "مراجعة الأدلة", "Visit and photograph level."),
+    ("TechnicalReview", "Technical review", "المراجعة الفنية", "Document level."),
+    ("FinanceReview", "Finance review", "المراجعة المالية", "Phase 6/7."),
+    ("Release", "Release", "الإصدار", "Authorises external delivery."),
+    ("OverrideAuthorisation", "Override authorisation", "اعتماد استثناء", "Recorded as an override, never silent."),
+])
+
+enum("ApprovalDecision", "Recorded decision. Bound to EntityVersion and ContentHash (ADR-0006).", [
+    ("Pending", "Pending", "قيد الانتظار", ""),
+    ("Approved", "Approved", "معتمد", ""),
+    ("Rejected", "Rejected", "مرفوض", ""),
+    ("Delegated", "Delegated", "مفوض", "Acted by a delegate; original responsible user recorded."),
+    ("Withdrawn", "Withdrawn", "مسحوب", ""),
+    ("Void", "Void — content changed", "لاغٍ لتغير المحتوى", "ContentHash no longer matches."),
+])
+
+enum("NumberState", "Document number lifecycle (D-10). A cancelled number is never reused.", [
+    ("Reserved", "Reserved", "محجوز", "Allocated atomically to a job before generation."),
+    ("Issued", "Issued", "صادر", "Bound to a created document."),
+    ("Cancelled", "Cancelled", "ملغي", "Job failed or abandoned. Recorded with a reason."),
+])
+
+enum("FailureClass", "Failure taxonomy (spec 12). Determines whether a retry is permitted.", [
+    ("Validation", "Validation", "تحقق", "Never retried."),
+    ("Authentication", "Authentication", "مصادقة", "Never retried. Alert administrator."),
+    ("Authorization", "Authorization", "تخويل", "Never retried. Possible security event."),
+    ("RateLimit", "Rate limit", "حد المعدل", "Retriable with backoff."),
+    ("Network", "Network", "شبكة", "Retriable with backoff."),
+    ("ProviderUnavailable", "Provider unavailable", "المزود غير متاح", "Retriable with backoff."),
+    ("FileMissing", "File missing", "ملف مفقود", "One delayed retry; sync latency is normal."),
+    ("SchemaMismatch", "Schema mismatch", "عدم تطابق المخطط", "Never retried blindly."),
+    ("Duplicate", "Duplicate", "مكرر", "Suppressed and logged. Expected, not an error."),
+    ("Conflict", "Conflict", "تعارض", "Human resolution. Never auto-overwrite."),
+    ("Unknown", "Unknown", "غير معروف", "Dead-letter immediately."),
+])
+
+enum("IntegrationStatus", "Outcome of one external call attempt.", [
+    ("Pending", "Pending", "معلق", ""), ("InProgress", "In progress", "قيد التنفيذ", ""),
+    ("Succeeded", "Succeeded", "نجح", ""), ("Failed", "Failed", "فشل", ""),
+    ("DeadLettered", "Dead lettered", "في طابور المراجعة", "Awaiting an operator."),
+    ("DuplicateSuppressed", "Duplicate suppressed", "تم منع التكرار", "Idempotency key already claimed."),
+])
+
+enum("DataClassificationCode", "Sensitivity classes used to drive residency and sharing rules (D-12).", [
+    ("Public", "Public", "عام", ""),
+    ("Internal", "Internal", "داخلي", ""),
+    ("ClientConfidential", "Client confidential", "سري للعميل", "Default for photographic evidence."),
+    ("Personal", "Personal data", "بيانات شخصية", "Identifiable individuals."),
+    ("Financial", "Financial", "مالي", "Rates, invoices, accounting identifiers."),
+    ("GovernmentRestricted", "Government restricted", "مقيد حكومياً", "Contract-imposed handling."),
+])
+
+enum("ResidencyRuleCode", "Storage and processing restrictions assignable per client, contract or project (D-12).", [
+    ("NoRestriction", "No restriction", "بدون قيود", "Default until a contract says otherwise."),
+    ("RegionRestricted", "Region restricted", "مقيد بالمنطقة", "Named region only."),
+    ("CountryRestricted", "Country restricted", "مقيد بالدولة", "Named country only."),
+    ("NoThirdPartyAI", "No third-party AI processing", "بدون معالجة ذكاء اصطناعي خارجية", "Disables AI analysis for the project."),
+    ("NoCloudStorage", "No third-party cloud storage", "بدون تخزين سحابي خارجي", "Blocks production upload for the project."),
+])
+
+enum("DelegationScope", "Breadth of a temporary approval delegation (D-09).", [
+    ("AllProjects", "All projects", "كل المشاريع", ""),
+    ("SpecificProjects", "Specific projects", "مشاريع محددة", ""),
+    ("SpecificStage", "Specific stage only", "مرحلة محددة فقط", ""),
+])
+
+enum("TaxTreatmentPlaceholder",
+     "Placeholder only. NO CLASSIFICATION IS NAMED OR ASSUMED (D-08). "
+     "'Zero-rated', 'exempt', 'out of scope' and 'no tax configured' are distinct and "
+     "non-interchangeable; the real values come from the accountant in writing.", [
+    ("PENDING_ACCOUNTANT_CONFIRMATION", "Pending accountant confirmation",
+     "بانتظار تأكيد المحاسب", "The only value permitted in production before written confirmation."),
+    ("SYNTHETIC_TEST_ONLY", "Synthetic test value — not a tax position",
+     "قيمة اختبارية فقط وليست موقفاً ضريبياً",
+     "Exists solely so the arithmetic can be tested offline. It asserts nothing about any "
+     "jurisdiction and must never appear in production data (D-08)."),
+])
+
+enum("EvidenceRuleSource", "Where an effective evidence rule came from.", [
+    ("Global", "Global activity type", "نوع النشاط العام", ""),
+    ("ProjectOverride", "Project override", "تخصيص للمشروع", "Project-specific rule wins."),
+])
+
+# --------------------------------------------------------------------------
+# 1. Legal entity, vocabularies and global master data
+# --------------------------------------------------------------------------
+table("LegalEntities", "master", "global", "internal", 1,
+      "Registered legal entities that issue documents. Multi-entity from the start (D-02).",
+      "الكيانات القانونية المسجلة التي تصدر المستندات",
+      "LegalEntityID", [
+    col("LegalEntityID", "id", True, key="pk", src="system", ex="LE-A7T3R2"),
+    col("EntityCode", "text", True, uniq=True, src="user", validation="2-6 uppercase letters/digits",
+        note="Used in document numbers (D-10).", ex="AH"),
+    col("LegalNameEN", "text", True, src="user", ar="LegalNameAR",
+        note="From the current Commercial Registration. Placeholder until verified.",
+        ex="LEGAL_ENTITY_NAME_PENDING_VERIFICATION"),
+    col("LegalNameAR", "text", True, src="user", lang="ar",
+        note="Arabic legal name preserved exactly; never transliterated (D-11)."),
+    col("TradeNameEN", "text", False, src="user", ar="TradeNameAR"),
+    col("TradeNameAR", "text", False, src="user", lang="ar"),
+    col("CommercialRegistrationNumber", "text", True, src="user",
+        note="CR number as registered. Verified before any production document (D-02)."),
+    col("EstablishmentCardNumber", "text", False, src="user"),
+    col("TaxRegistrationNumber", "text", False, src="user", sens="financial",
+        note="Presence does not imply any tax treatment (D-08)."),
+    col("TaxRegistrationStatus", "text", True, default="PENDING_ACCOUNTANT_CONFIRMATION", src="user",
+        note="Free text placeholder until the accountant confirms in writing (D-08)."),
+    col("RegisteredAddressEN", "longtext", True, src="user", ar="RegisteredAddressAR"),
+    col("RegisteredAddressAR", "longtext", False, src="user", lang="ar"),
+    col("Country", "text", True, src="user", ex="QA"),
+    col("Currency", "text", True, src="user", validation="ISO 4217", ex="QAR"),
+    col("OfficialEmail", "email", True, src="user"),
+    col("OfficialTelephone", "phone", True, src="user"),
+    col("OfficialWhatsApp", "phone", False, src="user"),
+    col("LogoFileKey", "filekey", False, src="config",
+        note="Reference to the approved logo. Aspect ratio preserved (spec 10)."),
+    col("DocumentFooterEN", "longtext", False, src="user", ar="DocumentFooterAR"),
+    col("DocumentFooterAR", "longtext", False, src="user", lang="ar"),
+    col("AuthorisedSignatories", "json", False, src="user",
+        note="List of {name_en, name_ar, position_en, position_ar, scope}. No specimen signatures stored."),
+    col("EffectiveFrom", "date", True, src="user"),
+    col("EffectiveTo", "date", False, src="user"),
+    col("Version", "int", True, default="1", src="system",
+        note="A change to legal identity creates a new version; documents record the version used."),
+] + ACTIVE + AUDIT,
+      notes=["Never edited in place for a legal-name correction: a new version is created so that "
+             "documents already issued remain explainable."])
+
+table("Languages", "vocabulary", "global", "internal", 1,
+      "Supported languages and their direction. Bilingual capability is architectural (D-11).",
+      "اللغات المدعومة واتجاه الكتابة", "LanguageCode", [
+    col("LanguageCode", "enum", True, key="pk", enum="Language", ex="en"),
+    col("NameEN", "text", True, src="config", ar="NameAR"),
+    col("NameAR", "text", True, src="config", lang="ar"),
+    col("Direction", "text", True, src="config", validation="LTR|RTL", ex="RTL"),
+    col("IsDocumentLanguage", "bool", True, src="config",
+        note="Whether approved templates exist for this language."),
+] + ACTIVE + AUDIT)
+
+table("Roles", "vocabulary", "global", "internal", 1,
+      "System roles. Authorisation is enforced by security filters and server-side re-validation, "
+      "never by view visibility (spec 7.4).",
+      "أدوار النظام", "RoleID", [
+    col("RoleID", "id", True, key="pk", ex="ROLE-FIELDUSER"),
+    col("RoleCode", "text", True, uniq=True, src="config", ex="FieldUser"),
+    col("NameEN", "text", True, src="config", ar="NameAR"),
+    col("NameAR", "text", True, src="config", lang="ar"),
+    col("Description", "longtext", True, src="config"),
+    col("SeesFinancialData", "bool", True, default="FALSE", src="config",
+        note="Field roles are FALSE. Financial tables are kept out of the field app entirely (SEC-04)."),
+    col("MayApprove", "bool", True, default="FALSE", src="config"),
+    col("MayAdministerMasterData", "bool", True, default="FALSE", src="config"),
+] + ACTIVE + AUDIT)
+
+table("Users", "master", "global", "personal", 1,
+      "People who may sign in. One identity per person — shared accounts destroy attribution.",
+      "مستخدمو النظام", "UserID", [
+    col("UserID", "id", True, key="pk", ex="USR-R6V1N8"),
+    col("Email", "email", True, uniq=True, src="user",
+        note="Normalised to lowercase. The sign-in identity and the audit key."),
+    col("FullNameEN", "text", True, src="user", ar="FullNameAR"),
+    col("FullNameAR", "text", False, src="user", lang="ar",
+        note="Arabic name preserved without transliteration loss (D-11)."),
+    col("Mobile", "phone", False, src="user", sens="personal"),
+    col("RoleID", "ref", True, ref="Roles.RoleID", src="user"),
+    col("EmployeeID", "text", False, src="user", sens="personal"),
+    col("DefaultProjectID", "ref", False, ref="Projects.ProjectID", src="user",
+        note="Convenience only. Never a substitute for ProjectAssignments."),
+    col("Language", "enum", True, default="en", enum="Language", src="user",
+        note="Interface and notification language preference (D-11)."),
+    col("LastLoginAt", "datetime", False, src="system"),
+] + ACTIVE + AUDIT,
+      notes=["Payroll and HR attributes are deliberately absent (spec 5.13)."])
+
+table("Units", "vocabulary", "global", "internal", 1,
+      "Units of measure for quantities.", "وحدات القياس", "UnitID", [
+    col("UnitID", "id", True, key="pk", ex="UNIT-M2"),
+    col("UnitCode", "text", True, uniq=True, src="config", ex="m2"),
+    col("NameEN", "text", True, src="config", ar="NameAR"),
+    col("NameAR", "text", True, src="config", lang="ar"),
+    col("DecimalPlaces", "int", True, default="2", src="config",
+        note="Quantity rounding for this unit. Applied by the calculation module only."),
+] + ACTIVE + AUDIT)
+
+table("Disciplines", "vocabulary", "global", "internal", 1,
+      "Work disciplines. A project may permit one or many.", "التخصصات", "DisciplineID", [
+    col("DisciplineID", "id", True, key="pk", ex="DIS-LAND"),
+    col("DisciplineCode", "text", True, uniq=True, src="config", ex="LANDSCAPE"),
+    col("NameEN", "text", True, src="config", ar="NameAR"),
+    col("NameAR", "text", True, src="config", lang="ar"),
+] + ACTIVE + AUDIT)
+
+table("ActivityTypes", "master", "global", "internal", 1,
+      "Catalogue of activities with their default evidence and quantity rules. "
+      "Per-project overrides live in ProjectActivityRules.",
+      "أنواع الأنشطة وقواعد الأدلة الافتراضية", "ActivityTypeID", [
+    col("ActivityTypeID", "id", True, key="pk", ex="ACT-0001"),
+    col("DisciplineID", "ref", True, ref="Disciplines.DisciplineID", src="config"),
+    col("ActivityCode", "text", True, uniq=True, src="config", ex="TURF-MOW"),
+    col("ActivityNameEN", "text", True, src="config", ar="ActivityNameAR"),
+    col("ActivityNameAR", "text", True, src="config", lang="ar"),
+    col("RequiresBeforePhoto", "bool", True, default="FALSE", src="config"),
+    col("RequiresAfterPhoto", "bool", True, default="FALSE", src="config"),
+    col("RequiresQuantity", "bool", True, default="FALSE", src="config"),
+    col("QuantityUnitID", "ref", False, ref="Units.UnitID", src="config",
+        validation="Required when RequiresQuantity is TRUE"),
+    col("RequiresMaterial", "bool", True, default="FALSE", src="config"),
+    col("RequiresSnagCheck", "bool", True, default="FALSE", src="config"),
+    col("MinPhotos", "int", True, default="0", src="config"),
+    col("DefaultEvidenceStages", "text", False, src="config",
+        note="Comma-separated EvidenceStage codes suggested in the form."),
+] + ACTIVE + AUDIT)
+
+table("DocumentTypes", "vocabulary", "global", "internal", 1,
+      "Controlled document types. Adding a type is configuration, not development (D-10).",
+      "أنواع المستندات المعتمدة", "DocumentTypeCode", [
+    col("DocumentTypeCode", "enum", True, key="pk", enum="DocumentTypeCode"),
+    col("NameEN", "text", True, src="config", ar="NameAR"),
+    col("NameAR", "text", True, src="config", lang="ar"),
+    col("RequiresTechnicalApproval", "bool", True, default="TRUE", src="config"),
+    col("RequiresFinanceApproval", "bool", True, default="FALSE", src="config"),
+    col("RequiresReleaseApproval", "bool", True, default="TRUE", src="config"),
+    col("IsExternallyIssued", "bool", True, default="TRUE", src="config"),
+    col("BuiltInPhase", "text", True, src="config", ex="5",
+        note="MonthlyTechnicalReport is the only type produced in the MVP."),
+] + ACTIVE + AUDIT)
+
+table("DataClassifications", "master", "global", "internal", 1,
+      "Sensitivity classes applied to records and files, driving residency and sharing rules (D-12).",
+      "تصنيفات حساسية البيانات", "ClassificationCode", [
+    col("ClassificationCode", "enum", True, key="pk", enum="DataClassificationCode"),
+    col("NameEN", "text", True, src="config", ar="NameAR"),
+    col("NameAR", "text", True, src="config", lang="ar"),
+    col("Description", "longtext", True, src="config"),
+    col("MayLeaveTenant", "bool", True, default="FALSE", src="config",
+        note="Whether data of this class may be sent to any third-party processor."),
+    col("MayBeSharedExternally", "bool", True, default="FALSE", src="config"),
+    col("DefaultRetentionDays", "int", False, src="config",
+        note="Expiry flags for review. Nothing is ever auto-deleted (C-10)."),
+] + ACTIVE + AUDIT)
+
+table("ResidencyRequirements", "master", "global", "internal", 1,
+      "Storage and processing restrictions that may be assigned to a client, contract or project (D-12).",
+      "متطلبات مكان تخزين ومعالجة البيانات", "ResidencyRequirementID", [
+    col("ResidencyRequirementID", "id", True, key="pk", ex="RES-G3K9V2"),
+    col("RuleCode", "enum", True, enum="ResidencyRuleCode", src="config"),
+    col("NameEN", "text", True, src="config", ar="NameAR"),
+    col("NameAR", "text", True, src="config", lang="ar"),
+    col("AllowedRegions", "text", False, src="config",
+        note="Comma-separated region or country codes where storage is permitted."),
+    col("BlocksProductionUpload", "bool", True, default="FALSE", src="config",
+        note="TRUE blocks production upload for the affected project only, not the system (D-12)."),
+    col("BlocksThirdPartyAI", "bool", True, default="FALSE", src="config",
+        note="TRUE disables AI analysis for the affected project."),
+    col("SourceClauseReference", "text", False, src="user",
+        note="Where in the contract the restriction comes from. No contract text is stored."),
+] + ACTIVE + AUDIT)
+
+table("TaxRules", "master", "global", "financial", 6,
+      "Configurable tax rules. NO CLASSIFICATION IS NAMED OR ASSUMED before the accountant "
+      "confirms it in writing (D-08).",
+      "قواعد الضريبة القابلة للتهيئة", "TaxRuleID", [
+    col("TaxRuleID", "id", True, key="pk", ex="TAX-PLACEHOLDER-PENDING"),
+    col("TaxRuleCode", "text", True, uniq=True, src="config", ex="PENDING_ACCOUNTANT_CONFIRMATION"),
+    col("NameEN", "text", True, src="config", ar="NameAR"),
+    col("NameAR", "text", True, src="config", lang="ar"),
+    col("TreatmentLabel", "enum", True, enum="TaxTreatmentPlaceholder", src="config",
+        note="'Zero-rated', 'exempt', 'out of scope' and 'no tax configured' are distinct and "
+             "non-interchangeable. None may be recorded here without written confirmation (D-08)."),
+    col("RatePercent", "decimal", False, src="config", scale=4,
+        validation="Null until confirmed. Null means 'unknown', never 'zero'."),
+    col("AppliesToCountry", "text", False, src="config"),
+    col("EffectiveFrom", "date", True, src="config"),
+    col("EffectiveTo", "date", False, src="config"),
+    col("Version", "int", True, default="1", src="system",
+        note="The rule AND its version are preserved on every invoice calculation (D-08)."),
+    col("ConfirmedByAccountant", "bool", True, default="FALSE", src="user",
+        note="Production invoicing is blocked while FALSE."),
+    col("ConfirmationReference", "text", False, src="user",
+        note="Reference to the accountant's written confirmation. No document content stored."),
+] + ACTIVE + AUDIT)
+
+table("NumberingSeries", "master", "global", "internal", 5,
+      "One configurable series per legal entity x document type x year x scope x optional client "
+      "requirement. Never one undifferentiated sequence (D-10).",
+      "تسلسلات ترقيم المستندات القابلة للتهيئة", "SeriesID", [
+    col("SeriesID", "id", True, key="pk", ex="SER-F9W3C5"),
+    col("LegalEntityID", "ref", True, ref="LegalEntities.LegalEntityID", src="config"),
+    col("DocumentTypeCode", "enum", True, enum="DocumentTypeCode", src="config"),
+    col("ScopeKind", "text", True, src="config", validation="CompanyWide|PerProject|PerClient",
+        note="Determines whether the counter is shared or partitioned."),
+    col("ProjectID", "ref", False, ref="Projects.ProjectID", src="config",
+        validation="Required when ScopeKind = PerProject"),
+    col("ClientID", "ref", False, ref="Clients.ClientID", src="config",
+        validation="Required when ScopeKind = PerClient"),
+    col("YearBasis", "text", True, default="Calendar", src="config", validation="Calendar|Financial|None"),
+    col("FinancialYearStartMonth", "int", False, src="config", validation="1-12 when YearBasis=Financial"),
+    col("FormatPattern", "text", True, src="config",
+        note="Tokens: {ENTITY} {TYPE} {YYYY} {YY} {PROJECT} {CLIENT} {NNN} {REV}. "
+             "Illustrative only until the existing manual register is reviewed (D-10).",
+        ex="{ENTITY}-TR-{YYYY}-{NNN}"),
+    col("PadWidth", "int", True, default="3", src="config"),
+    col("StartNumber", "int", True, default="1", src="config",
+        note="Continues the existing manual register rather than restarting it (A-18)."),
+    col("ResetRule", "text", True, default="PerYear", src="config", validation="PerYear|Never"),
+    col("MigratedFromManualRegister", "bool", True, default="FALSE", src="user",
+        note="TRUE once the existing manual series has been reviewed and its last number recorded."),
+    col("LastManualNumber", "int", False, src="user",
+        note="The final number used manually, so the system continues rather than collides."),
+    col("AlignedToAccountingProcess", "bool", True, default="FALSE", src="config",
+        note="TRUE for invoice-related series: numbering follows the approved accounting process (D-10)."),
+] + ACTIVE + AUDIT,
+      unique_together=[["LegalEntityID", "DocumentTypeCode", "ScopeKind", "ProjectID", "ClientID", "YearBasis"]])
+
+table("DocumentTemplates", "master", "global", "internal", 5,
+      "Approved templates, keyed by document type, language and optionally project or discipline "
+      "(D-11, ADR-0007).",
+      "القوالب المعتمدة", "TemplateID", [
+    col("TemplateID", "id", True, key="pk", ex="TPL-D8Q2H6"),
+    col("DocumentTypeCode", "enum", True, enum="DocumentTypeCode", src="config"),
+    col("TemplateNameEN", "text", True, src="config", ar="TemplateNameAR"),
+    col("TemplateNameAR", "text", False, src="config", lang="ar"),
+    col("LanguageCode", "enum", True, enum="Language", src="config",
+        note="A template is single-language; bilingual output is two approved templates (D-11)."),
+    col("TextDirection", "text", True, src="config", validation="LTR|RTL",
+        note="Derived from the language but stored explicitly so RTL is testable."),
+    col("ProjectID", "ref", False, ref="Projects.ProjectID", src="config",
+        note="Null means available to any project. Project-specific templates override (D-15 item 5)."),
+    col("DisciplineID", "ref", False, ref="Disciplines.DisciplineID", src="config"),
+    col("LegalEntityID", "ref", True, ref="LegalEntities.LegalEntityID", src="config"),
+    col("StorageFileKey", "filekey", False, src="config",
+        note="Reference to the controlled template file. No production file ID exists in Phase 1."),
+    col("Version", "int", True, default="1", src="config"),
+    col("EffectiveFrom", "date", True, src="config"),
+    col("EffectiveTo", "date", False, src="config"),
+    col("ApprovedByUserID", "ref", False, ref="Users.UserID", src="user"),
+    col("Status", "text", True, default="Draft", src="config", validation="Draft|Approved|Superseded|Withdrawn"),
+] + ACTIVE + AUDIT)
+
+# --------------------------------------------------------------------------
+# 2. Client and project master data
+# --------------------------------------------------------------------------
+table("Clients", "master", "global", "confidential", 1,
+      "Clients the company works for. Bilingual names preserved exactly (D-11).",
+      "العملاء", "ClientID", [
+    col("ClientID", "id", True, key="pk", ex="CLI-D4F8T2"),
+    col("LegalNameEN", "text", False, src="user", ar="LegalNameAR",
+        note="Not required: a client may be registered only in Arabic. At least one legal name "
+             "must be present (D-11)."),
+    col("LegalNameAR", "text", False, src="user", lang="ar",
+        note="Some clients are known only by an Arabic legal name; it is stored exactly as given "
+             "and is never transliterated to fill an English column."),
+    col("DisplayNameEN", "text", False, src="user", ar="DisplayNameAR"),
+    col("DisplayNameAR", "text", False, src="user", lang="ar"),
+    col("ClientKind", "text", True, src="user", validation="Government|SemiGovernment|Private|MainContractor"),
+    col("BillingAddressEN", "longtext", False, src="user", sens="financial", ar="BillingAddressAR"),
+    col("BillingAddressAR", "longtext", False, src="user", sens="financial", lang="ar"),
+    col("TaxRegistrationNumber", "text", False, src="user", sens="financial",
+        note="Hidden from field roles (spec 7.4)."),
+    col("PrimaryContactID", "ref", False, ref="Contacts.ContactID", src="user"),
+    col("PaymentTermsDays", "int", False, src="user", sens="financial"),
+    col("Currency", "text", False, src="user", sens="financial", validation="ISO 4217"),
+    col("DefaultClassificationCode", "enum", False, enum="DataClassificationCode", src="user",
+        note="Baseline classification for this client's records (D-12)."),
+    col("QuickBooksCustomerID", "text", False, src="integration", sens="financial",
+        note="Immutable accounting identifier. Never name-matched (spec 8 scenario 10)."),
+    col("Status", "text", True, default="Active", src="user", validation="Active|Suspended|Closed"),
+] + ACTIVE + AUDIT,
+      at_least_one=[["LegalNameEN", "LegalNameAR"], ["DisplayNameEN", "DisplayNameAR"]],
+      notes=["A client registered only in Arabic is normal in Qatar. Forcing an English legal name "
+             "would invite a transliteration that is not the client's legal name (D-11)."])
+
+table("Contacts", "master", "global", "personal", 1,
+      "Client contacts. Only an authorised recipient may receive a released document.",
+      "جهات الاتصال لدى العملاء", "ContactID", [
+    col("ContactID", "id", True, key="pk", ex="CON-B3H9L5"),
+    col("ClientID", "ref", True, ref="Clients.ClientID", src="user"),
+    col("NameEN", "text", False, src="user", ar="NameAR"),
+    col("NameAR", "text", False, src="user", lang="ar"),
+    col("PositionEN", "text", False, src="user", ar="PositionAR"),
+    col("PositionAR", "text", False, src="user", lang="ar"),
+    col("Email", "email", False, src="user", sens="personal"),
+    col("Mobile", "phone", False, src="user", sens="personal"),
+    col("PreferredLanguage", "enum", True, default="en", enum="Language", src="user"),
+    col("IsAuthorizedRecipient", "bool", True, default="FALSE", src="user",
+        note="Only TRUE contacts may appear in a release recipient snapshot."),
+    col("Status", "text", True, default="Active", src="user", validation="Active|Inactive"),
+] + ACTIVE + AUDIT,
+      at_least_one=[["NameEN", "NameAR"]])
+
+table("Projects", "master", "global", "confidential", 1,
+      "A project is pure configuration. Adding one never requires changed logic, a cloned app, "
+      "duplicated scenarios, rewritten prompts or changed code (D-01).",
+      "المشاريع", "ProjectID", [
+    col("ProjectID", "id", True, key="pk", ex="PRJ-K7M2Q1"),
+    col("ProjectCode", "text", True, uniq=True, src="user",
+        validation="Uppercase, no spaces, filename-safe", ex="EXAMPLE-CODE-01",
+        note="Used in folder and file names. A display code, never a key."),
+    col("ProjectNameEN", "text", True, src="user", ar="ProjectNameAR"),
+    col("ProjectNameAR", "text", False, src="user", lang="ar"),
+    col("LegalEntityID", "ref", True, ref="LegalEntities.LegalEntityID", src="user",
+        note="Which registered entity issues this project's documents (D-02)."),
+    col("ClientID", "ref", True, ref="Clients.ClientID", src="user"),
+    col("ContractID", "ref", False, ref="Contracts.ContractID", src="user", sens="financial"),
+    col("LocationSummaryEN", "text", False, src="user", ar="LocationSummaryAR"),
+    col("LocationSummaryAR", "text", False, src="user", lang="ar"),
+    col("StartDate", "date", True, src="user"),
+    col("EndDate", "date", False, src="user", validation="Must be >= StartDate when present"),
+    col("ReportingFrequency", "enum", True, enum="ReportingFrequency", src="user"),
+    col("ReportingCutoffDay", "int", False, src="user", validation="1-28",
+        note="Latest day evidence may be added to a closing period (OQ-02)."),
+    col("DefaultTemplateID", "ref", False, ref="DocumentTemplates.TemplateID", src="user"),
+    col("DefaultDocumentLanguage", "enum", True, default="en", enum="Language", src="user"),
+    col("ProjectManagerUserID", "ref", False, ref="Users.UserID", src="user"),
+    col("Currency", "text", True, src="user", sens="financial", validation="ISO 4217",
+        note="Must match the contract currency; a mismatch is a validation failure (C-09)."),
+    col("TimeZone", "text", True, default="Asia/Qatar", src="user"),
+    col("BillingMethod", "enum", False, enum="BillingMethod", src="user", sens="financial"),
+    col("PaymentTermsDays", "int", False, src="user", sens="financial"),
+    col("AIAnalysisEnabled", "bool", True, default="TRUE", src="user",
+        note="Set FALSE where a contract or residency rule forbids third-party AI processing (D-12)."),
+    col("RetentionDays", "int", False, src="user",
+        note="Overrides the classification default. Expiry flags for review, never auto-deletes."),
+    col("DriveFolderKey", "filekey", False, src="integration",
+        note="Provisioned folder reference. Empty in Phase 1 — nothing is connected (D-14)."),
+    col("Status", "enum", True, default="Draft", enum="ProjectStatus", src="user"),
+] + ACTIVE + AUDIT,
+      notes=["Every project-varying behaviour is a column or a child row here, never a branch in code."])
+
+table("ProjectAssignments", "master", "project", "internal", 1,
+      "Which users may act on which project, and in what role. A user may be assigned to many "
+      "projects, and a project may have many users (D-15 item 2).",
+      "إسناد المستخدمين إلى المشاريع", "AssignmentID", [
+    col("AssignmentID", "id", True, key="pk", ex="ASG-V7D1G6"),
+    col("ProjectID", "ref", True, ref="Projects.ProjectID", src="user"),
+    col("UserID", "ref", True, ref="Users.UserID", src="user"),
+    col("RoleID", "ref", True, ref="Roles.RoleID", src="user",
+        note="The role a user holds ON THIS PROJECT. It may differ from their default role."),
+    col("AssignedFrom", "date", True, src="user"),
+    col("AssignedTo", "date", False, src="user",
+        note="Null means open-ended. An expired assignment grants nothing."),
+    col("MaySubmitEvidence", "bool", True, default="TRUE", src="user"),
+    col("MayReviewEvidence", "bool", True, default="FALSE", src="user"),
+    col("MayRequestDocuments", "bool", True, default="FALSE", src="user"),
+] + ACTIVE + AUDIT,
+      unique_together=[["ProjectID", "UserID", "RoleID", "AssignedFrom"]],
+      notes=["This table is the sole source of row-level access. Absence of a row means no access, "
+             "and no view, slice or convenience field may substitute for it."])
+
+table("Locations", "master", "project", "confidential", 1,
+      "Hierarchical locations within a project. Choices are always filtered by project (spec 7.3).",
+      "المواقع ضمن المشروع", "LocationID", [
+    col("LocationID", "id", True, key="pk", ex="LOC-Z5J3D9"),
+    col("ProjectID", "ref", True, ref="Projects.ProjectID", src="user"),
+    col("LocationCode", "text", True, src="user", validation="Filename-safe; unique within project",
+        ex="BLK-A"),
+    col("LocationNameEN", "text", True, src="user", ar="LocationNameAR"),
+    col("LocationNameAR", "text", False, src="user", lang="ar"),
+    col("ParentLocationID", "ref", False, ref="Locations.LocationID", src="user",
+        validation="Parent must belong to the SAME project; no cycles; max depth 5",
+        note="Supports site > building > floor > room hierarchies (D-15 item 3)."),
+    col("LocationKind", "text", False, src="user", validation="Site|Zone|Building|Floor|Room|Asset"),
+    col("GPSLatitude", "decimal", False, src="device", scale=7,
+        note="Evidence, not a gate. Missing is recorded as missing, never as zero (C-08)."),
+    col("GPSLongitude", "decimal", False, src="device", scale=7),
+    col("GeofenceRadiusM", "int", False, src="user",
+        note="Out-of-geofence capture is flagged for the reviewer, never auto-rejected."),
+    col("DisplayOrder", "int", True, default="100", src="user"),
+] + ACTIVE + AUDIT,
+      unique_together=[["ProjectID", "LocationCode"]])
+
+table("ProjectActivityRules", "master", "project", "internal", 1,
+      "Per-project overrides of the global activity and evidence rules (D-15 item 4). "
+      "A project that needs a different rule gets a row, never a code change.",
+      "قواعد الأنشطة والأدلة الخاصة بالمشروع", "ProjectActivityRuleID", [
+    col("ProjectActivityRuleID", "id", True, key="pk", ex="PAR-X1B6M7"),
+    col("ProjectID", "ref", True, ref="Projects.ProjectID", src="user"),
+    col("ActivityTypeID", "ref", True, ref="ActivityTypes.ActivityTypeID", src="user"),
+    col("IsPermitted", "bool", True, default="TRUE", src="user",
+        note="FALSE removes the activity from this project's form without deleting history."),
+    col("RequiresBeforePhoto", "bool", False, src="user", note="Null inherits the global rule."),
+    col("RequiresAfterPhoto", "bool", False, src="user", note="Null inherits the global rule."),
+    col("RequiresQuantity", "bool", False, src="user", note="Null inherits the global rule."),
+    col("QuantityUnitID", "ref", False, ref="Units.UnitID", src="user"),
+    col("MinPhotos", "int", False, src="user"),
+    col("RequiresCaption", "bool", False, src="user"),
+    col("BOQItemHint", "text", False, src="user", sens="financial",
+        note="Optional link to the billing item, used from Phase 6."),
+] + ACTIVE + AUDIT,
+      unique_together=[["ProjectID", "ActivityTypeID"]])
+
+table("ApprovalMatrix", "master", "project", "internal", 1,
+      "Who approves what, per project and stage (D-09, D-15 item 6). The GM is the MVP approver, "
+      "and the structure supports delegation without redesign.",
+      "مصفوفة الاعتمادات", "ApprovalMatrixID", [
+    col("ApprovalMatrixID", "id", True, key="pk", ex="APM-C2S9W3"),
+    col("ProjectID", "ref", False, ref="Projects.ProjectID", src="user",
+        note="Null means the company-wide default for this stage."),
+    col("ApprovalStage", "enum", True, enum="ApprovalStage", src="user"),
+    col("DocumentTypeCode", "enum", False, enum="DocumentTypeCode", src="user",
+        note="Null applies to every document type."),
+    col("ResponsibleUserID", "ref", True, ref="Users.UserID", src="user",
+        note="The accountable approver. A delegate acts FOR this person, never instead of them."),
+    col("BackupUserID", "ref", False, ref="Users.UserID", src="user",
+        note="May remain unassigned until before go-live (D-09)."),
+    col("SequenceNumber", "int", True, default="1", src="user",
+        note="Supports multi-step approval within a stage."),
+    col("SelfApprovalProhibited", "bool", True, default="TRUE", src="config",
+        note="No user may approve their own restricted transaction because an approver is "
+             "unavailable (D-09). This is not configurable to FALSE for financial stages."),
+] + ACTIVE + AUDIT)
+
+table("ApprovalDelegations", "master", "global", "internal", 1,
+      "Temporary delegation of an approval authority (D-09). Every delegated decision records both "
+      "the acting user and the original responsible user.",
+      "تفويض صلاحيات الاعتماد مؤقتاً", "DelegationID", [
+    col("DelegationID", "id", True, key="pk", ex="DEL-N5T8J4"),
+    col("FromUserID", "ref", True, ref="Users.UserID", src="user",
+        note="The original responsible approver."),
+    col("ToUserID", "ref", True, ref="Users.UserID", src="user",
+        note="The acting delegate. May be unassigned until before go-live."),
+    col("ApprovalStage", "enum", False, enum="ApprovalStage", src="user",
+        note="Null delegates every stage the delegator holds."),
+    col("Scope", "enum", True, enum="DelegationScope", src="user"),
+    col("ProjectIDs", "text", False, src="user",
+        note="Comma-separated ProjectIDs when Scope = SpecificProjects."),
+    col("ValidFrom", "datetime", True, src="user"),
+    col("ValidTo", "datetime", True, src="user",
+        validation="Must be after ValidFrom. An open-ended delegation is not permitted."),
+    col("Reason", "text", True, src="user"),
+    col("AuthorisedByUserID", "ref", True, ref="Users.UserID", src="user"),
+    col("RevokedAt", "datetime", False, src="user"),
+    col("RevokedByUserID", "ref", False, ref="Users.UserID", src="user"),
+] + ACTIVE + AUDIT,
+      notes=["A delegation is evidence, so it is never deleted — it is revoked, with a timestamp."])
+
+table("ResidencyAssignments", "master", "project", "internal", 1,
+      "Binds a residency requirement to a client, contract or project (D-12).",
+      "ربط متطلبات الإقامة بالبيانات", "ResidencyAssignmentID", [
+    col("ResidencyAssignmentID", "id", True, key="pk", ex="RSA-L6P4Z8"),
+    col("ResidencyRequirementID", "ref", True, ref="ResidencyRequirements.ResidencyRequirementID", src="user"),
+    col("AppliesToKind", "text", True, src="user", validation="Client|Contract|Project"),
+    col("ClientID", "ref", False, ref="Clients.ClientID", src="user"),
+    col("ContractID", "ref", False, ref="Contracts.ContractID", src="user"),
+    col("ProjectID", "ref", False, ref="Projects.ProjectID", src="user"),
+    col("EffectiveFrom", "date", True, src="user"),
+    col("EffectiveTo", "date", False, src="user"),
+    col("VerifiedFromContract", "bool", True, default="FALSE", src="user",
+        note="FALSE means the contract has not yet been reviewed — production upload stays blocked."),
+] + ACTIVE + AUDIT)
+
+# --------------------------------------------------------------------------
+# 3. Operational records
+# --------------------------------------------------------------------------
+table("SiteVisits", "operational", "project", "confidential", 1,
+      "One reporting event at a location on a date. The unit of submission and review.",
+      "زيارة موقع", "VisitID", [
+    col("VisitID", "id", True, key="pk", ex="VIS-Q8C4K1"),
+    col("ProjectID", "ref", True, ref="Projects.ProjectID", src="user", hash=True),
+    col("LocationID", "ref", True, ref="Locations.LocationID", src="user", hash=True,
+        validation="Location must belong to ProjectID"),
+    col("WorkOrderID", "ref", False, ref="WorkOrders.WorkOrderID", src="user", hash=True),
+    col("VisitDate", "date", True, src="user", hash=True,
+        note="Defaults to the device date; correctable by an authorised user (spec 7.3)."),
+    col("StartTime", "time", False, src="user", hash=True),
+    col("EndTime", "time", False, src="user", hash=True, validation="Must be after StartTime"),
+    col("Weather", "text", False, src="user", hash=True),
+    col("SupervisorUserID", "ref", True, ref="Users.UserID", src="system", hash=True,
+        note="Defaults from USEREMAIL(); must hold an active assignment to ProjectID."),
+    col("GPSLatitude", "decimal", False, src="device", scale=7),
+    col("GPSLongitude", "decimal", False, src="device", scale=7),
+    col("OverallDescriptionEN", "longtext", False, src="user", hash=True, ar="OverallDescriptionAR"),
+    col("OverallDescriptionAR", "longtext", False, src="user", hash=True, lang="ar",
+        note="A supervisor may write in either language; both are carried to the report (D-11)."),
+    col("SafetyObservation", "longtext", False, src="user", hash=True),
+    col("ClientRepresentative", "text", False, src="user", hash=True, sens="personal"),
+    col("ClientAcknowledgementStatus", "text", False, src="user", hash=True,
+        validation="NotRequested|Claimed|Declined",
+        note="A CLAIM recorded on site. Never treated as a client approval (A-20)."),
+    col("WorkflowStatus", "enum", True, default="Draft", enum="WorkflowStatus", src="system"),
+    col("SubmittedAt", "datetime", False, src="system"),
+    col("TechnicalReviewedAt", "datetime", False, src="system"),
+    col("TechnicalReviewedBy", "ref", False, ref="Users.UserID", src="system"),
+    col("RejectionReason", "longtext", False, src="user",
+        note="Mandatory when returning a record for correction."),
+    col("ValidationErrors", "json", False, src="system",
+        note="Specific correctable errors from server-side validation, never a generic message."),
+    col("CorrelationID", "text", False, src="system",
+        note="Links this record to its orchestration jobs and audit entries."),
+] + VERSIONED + AUDIT,
+      content_hash=["ProjectID", "LocationID", "WorkOrderID", "VisitDate", "StartTime", "EndTime",
+                    "Weather", "SupervisorUserID", "OverallDescriptionEN", "OverallDescriptionAR",
+                    "SafetyObservation", "ClientRepresentative", "ClientAcknowledgementStatus"])
+
+table("VisitActivities", "operational", "project", "confidential", 1,
+      "What was actually done during a visit. One row per activity.",
+      "أنشطة الزيارة", "VisitActivityID", [
+    col("VisitActivityID", "id", True, key="pk", ex="VAC-T3N6B7"),
+    col("VisitID", "ref", True, ref="SiteVisits.VisitID", src="system", hash=True),
+    col("ProjectID", "ref", True, ref="Projects.ProjectID", src="system", hash=True,
+        note="Denormalised for row-level security; must equal the parent visit's project."),
+    col("ActivityTypeID", "ref", True, ref="ActivityTypes.ActivityTypeID", src="user", hash=True,
+        validation="Must be permitted for the project by ProjectActivityRules"),
+    col("DescriptionEN", "longtext", False, src="user", hash=True, ar="DescriptionAR"),
+    col("DescriptionAR", "longtext", False, src="user", hash=True, lang="ar"),
+    col("Quantity", "decimal", False, src="user", hash=True, scale=3,
+        validation="Numeric, >= 0, present only where the effective rule requires it"),
+    col("UnitID", "ref", False, ref="Units.UnitID", src="user", hash=True),
+    col("PercentComplete", "int", False, src="user", hash=True, validation="0-100",
+        note="Entered by a human. NEVER inferred by AI (spec 5.9, ADR-0004)."),
+    col("EvidenceStatus", "text", True, default="Incomplete", src="system",
+        validation="Incomplete|Complete|Waived",
+        note="Computed from the effective evidence rule, not typed."),
+    col("SupervisorConfirmation", "bool", True, default="FALSE", src="user",
+        note="An authorised human confirmation. One of the only two bases for a completion "
+             "statement, the other being approved evidence (operating rule 11)."),
+    col("TechnicalReviewerComment", "longtext", False, src="user"),
+    col("Status", "enum", True, default="Draft", enum="VisitActivityStatus", src="system"),
+] + VERSIONED + AUDIT,
+      content_hash=["VisitID", "ActivityTypeID", "DescriptionEN", "DescriptionAR", "Quantity",
+                    "UnitID", "PercentComplete", "SupervisorConfirmation"])
+
+table("Photos", "operational", "project", "confidential", 1,
+      "One photograph per row. The received file is write-once and is never altered (D-13).",
+      "الصور الفوتوغرافية كأدلة", "PhotoID", [
+    col("PhotoID", "id", True, key="pk", ex="PHO-M9F2X5"),
+    col("VisitID", "ref", True, ref="SiteVisits.VisitID", src="system", hash=True),
+    col("VisitActivityID", "ref", False, ref="VisitActivities.VisitActivityID", src="user", hash=True),
+    col("ProjectID", "ref", True, ref="Projects.ProjectID", src="system", hash=True,
+        note="Denormalised for row-level security and for folder routing."),
+    col("LocationID", "ref", True, ref="Locations.LocationID", src="system", hash=True),
+    col("CapturedAt", "datetime", False, src="device",
+        note="Device capture time where available. Drives the old-photo warning, never a rejection."),
+    col("ReceivedAt", "datetime", True, src="system",
+        note="When the controlled system first received the file. The anchor of the write-once "
+             "guarantee (D-13)."),
+    col("UploadedAt", "datetime", False, src="system"),
+    col("CapturedBy", "ref", True, ref="Users.UserID", src="system",
+        note="The uploader identity recorded with the original (D-13)."),
+    col("OriginalFileKey", "filekey", True, src="system",
+        note="WRITE-ONCE. Never overwritten, altered, annotated, resized or deleted."),
+    col("OriginalChecksum", "checksum", False, src="integration",
+        note="Taken from the storage provider's own file metadata where available (C-03); "
+             "computed only as a fallback."),
+    col("ChecksumAlgorithm", "text", False, src="integration", ex="MD5",
+        note="Recorded so the value is interpretable years later."),
+    col("OriginalMimeType", "text", False, src="integration"),
+    col("OriginalWidth", "int", False, src="integration"),
+    col("OriginalHeight", "int", False, src="integration"),
+    col("OriginalSizeBytes", "int", False, src="integration"),
+    col("IsOriginalDeviceImageVerified", "bool", True, default="FALSE", src="system",
+        note="Stays FALSE until real-device testing proves no upstream re-encoding. No file may be "
+             "described as the original device image while this is FALSE (D-13)."),
+    col("EvidenceStage", "enum", True, enum="EvidenceStage", src="user", hash=True),
+    col("CaptionEN", "text", False, src="user", hash=True, ar="CaptionAR",
+        validation="Mandatory for Snag, Observation, Material and Safety stages",
+        note="The supervisor's own words. Never overwritten by AI (D-06)."),
+    col("CaptionAR", "text", False, src="user", hash=True, lang="ar"),
+    col("GPSLatitude", "decimal", False, src="device", scale=7),
+    col("GPSLongitude", "decimal", False, src="device", scale=7),
+    col("IsDuplicateSuspected", "bool", True, default="FALSE", src="system",
+        note="Flag only. A suspected duplicate is never deleted or merged (S-09)."),
+    col("DuplicateOfPhotoID", "ref", False, ref="Photos.PhotoID", src="system"),
+    col("AIAnalysisStatus", "enum", True, default="NotRequested", enum="AIAnalysisStatus", src="system"),
+    col("AIObservation", "json", False, src="ai",
+        note="ADVISORY ONLY. Schema-validated output, displayed as an AI observation, visually "
+             "distinct from the caption and the reviewer decision (D-06)."),
+    col("AIConfidence", "decimal", False, src="ai", scale=2, validation="0.00-1.00",
+        note="Advisory. Never a threshold for automatic approval."),
+    col("AIModel", "text", False, src="ai", note="Recorded for reproducibility."),
+    col("AIPromptVersion", "text", False, src="ai"),
+    col("AIContradictsCaption", "bool", False, src="ai",
+        note="Raised for the reviewer's attention; resolves nothing by itself."),
+    col("ReviewerDecision", "enum", True, default="Pending", enum="ReviewerDecision", src="user",
+        note="Set only by a human reviewer. AI may never write this field."),
+    col("ReviewerComment", "longtext", False, src="user"),
+    col("ReviewedByUserID", "ref", False, ref="Users.UserID", src="system"),
+    col("ReviewedAt", "datetime", False, src="system"),
+    col("ApprovedForReport", "bool", True, default="FALSE", src="system", hash=True,
+        note="Derived from ReviewerDecision = Approved. Only human-approved evidence may appear in "
+             "an official report (D-06)."),
+    col("ReportSequence", "int", False, src="user", hash=True),
+    col("DerivedFileKey", "filekey", False, src="system",
+        note="Report-ready or downscaled derivative, stored SEPARATELY from the original (D-13)."),
+    col("ClassificationCode", "enum", True, default="ClientConfidential",
+        enum="DataClassificationCode", src="system",
+        note="Drives residency and sharing decisions (D-12)."),
+] + VERSIONED + AUDIT,
+      content_hash=["VisitID", "VisitActivityID", "LocationID", "EvidenceStage", "CaptionEN",
+                    "CaptionAR", "ApprovedForReport", "ReportSequence"],
+      notes=["Advisory AI fields are deliberately excluded from ContentHash: an AI observation "
+             "arriving later must not void a human approval (C-06)."])
+
+table("Snags", "operational", "project", "confidential", 1,
+      "Defects and observations tracked to closure with evidence.", "الملاحظات وعدم المطابقات",
+      "SnagID", [
+    col("SnagID", "id", True, key="pk", ex="SNG-H4L8R2"),
+    col("ProjectID", "ref", True, ref="Projects.ProjectID", src="system"),
+    col("LocationID", "ref", True, ref="Locations.LocationID", src="user"),
+    col("VisitID", "ref", False, ref="SiteVisits.VisitID", src="system"),
+    col("VisitActivityID", "ref", False, ref="VisitActivities.VisitActivityID", src="system"),
+    col("SourcePhotoID", "ref", False, ref="Photos.PhotoID", src="user"),
+    col("Category", "text", True, src="user"),
+    col("Severity", "enum", True, enum="SnagSeverity", src="user"),
+    col("DescriptionEN", "longtext", True, src="user", ar="DescriptionAR"),
+    col("DescriptionAR", "longtext", False, src="user", lang="ar"),
+    col("RaisedAt", "datetime", True, src="system"),
+    col("RaisedBy", "ref", True, ref="Users.UserID", src="system"),
+    col("ResponsibleParty", "text", False, src="user"),
+    col("TargetDate", "date", False, src="user"),
+    col("Status", "enum", True, default="Open", enum="SnagStatus", src="user"),
+    col("ClosureDate", "date", False, src="user", validation="Required when Status = Closed"),
+    col("ClosureEvidencePhotoID", "ref", False, ref="Photos.PhotoID", src="user",
+        validation="Required when Status = Closed",
+        note="A snag cannot be closed on assertion alone."),
+    col("VerifiedBy", "ref", False, ref="Users.UserID", src="system",
+        validation="Required when Status = Closed"),
+    col("VerificationDate", "date", False, src="system"),
+] + ACTIVE + AUDIT)
+
+# --------------------------------------------------------------------------
+# 4. Document production
+# --------------------------------------------------------------------------
+table("DocumentJobs", "document", "project", "internal", 5,
+      "A request to produce a document from a frozen snapshot of approved records.",
+      "مهام إنشاء المستندات", "JobID", [
+    col("JobID", "id", True, key="pk", ex="JOB-S4M7B1"),
+    col("ProjectID", "ref", True, ref="Projects.ProjectID", src="user"),
+    col("LegalEntityID", "ref", True, ref="LegalEntities.LegalEntityID", src="system"),
+    col("DocumentTypeCode", "enum", True, enum="DocumentTypeCode", src="user"),
+    col("LanguageCode", "enum", True, default="en", enum="Language", src="user"),
+    col("PeriodStart", "date", True, src="user"),
+    col("PeriodEnd", "date", True, src="user", validation="Must be >= PeriodStart"),
+    col("RequestedBy", "ref", True, ref="Users.UserID", src="system",
+        validation="Must hold MayRequestDocuments on ProjectID"),
+    col("RequestedAt", "datetime", True, src="system"),
+    col("InputValidationStatus", "text", True, default="NotRun", src="system",
+        validation="NotRun|Passed|Failed"),
+    col("InputValidationFindings", "json", False, src="system",
+        note="Explicit DATA GAP items rather than silent omissions."),
+    col("SnapshotManifest", "json", False, src="system",
+        note="Frozen list of included record IDs with their EntityVersion and ContentHash. "
+             "Later edits cannot silently alter a draft (spec 8 scenario 05)."),
+    col("SnapshotFrozenAt", "datetime", False, src="system"),
+    col("WorkflowStatus", "enum", True, default="Requested", enum="JobStatus", src="system"),
+    col("AIModel", "text", False, src="system"),
+    col("PromptVersion", "text", False, src="system"),
+    col("ReservedNumberID", "ref", False, ref="NumberRegister.NumberID", src="system",
+        note="A number reserved for this job; cancelled if the job fails (D-10)."),
+    col("StartedAt", "datetime", False, src="system"),
+    col("FinishedAt", "datetime", False, src="system"),
+    col("ErrorClass", "enum", False, enum="FailureClass", src="system"),
+    col("ErrorMessage", "longtext", False, src="system", note="Sanitised. Never contains a secret."),
+    col("RetryCount", "int", True, default="0", src="system"),
+    col("CorrelationID", "text", True, src="system"),
+] + AUDIT)
+
+table("Documents", "document", "project", "confidential", 5,
+      "A produced document revision. Approval binds to ContentHash (ADR-0006).",
+      "المستندات المنتجة", "DocumentID", [
+    col("DocumentID", "id", True, key="pk", ex="DOC-Y2R5T9"),
+    col("JobID", "ref", True, ref="DocumentJobs.JobID", src="system"),
+    col("ProjectID", "ref", True, ref="Projects.ProjectID", src="system"),
+    col("LegalEntityID", "ref", True, ref="LegalEntities.LegalEntityID", src="system"),
+    col("DocumentTypeCode", "enum", True, enum="DocumentTypeCode", src="system"),
+    col("TemplateID", "ref", True, ref="DocumentTemplates.TemplateID", src="system"),
+    col("LanguageCode", "enum", True, enum="Language", src="system"),
+    col("DocumentNumber", "text", False, uniq=True, src="system",
+        note="Issued by the numbering service at creation (D-10)."),
+    col("VersionNumber", "int", True, default="1", src="system"),
+    col("RevisionLabel", "text", False, src="system", ex="Rev.0"),
+    col("DraftFileKey", "filekey", False, src="system"),
+    col("PDFFileKey", "filekey", False, src="system"),
+    col("ContentHash", "checksum", True, src="system", hash=True,
+        note="Recomputed and compared before any release, posting or send."),
+    col("TechnicalApprovalStatus", "text", True, default="Pending", src="system",
+        validation="Pending|Approved|Rejected|Void"),
+    col("FinancialApprovalStatus", "text", True, default="NotRequired", src="system",
+        validation="NotRequired|Pending|Approved|Rejected|Void"),
+    col("ReleaseStatus", "enum", True, default="Draft", enum="DocumentStatus", src="system"),
+    col("ReleasedAt", "datetime", False, src="system"),
+    col("ReleasedBy", "ref", False, ref="Users.UserID", src="system"),
+    col("RecipientSnapshot", "json", False, src="system",
+        note="Authorised recipients as they were AT RELEASE. Later contact edits cannot rewrite "
+             "history."),
+    col("SupersedesDocumentID", "ref", False, ref="Documents.DocumentID", src="system"),
+    col("ClassificationCode", "enum", True, default="ClientConfidential",
+        enum="DataClassificationCode", src="system"),
+] + AUDIT)
+
+table("NumberRegister", "document", "global", "internal", 5,
+      "Every number ever reserved, issued or cancelled. A cancelled number is never reused (D-10).",
+      "سجل أرقام المستندات", "NumberID", [
+    col("NumberID", "id", True, key="pk", ex="NUM-J7V3F4"),
+    col("SeriesID", "ref", True, ref="NumberingSeries.SeriesID", src="system"),
+    col("SequenceValue", "int", True, src="system"),
+    col("FormattedNumber", "text", True, uniq=True, src="system", ex="{ENTITY}-TR-2026-001 (illustrative)"),
+    col("YearKey", "text", True, src="system", ex="2026"),
+    col("ScopeKey", "text", True, src="system",
+        note="Partition key: company-wide, project or client, per the series configuration."),
+    col("State", "enum", True, default="Reserved", enum="NumberState", src="system"),
+    col("ReservedForJobID", "ref", False, ref="DocumentJobs.JobID", src="system"),
+    col("IssuedToDocumentID", "ref", False, ref="Documents.DocumentID", src="system"),
+    col("ReservedAt", "datetime", True, src="system"),
+    col("IssuedAt", "datetime", False, src="system"),
+    col("CancelledAt", "datetime", False, src="system"),
+    col("CancellationReason", "text", False, src="system",
+        validation="Required when State = Cancelled",
+        note="A gap in the register must always be explainable."),
+    col("MigratedFromManual", "bool", True, default="FALSE", src="system",
+        note="TRUE for numbers imported from the existing manual register."),
+] + AUDIT,
+      unique_together=[["SeriesID", "YearKey", "ScopeKey", "SequenceValue"]])
+
+# --------------------------------------------------------------------------
+# 5. Control tables
+# --------------------------------------------------------------------------
+table("Approvals", "control", "project", "internal", 1,
+      "Every approval decision, bound to the exact content approved (ADR-0006, D-09).",
+      "قرارات الاعتماد", "ApprovalID", [
+    col("ApprovalID", "id", True, key="pk", ex="APR-B5X8N2"),
+    col("EntityType", "text", True, src="system", validation="Table name"),
+    col("EntityID", "text", True, src="system"),
+    col("ProjectID", "ref", False, ref="Projects.ProjectID", src="system",
+        note="Carried for row-level security even on control records."),
+    col("ApprovalStage", "enum", True, enum="ApprovalStage", src="system"),
+    col("SequenceNumber", "int", True, default="1", src="system"),
+    col("RequestedFromUserID", "ref", True, ref="Users.UserID", src="system",
+        note="The ACCOUNTABLE approver from the approval matrix."),
+    col("RequestedAt", "datetime", True, src="system"),
+    col("Decision", "enum", True, default="Pending", enum="ApprovalDecision", src="user"),
+    col("DecisionAt", "datetime", False, src="system"),
+    col("DecisionByUserID", "ref", False, ref="Users.UserID", src="system",
+        note="The ACTING user. Differs from RequestedFromUserID only under a valid delegation."),
+    col("DelegationID", "ref", False, ref="ApprovalDelegations.DelegationID", src="system",
+        validation="Required when DecisionByUserID != RequestedFromUserID"),
+    col("Comment", "longtext", False, src="user"),
+    col("EntityVersion", "int", True, src="system"),
+    col("ContentHash", "checksum", True, src="system",
+        note="The approval applies to THIS hash only. A change voids it and everything downstream."),
+    col("VoidedAt", "datetime", False, src="system"),
+    col("VoidReason", "text", False, src="system"),
+    col("IsOverride", "bool", True, default="FALSE", src="system",
+        note="An override is recorded AS an override, with a reason. Never silent (SEC-05)."),
+    col("OverrideReason", "longtext", False, src="user", validation="Required when IsOverride"),
+] + AUDIT,
+      notes=["Self-approval of a restricted transaction is rejected even when the approver is "
+             "unavailable; the correct path is a recorded delegation (D-09)."])
+
+table("EntityVersions", "control", "project", "internal", 1,
+      "Immutable version history of hashable entities. Supports proving what a decision applied to.",
+      "سجل نسخ السجلات", "VersionID", [
+    col("VersionID", "id", True, key="pk", ex="VER-K1G6D7"),
+    col("EntityType", "text", True, src="system"),
+    col("EntityID", "text", True, src="system"),
+    col("ProjectID", "ref", False, ref="Projects.ProjectID", src="system"),
+    col("VersionNumber", "int", True, src="system"),
+    col("ContentHash", "checksum", True, src="system"),
+    col("CanonicalFieldSetVersion", "text", True, src="system",
+        note="Which canonical field list produced this hash. Changing the list is a migration."),
+    col("ChangedByUserID", "ref", True, ref="Users.UserID", src="system"),
+    col("ChangedAt", "datetime", True, src="system"),
+    col("ChangeSummary", "text", False, src="system",
+        note="Which hashed fields changed. Never the full payload."),
+    col("InvalidatedApprovalIDs", "text", False, src="system",
+        note="Approvals voided by this change, recorded at the moment it happened."),
+] + AUDIT,
+      unique_together=[["EntityType", "EntityID", "VersionNumber"]])
+
+table("AuditLog", "control", "global", "internal", 1,
+      "Append-only record of every state transition and every consequential action.",
+      "سجل التدقيق", "AuditID", [
+    col("AuditID", "id", True, key="pk", ex="AUD-P9C4L3"),
+    col("TimestampUTC", "datetime", True, src="system"),
+    col("UserOrService", "text", True, src="system"),
+    col("Action", "text", True, src="system", ex="SiteVisit.Submit"),
+    col("EntityType", "text", True, src="system"),
+    col("EntityID", "text", True, src="system"),
+    col("ProjectID", "ref", False, ref="Projects.ProjectID", src="system"),
+    col("BeforeHash", "checksum", False, src="system"),
+    col("AfterHash", "checksum", False, src="system"),
+    col("SourceIPOrDevice", "text", False, src="system", note="Where available. Not fabricated."),
+    col("CorrelationID", "text", False, src="system"),
+    col("Result", "text", True, src="system", validation="Success|Failure|Denied"),
+    col("Reason", "text", False, src="system"),
+] + [],
+      notes=["Append-only. No update or delete path exists for any role, including SystemAdmin.",
+             "Never stores an access token, a credential or a full sensitive payload."])
+
+table("IntegrationJobs", "control", "global", "internal", 3,
+      "One row per external call attempt, with idempotency and failure classification.",
+      "سجل عمليات التكامل الخارجي", "IntegrationJobID", [
+    col("IntegrationJobID", "id", True, key="pk", ex="INT-T6Z2W8"),
+    col("SystemName", "text", True, src="system", ex="Drive"),
+    col("OperationName", "text", True, src="system"),
+    col("IdempotencyKey", "text", True, src="system",
+        note="{Scenario}:{EntityType}:{EntityID}:{TargetState}. Claimed BEFORE any side effect."),
+    col("CorrelationID", "text", True, src="system"),
+    col("EntityType", "text", True, src="system"),
+    col("EntityID", "text", True, src="system"),
+    col("ProjectID", "ref", False, ref="Projects.ProjectID", src="system"),
+    col("AttemptNumber", "int", True, default="1", src="system"),
+    col("StartedAt", "datetime", True, src="system"),
+    col("FinishedAt", "datetime", False, src="system"),
+    col("Status", "enum", True, default="Pending", enum="IntegrationStatus", src="system"),
+    col("SanitizedRequestSummary", "text", False, src="system",
+        note="Summary only. Never a payload, a credential or a token."),
+    col("SanitizedResponseSummary", "text", False, src="system"),
+    col("ErrorClass", "enum", False, enum="FailureClass", src="system"),
+    col("ErrorCode", "text", False, src="system"),
+    col("RetryAfter", "datetime", False, src="system"),
+    col("IsRetriable", "bool", True, default="FALSE", src="system",
+        note="Derived from ErrorClass. Validation and authorisation failures are never retried."),
+] + [],
+      unique_together=[["IdempotencyKey", "AttemptNumber"]])
+
+# --------------------------------------------------------------------------
+# 6. Designed now, built later: contracts, billing, resources
+# --------------------------------------------------------------------------
+table("Contracts", "financial", "project", "financial", 6,
+      "Commercial agreement governing a project. Hidden from field roles entirely.",
+      "العقود", "ContractID", [
+    col("ContractID", "id", True, key="pk", ex="CNT-W2Y7P4"),
+    col("LegalEntityID", "ref", True, ref="LegalEntities.LegalEntityID", src="user"),
+    col("ClientID", "ref", True, ref="Clients.ClientID", src="user"),
+    col("ProjectID", "ref", False, ref="Projects.ProjectID", src="user"),
+    col("ContractNumber", "text", True, uniq=True, src="user"),
+    col("EffectiveDate", "date", True, src="user"),
+    col("ExpiryDate", "date", False, src="user"),
+    col("Currency", "text", True, src="user", validation="ISO 4217; must match the project currency"),
+    col("PaymentTermsDays", "int", True, src="user"),
+    col("RetentionPercent", "decimal", False, src="user", scale=4),
+    col("AdvanceAmount", "decimal", False, src="user", scale=3),
+    col("AdvanceRecoveryPercent", "decimal", False, src="user", scale=4),
+    col("TaxRuleID", "ref", False, ref="TaxRules.TaxRuleID", src="user",
+        note="The rule AND its version are preserved on every calculation (D-08)."),
+    col("BillingFrequency", "enum", False, enum="ReportingFrequency", src="user"),
+    col("BillingMethod", "enum", True, enum="BillingMethod", src="user"),
+    col("ContractValue", "decimal", False, src="user", scale=3),
+    col("Status", "text", True, default="Draft", src="user",
+        validation="Draft|Active|Suspended|Completed|Terminated"),
+    col("Version", "int", True, default="1", src="system"),
+] + ACTIVE + AUDIT)
+
+table("WorkOrders", "financial", "project", "financial", 6,
+      "A discrete instruction under a contract, or a one-off job.", "أوامر العمل", "WorkOrderID", [
+    col("WorkOrderID", "id", True, key="pk", ex="WO-H3N7Q5"),
+    col("ProjectID", "ref", True, ref="Projects.ProjectID", src="user"),
+    col("ContractID", "ref", False, ref="Contracts.ContractID", src="user"),
+    col("WorkOrderNumber", "text", True, src="user"),
+    col("DescriptionEN", "longtext", True, src="user", ar="DescriptionAR"),
+    col("DescriptionAR", "longtext", False, src="user", lang="ar"),
+    col("IssuedDate", "date", True, src="user"),
+    col("TargetCompletionDate", "date", False, src="user"),
+    col("Status", "text", True, default="Open", src="user",
+        validation="Open|InProgress|Completed|Cancelled"),
+] + ACTIVE + AUDIT,
+      unique_together=[["ProjectID", "WorkOrderNumber"]])
+
+table("BOQItems", "financial", "project", "financial", 6,
+      "Bill of quantities. Cumulative quantity is controlled, never merely recorded.",
+      "بنود جدول الكميات", "BOQItemID", [
+    col("BOQItemID", "id", True, key="pk", ex="BOQ-M2D9S6"),
+    col("ContractID", "ref", True, ref="Contracts.ContractID", src="user"),
+    col("ProjectID", "ref", True, ref="Projects.ProjectID", src="system"),
+    col("ItemNumber", "text", True, src="user"),
+    col("DescriptionEN", "longtext", True, src="user", ar="DescriptionAR"),
+    col("DescriptionAR", "longtext", False, src="user", lang="ar"),
+    col("UnitID", "ref", True, ref="Units.UnitID", src="user"),
+    col("ContractQuantity", "decimal", True, src="user", scale=3, validation=">= 0"),
+    col("UnitRate", "decimal", True, src="user", scale=3, validation=">= 0"),
+    col("ApprovedVariationQuantity", "decimal", True, default="0", src="user", scale=3),
+    col("PreviouslyCertifiedQuantity", "decimal", True, default="0", src="system", scale=3),
+    col("CurrentQuantity", "decimal", True, default="0", src="system", scale=3),
+    col("CumulativeQuantity", "decimal", True, default="0", src="system", scale=3,
+        note="Computed. Must not exceed ContractQuantity + ApprovedVariationQuantity without a "
+             "recorded authorised override (spec 5.17)."),
+    col("RemainingQuantity", "decimal", True, default="0", src="system", scale=3, note="Computed."),
+    col("QuickBooksItemID", "text", False, src="integration",
+        note="Immutable accounting item identifier. Never name-matched."),
+] + ACTIVE + AUDIT,
+      unique_together=[["ContractID", "ItemNumber"]])
+
+table("InvoiceRequests", "financial", "project", "financial", 6,
+      "A calculated billing request. Drafts only until Phase 7; never posted from Phase 1 or 6.",
+      "طلبات إصدار الفواتير", "InvoiceRequestID", [
+    col("InvoiceRequestID", "id", True, key="pk", ex="INV-R8F1V4"),
+    col("LegalEntityID", "ref", True, ref="LegalEntities.LegalEntityID", src="system"),
+    col("ClientID", "ref", True, ref="Clients.ClientID", src="system"),
+    col("ProjectID", "ref", True, ref="Projects.ProjectID", src="system"),
+    col("ContractID", "ref", True, ref="Contracts.ContractID", src="system"),
+    col("BillingPeriodStart", "date", True, src="user"),
+    col("BillingPeriodEnd", "date", True, src="user"),
+    col("Currency", "text", True, src="system",
+        note="From the contract. A mismatch anywhere is a validation failure (C-09)."),
+    col("PaymentTermsDays", "int", True, src="system"),
+    col("InvoiceDate", "date", False, src="user"),
+    col("DueDate", "date", False, src="system", note="InvoiceDate + PaymentTermsDays, per contract."),
+    col("TaxRuleID", "ref", False, ref="TaxRules.TaxRuleID", src="system"),
+    col("TaxRuleVersion", "int", False, src="system",
+        note="The version applied, preserved forever (D-08)."),
+    col("Subtotal", "decimal", True, default="0", src="calculation", scale=3),
+    col("Discount", "decimal", True, default="0", src="calculation", scale=3),
+    col("TaxAmount", "decimal", True, default="0", src="calculation", scale=3),
+    col("RetentionAmount", "decimal", True, default="0", src="calculation", scale=3),
+    col("AdvanceRecovery", "decimal", True, default="0", src="calculation", scale=3),
+    col("NetPayable", "decimal", True, default="0", src="calculation", scale=3),
+    col("CalculationTrace", "json", False, src="calculation",
+        note="Ordered record of every step and rounding decision, reproducible from stored inputs."),
+    col("SourceDocumentID", "ref", False, ref="Documents.DocumentID", src="system",
+        note="The completion certificate or report this billing derives from."),
+    col("FinanceStatus", "text", True, default="Draft", src="system",
+        validation="Draft|PendingFinanceApproval|FinanceApproved|Rejected|Void"),
+    col("QuickBooksStatus", "text", True, default="NotSent", src="system",
+        validation="NotSent|Draft|Posted|Failed|ReconciliationFailed"),
+    col("QuickBooksInvoiceID", "text", False, src="integration"),
+    col("DraftInvoiceNumber", "text", False, src="system",
+        note="Internal. Separate from the final accounting number (spec 11)."),
+    col("FinalInvoiceNumber", "text", False, src="integration"),
+    col("ContentHash", "checksum", True, src="system"),
+    col("EntityVersion", "int", True, default="1", src="system"),
+] + AUDIT,
+      unique_together=[["ClientID", "ProjectID", "ContractID", "BillingPeriodStart",
+                        "BillingPeriodEnd", "SourceDocumentID"]],
+      notes=["The unique key is the duplicate-billing control (spec 11)."])
+
+table("InvoiceLines", "financial", "project", "financial", 6,
+      "Calculated invoice lines. No figure originates from a language model (invariant I-4).",
+      "بنود الفاتورة", "InvoiceLineID", [
+    col("InvoiceLineID", "id", True, key="pk", ex="INL-C7J5K9"),
+    col("InvoiceRequestID", "ref", True, ref="InvoiceRequests.InvoiceRequestID", src="system"),
+    col("ProjectID", "ref", True, ref="Projects.ProjectID", src="system"),
+    col("BOQItemID", "ref", False, ref="BOQItems.BOQItemID", src="system"),
+    col("LineNumber", "int", True, src="system"),
+    col("DescriptionEN", "longtext", True, src="user", ar="DescriptionAR",
+        note="AI may draft this human-readable description and nothing else (spec 9.4)."),
+    col("DescriptionAR", "longtext", False, src="user", lang="ar"),
+    col("Quantity", "decimal", True, src="system", scale=3),
+    col("UnitRate", "decimal", True, src="system", scale=3),
+    col("LineAmount", "decimal", True, src="calculation", scale=3, note="Computed, never entered."),
+    col("TaxCode", "text", False, src="system"),
+    col("TaxAmount", "decimal", True, default="0", src="calculation", scale=3),
+    col("CostCenter", "text", False, src="user"),
+    col("Class", "text", False, src="user", note="Maps to an accounting class where available."),
+    col("ProjectReference", "text", False, src="system"),
+] + AUDIT)
+
+table("Materials", "master", "global", "internal", 5,
+      "Approved materials catalogue.", "كتالوج المواد", "MaterialID", [
+    col("MaterialID", "id", True, key="pk", ex="MAT-W4B2T1"),
+    col("ItemCode", "text", True, uniq=True, src="config"),
+    col("DescriptionEN", "text", True, src="config", ar="DescriptionAR"),
+    col("DescriptionAR", "text", False, src="config", lang="ar"),
+    col("UnitID", "ref", True, ref="Units.UnitID", src="config"),
+    col("ApprovedSpecification", "longtext", False, src="config"),
+    col("ApprovedBrand", "text", False, src="config"),
+    col("Supplier", "text", False, src="config"),
+    col("QuickBooksItemID", "text", False, src="integration", sens="financial"),
+] + ACTIVE + AUDIT)
+
+table("MaterialUsage", "operational", "project", "internal", 5,
+      "Material consumed against a visit activity. Never creates an accounting transaction (spec 5.12).",
+      "استهلاك المواد", "MaterialUsageID", [
+    col("MaterialUsageID", "id", True, key="pk", ex="MUS-G6L9P3"),
+    col("VisitActivityID", "ref", True, ref="VisitActivities.VisitActivityID", src="user"),
+    col("ProjectID", "ref", True, ref="Projects.ProjectID", src="system"),
+    col("MaterialID", "ref", True, ref="Materials.MaterialID", src="user"),
+    col("Quantity", "decimal", True, src="user", scale=3, validation=">= 0"),
+    col("UnitID", "ref", True, ref="Units.UnitID", src="user"),
+    col("Remarks", "text", False, src="user"),
+] + AUDIT)
+
+table("Equipment", "master", "global", "internal", 5,
+      "Equipment register.", "سجل المعدات", "EquipmentID", [
+    col("EquipmentID", "id", True, key="pk", ex="EQP-N1X7Z5"),
+    col("EquipmentCode", "text", True, uniq=True, src="config"),
+    col("NameEN", "text", True, src="config", ar="NameAR"),
+    col("NameAR", "text", False, src="config", lang="ar"),
+    col("Category", "text", False, src="config"),
+] + ACTIVE + AUDIT)
+
+table("VisitEquipment", "operational", "project", "internal", 5,
+      "Equipment present during a visit.", "المعدات المستخدمة في الزيارة", "VisitEquipmentID", [
+    col("VisitEquipmentID", "id", True, key="pk", ex="VEQ-Q3S8M6"),
+    col("VisitID", "ref", True, ref="SiteVisits.VisitID", src="user"),
+    col("ProjectID", "ref", True, ref="Projects.ProjectID", src="system"),
+    col("EquipmentID", "ref", True, ref="Equipment.EquipmentID", src="user"),
+    col("Hours", "decimal", False, src="user", scale=2),
+    col("Remarks", "text", False, src="user"),
+] + AUDIT)
+
+table("Employees", "master", "global", "personal", 5,
+      "Crew register for resource reporting. Payroll data is deliberately excluded (spec 5.13).",
+      "سجل العمالة", "EmployeeID", [
+    col("EmployeeID", "id", True, key="pk", ex="EMP-F5D2H4"),
+    col("EmployeeCode", "text", True, uniq=True, src="config"),
+    col("FullNameEN", "text", True, src="config", ar="FullNameAR"),
+    col("FullNameAR", "text", False, src="config", lang="ar"),
+    col("TradeEN", "text", False, src="config", ar="TradeAR"),
+    col("TradeAR", "text", False, src="config", lang="ar"),
+    col("CrewCode", "text", False, src="config"),
+] + ACTIVE + AUDIT,
+      notes=["No salary, rate, passport, visa or personal document field exists in this table."])
+
+table("VisitManpower", "operational", "project", "internal", 5,
+      "Manpower present during a visit, for resource summaries only.", "العمالة في الزيارة",
+      "VisitManpowerID", [
+    col("VisitManpowerID", "id", True, key="pk", ex="VMP-V9K1B7"),
+    col("VisitID", "ref", True, ref="SiteVisits.VisitID", src="user"),
+    col("ProjectID", "ref", True, ref="Projects.ProjectID", src="system"),
+    col("EmployeeID", "ref", False, ref="Employees.EmployeeID", src="user"),
+    col("TradeEN", "text", False, src="user", ar="TradeAR"),
+    col("TradeAR", "text", False, src="user", lang="ar"),
+    col("HeadCount", "int", False, src="user", validation=">= 0"),
+    col("Hours", "decimal", False, src="user", scale=2),
+] + AUDIT,
+      notes=["Never exposes payroll detail to field roles."])
+
+# --------------------------------------------------------------------------
+# 7. Status transitions
+# --------------------------------------------------------------------------
+TRANSITIONS = {}
+
+
+def transitions(entity, field, allowed, forbidden, terminal):
+    TRANSITIONS[entity] = {
+        "entity": entity, "field": field,
+        "allowed": [
+            {"from": f, "to": t, "roles": r, "preconditions": p, "side_effects": s, "invalidates": i}
+            for (f, t, r, p, s, i) in allowed],
+        "forbidden": forbidden,
+        "terminal_states": terminal,
+    }
+
+
+transitions("SiteVisits", "WorkflowStatus", [
+    ("Draft", "Submitted", ["FieldUser", "SiteSupervisor"],
+     ["At least one VisitActivity exists",
+      "Every effective evidence rule satisfied",
+      "Submitter holds an active ProjectAssignment with MaySubmitEvidence",
+      "Project.Status = Active"],
+     ["SubmittedAt set", "EntityVersion incremented", "ContentHash computed",
+      "Protected fields become read-only to the submitter"], []),
+    ("Draft", "Cancelled", ["FieldUser", "SiteSupervisor", "ProjectManager"],
+     ["Reason recorded"], ["Record retained, never deleted"], []),
+    ("Submitted", "UnderTechnicalReview", ["System"],
+     ["Server-side validation passed", "Authorisation re-validated from the authoritative record"],
+     ["Reviewer notified once", "Idempotency key claimed"], []),
+    ("Submitted", "ValidationFailed", ["System"],
+     ["Server-side validation failed"],
+     ["Specific correctable errors recorded in ValidationErrors", "Submitter notified"], []),
+    ("ValidationFailed", "Draft", ["FieldUser", "SiteSupervisor"], [],
+     ["Record editable again"], []),
+    ("UnderTechnicalReview", "CorrectionRequired", ["TechnicalReviewer", "ProjectManager", "GeneralManager"],
+     ["RejectionReason recorded"], ["Returned to the submitter's queue"], []),
+    ("UnderTechnicalReview", "TechnicallyApproved", ["TechnicalReviewer", "ProjectManager", "GeneralManager"],
+     ["Reviewer is not the submitter (self-approval prohibited, D-09)",
+      "Every photograph has a ReviewerDecision other than Pending"],
+     ["Approval row written with EntityVersion and ContentHash",
+      "TechnicalReviewedAt and TechnicalReviewedBy set"], []),
+    ("CorrectionRequired", "Draft", ["FieldUser", "SiteSupervisor"], [],
+     ["Record editable again"], []),
+    ("TechnicallyApproved", "ReadyForReport", ["System"],
+     ["Period open", "Project reporting configuration resolved"], [], []),
+    ("TechnicallyApproved", "CorrectionRequired", ["TechnicalReviewer", "GeneralManager"],
+     ["Reason recorded"], ["Approval voided"], ["Approvals for this visit"]),
+    ("ReadyForReport", "IncludedInDraft", ["System"],
+     ["Included in a frozen DocumentJob snapshot"], ["Snapshot records version and hash"], []),
+    ("IncludedInDraft", "Released", ["System"],
+     ["Parent document reached Released"], [], []),
+    ("Released", "Archived", ["SystemAdmin", "GeneralManager"],
+     ["Retention review completed"], ["Moved to archive folder; nothing deleted"], []),
+    ("IncludedInDraft", "ReadyForReport", ["System"],
+     ["The document draft was cancelled"], ["Reserved number cancelled, never reused"], []),
+], forbidden=[
+    "Draft -> TechnicallyApproved (skips validation and review)",
+    "Submitted -> TechnicallyApproved (skips validation)",
+    "ValidationFailed -> UnderTechnicalReview (errors must be corrected first)",
+    "Any state -> Released without a released parent document",
+    "Archived -> any state (archive is terminal)",
+    "Any transition performed by a user without an active ProjectAssignment",
+], terminal=["Archived", "Cancelled"])
+
+transitions("VisitActivities", "Status", [
+    ("Draft", "Submitted", ["FieldUser", "SiteSupervisor"], ["Parent visit submitted"], [], []),
+    ("Submitted", "UnderReview", ["System"], ["Parent visit under review"], [], []),
+    ("UnderReview", "Approved", ["TechnicalReviewer", "ProjectManager", "GeneralManager"],
+     ["Reviewer is not the submitter", "Evidence rule satisfied or a recorded override exists"],
+     ["Eligible for reporting"], []),
+    ("UnderReview", "Rejected", ["TechnicalReviewer", "ProjectManager", "GeneralManager"],
+     ["Comment recorded"], ["Excluded from reporting; record retained"], []),
+    ("UnderReview", "CorrectionRequired", ["TechnicalReviewer", "ProjectManager", "GeneralManager"],
+     ["Comment recorded"], [], []),
+    ("CorrectionRequired", "Draft", ["FieldUser", "SiteSupervisor"], [], [], []),
+    ("Approved", "CorrectionRequired", ["TechnicalReviewer", "GeneralManager"],
+     ["Reason recorded"], ["Approval voided"], ["Approvals for this activity and its parent visit"]),
+    ("Draft", "Cancelled", ["FieldUser", "SiteSupervisor"], ["Reason recorded"], [], []),
+], forbidden=[
+    "Draft -> Approved",
+    "Rejected -> Approved (a new activity record is required instead)",
+    "Any approval by the user who submitted the activity",
+], terminal=["Cancelled"])
+
+transitions("Photos", "ReviewerDecision", [
+    ("Pending", "Approved", ["TechnicalReviewer", "ProjectManager", "GeneralManager"],
+     ["Reviewer is not the uploader",
+      "Caption present where the evidence stage requires one"],
+     ["ApprovedForReport set TRUE", "ReviewedAt and ReviewedByUserID set",
+      "EntityVersion incremented"], []),
+    ("Pending", "Rejected", ["TechnicalReviewer", "ProjectManager", "GeneralManager"],
+     ["ReviewerComment recorded"], ["ApprovedForReport stays FALSE; file retained unchanged"], []),
+    ("Pending", "Excluded", ["TechnicalReviewer", "ProjectManager", "GeneralManager"],
+     ["ReviewerComment recorded"], ["Valid evidence deliberately left out of this report"], []),
+    ("Approved", "Rejected", ["TechnicalReviewer", "GeneralManager"],
+     ["Reason recorded", "Not already frozen into a released document"],
+     ["ApprovedForReport set FALSE"], ["Approvals for the parent visit", "Unreleased draft documents containing it"]),
+    ("Rejected", "Approved", ["TechnicalReviewer", "GeneralManager"],
+     ["Reason recorded"], [], ["Approvals for the parent visit"]),
+], forbidden=[
+    "Any transition performed by AI or by an automation on AI output (ADR-0004, D-06)",
+    "Any transition that modifies, replaces or deletes the original received file (D-13)",
+    "Approval by the user who uploaded the photograph",
+], terminal=[])
+
+transitions("Snags", "Status", [
+    ("Open", "Assigned", ["ProjectManager", "TechnicalReviewer", "GeneralManager"],
+     ["ResponsibleParty and TargetDate set"], [], []),
+    ("Assigned", "InProgress", ["SiteSupervisor", "ProjectManager"], [], [], []),
+    ("InProgress", "PendingVerification", ["SiteSupervisor", "ProjectManager"],
+     ["Closure evidence photograph attached"], [], []),
+    ("PendingVerification", "Closed", ["TechnicalReviewer", "ProjectManager", "GeneralManager"],
+     ["ClosureEvidencePhotoID present and approved", "VerifiedBy is not the person who raised it",
+      "ClosureDate set"], ["Verification recorded"], []),
+    ("PendingVerification", "InProgress", ["TechnicalReviewer", "ProjectManager", "GeneralManager"],
+     ["Comment recorded"], [], []),
+    ("Open", "Rejected", ["ProjectManager", "GeneralManager"], ["Reason recorded"], [], []),
+    ("Open", "Deferred", ["ProjectManager", "GeneralManager"], ["Reason and review date recorded"], [], []),
+    ("Deferred", "Open", ["ProjectManager", "GeneralManager"], [], [], []),
+], forbidden=[
+    "Open -> Closed (closure requires evidence and verification)",
+    "Closure verified by the person who raised the snag",
+], terminal=["Closed", "Rejected"])
+
+transitions("DocumentJobs", "WorkflowStatus", [
+    ("Requested", "Validating", ["System"], ["Requester authorised on the project"], [], []),
+    ("Validating", "InputValidationFailed", ["System"],
+     ["Completeness check failed"], ["DATA GAP findings recorded explicitly"], []),
+    ("Validating", "SnapshotFrozen", ["System"],
+     ["All inputs present", "Every included record technically approved"],
+     ["Manifest of IDs, versions and hashes frozen", "Number reserved (D-10)"], []),
+    ("SnapshotFrozen", "Generating", ["System"], ["Template resolved for type, language and project"], [], []),
+    ("Generating", "Generated", ["System"],
+     ["Draft and PDF produced", "Content hash computed"], ["Number issued", "Document row created"], []),
+    ("Generating", "Failed", ["System"], ["Error classified"],
+     ["Reserved number cancelled with a reason, never reused"], []),
+    ("Requested", "Cancelled", ["ProjectManager", "GeneralManager"], ["Reason recorded"], [], []),
+    ("SnapshotFrozen", "Cancelled", ["ProjectManager", "GeneralManager"],
+     ["Reason recorded"], ["Reserved number cancelled"], []),
+], forbidden=[
+    "Requested -> Generating (a frozen snapshot is mandatory)",
+    "Re-freezing a snapshot in place (a new job is required)",
+], terminal=["Generated", "Failed", "Cancelled"])
+
+transitions("Documents", "ReleaseStatus", [
+    ("Draft", "PendingTechnicalApproval", ["System"], ["Draft and PDF exist"], [], []),
+    ("PendingTechnicalApproval", "TechnicallyApproved", ["TechnicalReviewer", "GeneralManager"],
+     ["Approver is not the requester where the matrix requires segregation",
+      "ContentHash matches the approved content"],
+     ["Revision locked", "Approval recorded with hash"], []),
+    ("PendingTechnicalApproval", "RevisionRequired", ["TechnicalReviewer", "GeneralManager"],
+     ["Comment recorded"], [], []),
+    ("TechnicallyApproved", "PendingRelease", ["System"],
+     ["Finance approval complete where required for the type"], [], []),
+    ("PendingRelease", "Released", ["GeneralManager"],
+     ["Explicit release decision recorded", "Recipients are authorised contacts",
+      "ContentHash recomputed and unchanged"],
+     ["Recipient snapshot stored", "Files moved to released folder"], []),
+    ("TechnicallyApproved", "RevisionRequired", ["System"],
+     ["A source record changed: ContentHash no longer matches"],
+     ["Technical approval voided"], ["Technical approval", "Finance approval", "Release approval"]),
+    ("RevisionRequired", "Draft", ["System"], ["New revision created"],
+     ["VersionNumber incremented; the previous revision is superseded, not overwritten"], []),
+    ("Released", "Superseded", ["System"], ["A later revision was released"], [], []),
+    ("Draft", "Cancelled", ["GeneralManager", "ProjectManager"],
+     ["Reason recorded", "Document not yet released"],
+     ["Any reserved number is cancelled with a reason, never reused"], []),
+    ("PendingTechnicalApproval", "Cancelled", ["GeneralManager"],
+     ["Reason recorded"], ["Reserved number cancelled"], []),
+    ("RevisionRequired", "Cancelled", ["GeneralManager"],
+     ["Reason recorded"], ["Reserved number cancelled"], []),
+], forbidden=[
+    "Draft -> Released",
+    "TechnicallyApproved -> Released without a release decision (spec 14 criterion 12)",
+    "Release to a recipient not marked IsAuthorizedRecipient",
+    "Editing a released document in place (a new revision is mandatory)",
+], terminal=["Superseded", "Cancelled"])
+
+transitions("NumberRegister", "State", [
+    ("Reserved", "Issued", ["System"], ["Document created successfully"], ["IssuedAt set"], []),
+    ("Reserved", "Cancelled", ["System"], ["Job failed or was cancelled", "Reason recorded"],
+     ["Number never reused; the gap is explainable"], []),
+], forbidden=[
+    "Issued -> Reserved",
+    "Cancelled -> Reserved or Issued (silent reuse is prohibited, D-10)",
+    "Deleting any row from the register",
+], terminal=["Issued", "Cancelled"])
+
+transitions("Approvals", "Decision", [
+    ("Pending", "Approved", ["GeneralManager", "TechnicalReviewer", "FinanceReviewer"],
+     ["Acting user is the responsible approver, or holds a valid unrevoked delegation covering "
+      "this stage, project and moment",
+      "Acting user is not the originator where SelfApprovalProhibited is TRUE",
+      "ContentHash still matches the entity"],
+     ["DecisionAt and DecisionByUserID recorded", "DelegationID recorded when acting as a delegate"], []),
+    ("Pending", "Rejected", ["GeneralManager", "TechnicalReviewer", "FinanceReviewer"],
+     ["Comment recorded"], [], []),
+    ("Pending", "Delegated", ["GeneralManager", "TechnicalReviewer", "FinanceReviewer"],
+     ["A delegation exists that is active, unrevoked, inside its window, and covers this stage "
+      "and project", "The delegate is not the originator of the item being approved"],
+     ["Request reassigned to the delegate; the original responsible user is retained"], []),
+    ("Delegated", "Approved", ["GeneralManager", "TechnicalReviewer", "FinanceReviewer",
+                               "ProjectManager"],
+     ["Acting user is the named delegate", "Delegation still valid at the moment of decision",
+      "ContentHash still matches the entity"],
+     ["DecisionByUserID is the delegate; RequestedFromUserID remains the accountable approver; "
+      "DelegationID recorded"], []),
+    ("Delegated", "Rejected", ["GeneralManager", "TechnicalReviewer", "FinanceReviewer",
+                               "ProjectManager"],
+     ["Acting user is the named delegate", "Comment recorded"], ["DelegationID recorded"], []),
+    ("Pending", "Withdrawn", ["System"], ["Request superseded"], [], []),
+    ("Approved", "Void", ["System"], ["Entity ContentHash changed after approval"],
+     ["VoidedAt and VoidReason recorded"], ["Every approval downstream of this one"]),
+], forbidden=[
+    "Approving one's own restricted transaction because an approver is unavailable (D-09)",
+    "Approving with an expired, revoked or out-of-scope delegation",
+    "Delegating to the person who originated the item being approved",
+    "Void -> Approved (a fresh approval of the new content is required)",
+], terminal=["Rejected", "Withdrawn", "Void"])
+
+transitions("Projects", "Status", [
+    ("Draft", "Active", ["SystemAdmin", "GeneralManager"],
+     ["Client, legal entity, locations, activity rules, approval matrix and template resolved",
+      "Residency assignment reviewed or explicitly recorded as unrestricted"],
+     ["Project becomes visible to assigned users"], []),
+    ("Active", "Suspended", ["SystemAdmin", "GeneralManager"], ["Reason recorded"],
+     ["No new visits; existing records readable"], []),
+    ("Suspended", "Active", ["SystemAdmin", "GeneralManager"], [], [], []),
+    ("Active", "Completed", ["GeneralManager"], ["Closeout reporting complete"], [], []),
+    ("Completed", "Archived", ["SystemAdmin", "GeneralManager"], ["Retention review completed"],
+     ["Read-only"], []),
+], forbidden=[
+    "Draft -> Active while a residency requirement blocks production upload and is unreviewed (D-12)",
+    "Archived -> any state",
+], terminal=["Archived"])
+
+# --------------------------------------------------------------------------
+# 8. Role and row-level security matrix
+# --------------------------------------------------------------------------
+SCOPES = {
+    "all": "Every row in the table.",
+    "assigned": "Only rows whose ProjectID appears in the user's active ProjectAssignments.",
+    "own": "Only rows the user created, within their assigned projects.",
+    "none": "No access. The table is not present in this role's data set at all.",
+}
+
+ROLE_CODES = ["SystemAdmin", "GeneralManager", "TechnicalReviewer", "FinanceReviewer",
+              "ProjectManager", "SiteSupervisor", "FieldUser", "ReadOnlyAuditor"]
+
+GROUPS = {
+    "config": ["LegalEntities", "Languages", "Roles", "Units", "Disciplines", "ActivityTypes",
+               "DocumentTypes", "DataClassifications", "ResidencyRequirements", "NumberingSeries",
+               "DocumentTemplates", "Materials", "Equipment"],
+    "people": ["Users", "Employees"],
+    "clients": ["Clients", "Contacts"],
+    "projectmaster": ["Projects", "ProjectAssignments", "Locations", "ProjectActivityRules",
+                      "ApprovalMatrix", "ApprovalDelegations", "ResidencyAssignments"],
+    "operational": ["SiteVisits", "VisitActivities", "Photos", "Snags", "MaterialUsage",
+                    "VisitEquipment", "VisitManpower"],
+    "document": ["DocumentJobs", "Documents", "NumberRegister"],
+    "control": ["Approvals", "EntityVersions", "AuditLog", "IntegrationJobs"],
+    "financial": ["TaxRules", "Contracts", "WorkOrders", "BOQItems", "InvoiceRequests", "InvoiceLines"],
+}
+
+# read, create, update  (delete is "none" everywhere: rows are deactivated, never destroyed)
+RULES = {
+    # An administrator configures the system and works the error queue. They do not need to read
+    # client evidence or documents to do that, so they cannot (spec 7.4, least privilege).
+    "SystemAdmin": {
+        "config": ("all", "all", "all"), "people": ("all", "all", "all"),
+        "clients": ("all", "all", "all"), "projectmaster": ("all", "all", "all"),
+        "operational": ("none", "none", "none"), "document": ("none", "none", "none"),
+        "control": ("all", "none", "none"), "financial": ("none", "none", "none"),
+    },
+    "GeneralManager": {
+        "config": ("all", "all", "all"), "people": ("all", "all", "all"),
+        "clients": ("all", "all", "all"), "projectmaster": ("all", "all", "all"),
+        "operational": ("all", "none", "all"), "document": ("all", "all", "all"),
+        "control": ("all", "all", "all"), "financial": ("all", "all", "all"),
+    },
+    "TechnicalReviewer": {
+        "config": ("all", "none", "none"), "people": ("all", "none", "none"),
+        "clients": ("all", "none", "none"), "projectmaster": ("assigned", "none", "none"),
+        "operational": ("assigned", "none", "assigned"), "document": ("assigned", "none", "none"),
+        "control": ("assigned", "all", "all"), "financial": ("none", "none", "none"),
+    },
+    "FinanceReviewer": {
+        "config": ("all", "none", "none"), "people": ("all", "none", "none"),
+        "clients": ("all", "none", "none"), "projectmaster": ("all", "none", "none"),
+        "operational": ("assigned", "none", "none"), "document": ("all", "none", "none"),
+        "control": ("all", "all", "all"), "financial": ("all", "all", "all"),
+    },
+    "ProjectManager": {
+        "config": ("all", "none", "none"), "people": ("all", "none", "none"),
+        "clients": ("all", "none", "none"), "projectmaster": ("assigned", "none", "assigned"),
+        "operational": ("assigned", "assigned", "assigned"), "document": ("assigned", "assigned", "none"),
+        "control": ("assigned", "all", "none"), "financial": ("none", "none", "none"),
+    },
+    "SiteSupervisor": {
+        "config": ("all", "none", "none"), "people": ("all", "none", "none"),
+        "clients": ("all", "none", "none"), "projectmaster": ("assigned", "none", "none"),
+        "operational": ("assigned", "assigned", "own"), "document": ("none", "none", "none"),
+        "control": ("none", "none", "none"), "financial": ("none", "none", "none"),
+    },
+    "FieldUser": {
+        "config": ("all", "none", "none"), "people": ("none", "none", "none"),
+        "clients": ("none", "none", "none"), "projectmaster": ("assigned", "none", "none"),
+        "operational": ("own", "assigned", "own"), "document": ("none", "none", "none"),
+        "control": ("none", "none", "none"), "financial": ("none", "none", "none"),
+    },
+    "ReadOnlyAuditor": {
+        "config": ("all", "none", "none"), "people": ("all", "none", "none"),
+        "clients": ("all", "none", "none"), "projectmaster": ("all", "none", "none"),
+        "operational": ("all", "none", "none"), "document": ("all", "none", "none"),
+        "control": ("all", "none", "none"), "financial": ("all", "none", "none"),
+    },
+}
+
+# Deliberate per-table exceptions, each with a stated reason.
+EXCEPTIONS = {
+    ("SystemAdmin", "AuditLog"): ("all", "none", "none",
+        "Append-only for every role. No one may edit or delete the audit trail, including an administrator."),
+    ("GeneralManager", "AuditLog"): ("all", "none", "none", "Append-only for every role."),
+    ("FinanceReviewer", "AuditLog"): ("all", "none", "none", "Append-only for every role."),
+    ("TechnicalReviewer", "AuditLog"): ("none", "none", "none",
+        "Not needed for the review task; least privilege."),
+    ("SystemAdmin", "TaxRules"): ("all", "none", "none",
+        "Administrators may see tax configuration to support it, but may not change a financial "
+        "rule: separation of duties (D-08)."),
+    ("SystemAdmin", "Approvals"): ("all", "none", "none",
+        "An administrator must never be able to manufacture an approval."),
+    ("SystemAdmin", "NumberRegister"): ("all", "none", "none",
+        "Administrators must be able to explain a gap in the numbering register without being able "
+        "to read document content."),
+    ("ProjectManager", "AuditLog"): ("none", "none", "none",
+        "Append-only for every role, and a project manager has no need to read it."),
+    ("ProjectManager", "IntegrationJobs"): ("assigned", "none", "none",
+        "Visibility of failures affecting their own projects, without write access."),
+    ("ProjectManager", "Approvals"): ("assigned", "all", "all",
+        "Project managers act as first-line reviewers where the approval matrix assigns them."),
+    ("FieldUser", "Users"): ("own", "none", "none",
+        "A field user may see their own profile only."),
+    ("SiteSupervisor", "Photos"): ("assigned", "assigned", "own",
+        "Supervisors see all evidence for their projects so they can avoid duplicate captures, but "
+        "may edit only their own."),
+    ("FieldUser", "ActivityTypes"): ("all", "none", "none",
+        "The activity catalogue is not sensitive and is needed to fill the form."),
+    ("SiteSupervisor", "Clients"): ("assigned", "none", "none",
+        "Client display name only, for the projects they are assigned to."),
+}
+
+SECURITY = {"scopes": SCOPES, "roles": ROLE_CODES, "matrix": {}, "exceptions": {}}
+for role in ROLE_CODES:
+    SECURITY["matrix"][role] = {}
+    for group, tables_ in GROUPS.items():
+        r, c, u = RULES[role][group]
+        for t in tables_:
+            key = (role, t)
+            if key in EXCEPTIONS:
+                er, ec, eu, reason = EXCEPTIONS[key]
+                SECURITY["matrix"][role][t] = {"read": er, "create": ec, "update": eu,
+                                               "delete": "none", "exception_reason": reason}
+                SECURITY["exceptions"][f"{role}.{t}"] = reason
+            else:
+                SECURITY["matrix"][role][t] = {"read": r, "create": c, "update": u, "delete": "none"}
+
+SECURITY["principles"] = [
+    "Row-level access derives from ProjectAssignments only. Absence of an assignment grants nothing.",
+    "An expired assignment (AssignedTo in the past) grants nothing.",
+    "Field roles have NO access to any financial table: the data is absent from their data set, "
+    "not merely hidden (SEC-04).",
+    "Delete is 'none' for every role on every table. Rows are deactivated or cancelled, never "
+    "destroyed, because history is evidence.",
+    "The audit log is append-only for every role including SystemAdmin.",
+    "An administrator can configure the system and diagnose failures without reading client "
+    "evidence or documents: support does not require content access (spec 7.4).",
+    "View, slice and column visibility are presentation, never enforcement. Every state-changing "
+    "action is re-validated server-side against the authoritative record (P-04).",
+]
+
+# --------------------------------------------------------------------------
+# 9. Canonical hashing rules
+# --------------------------------------------------------------------------
+CANONICAL = {
+    "field_set_version": "1.0.0",
+    "algorithm": "SHA-256",
+    "encoding": "UTF-8, NFC-normalised",
+    "rules": [
+        "Serialise only the fields listed in the table's content_hash_fields, in that exact order.",
+        "Each field is emitted as 'FieldName=value' joined by the record separator U+001F.",
+        "Null and empty string both serialise as the empty value, so they never differ by accident.",
+        "Text is Unicode NFC-normalised and trimmed of leading and trailing whitespace. Arabic text "
+        "is normalised but never transliterated (D-11).",
+        "Decimals are emitted at the column's declared scale, with a leading zero and no thousands "
+        "separator. Integers carry no decimal point.",
+        "Dates are ISO 8601 (YYYY-MM-DD); datetimes are ISO 8601 UTC with a trailing Z.",
+        "Booleans are TRUE or FALSE in upper case.",
+        "Child collections that affect output (approved photographs and their sequence) are folded "
+        "in as an ordered list of child hashes.",
+        "Excluded by design: UpdatedAt, UpdatedBy, UI ordering, internal comments and every advisory "
+        "AI field. An AI observation arriving later must never void a human approval (C-06).",
+        "Changing this field set is a schema migration with its own decision record, because it "
+        "changes every hash.",
+    ],
+}
+
+# --------------------------------------------------------------------------
+# 10. Assemble and write
+# --------------------------------------------------------------------------
+def main():
+    # sanity checks before writing: a model that contradicts itself is worse than none
+    problems = []
+    for tname, t in TABLES.items():
+        names = [c["name"] for c in t["columns"]]
+        if len(names) != len(set(names)):
+            problems.append(f"{tname}: duplicate column name")
+        if t["primary_key"] not in names:
+            problems.append(f"{tname}: primary key {t['primary_key']} is not a column")
+        if t["scope"] == "project" and "ProjectID" not in names and tname not in (
+                "ProjectAssignments",):
+            problems.append(f"{tname}: project-scoped table without a ProjectID column")
+        for c in t["columns"]:
+            if c["type"] == "ref":
+                ref = c.get("ref", "")
+                rt, _, rc = ref.partition(".")
+                if rt not in TABLES:
+                    problems.append(f"{tname}.{c['name']}: reference to unknown table {rt}")
+                elif rc not in [x["name"] for x in TABLES[rt]["columns"]]:
+                    problems.append(f"{tname}.{c['name']}: reference to unknown column {ref}")
+            if c["type"] == "enum" and c.get("enum") not in ENUMS:
+                problems.append(f"{tname}.{c['name']}: unknown enum {c.get('enum')}")
+            if c.get("ar") and c["ar"] not in names:
+                problems.append(f"{tname}.{c['name']}: bilingual pair {c['ar']} missing")
+        for combo in t["at_least_one"]:
+            for f in combo:
+                if f not in names:
+                    problems.append(f"{tname}: at_least_one field {f} is not a column")
+        for f in t["content_hash_fields"]:
+            if f not in names:
+                problems.append(f"{tname}: content_hash field {f} is not a column")
+    for role, tbls in SECURITY["matrix"].items():
+        for t in tbls:
+            if t not in TABLES:
+                problems.append(f"security matrix references unknown table {t}")
+    for t in TABLES:
+        for role in SECURITY["matrix"]:
+            if t not in SECURITY["matrix"][role]:
+                problems.append(f"security matrix missing {role}.{t}")
+    for ent in TRANSITIONS:
+        if ent not in TABLES:
+            problems.append(f"transitions reference unknown table {ent}")
+
+    if problems:
+        print("MODEL PROBLEMS:", file=sys.stderr)
+        for p in problems:
+            print("  -", p, file=sys.stderr)
+        sys.exit(1)
+
+    model = {
+        "model_version": MODEL_VERSION,
+        "phase": 1,
+        "generated_by": "tools/build_model.py",
+        "authority": "MASTER_SPEC.md section 5, as amended by owner decisions D-01..D-15 "
+                     "(docs/00-discovery/10-owner-decisions.md)",
+        "statement": "Synthetic and structural only. Contains no real client, person, contract, "
+                     "credential or account identifier.",
+        "enums": ENUMS,
+        "tables": TABLES,
+        "transitions": TRANSITIONS,
+        "security": SECURITY,
+        "canonical_hash": CANONICAL,
+    }
+    out = os.path.join(ROOT, "model", "model.json")
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    with open(out, "w", encoding="utf-8") as fh:
+        json.dump(model, fh, indent=2, ensure_ascii=False, sort_keys=False)
+        fh.write("\n")
+    print(f"wrote {out}")
+    print(f"  tables      : {len(TABLES)}")
+    print(f"  columns     : {sum(len(t['columns']) for t in TABLES.values())}")
+    print(f"  enums       : {len(ENUMS)}")
+    print(f"  transitions : {sum(len(t['allowed']) for t in TRANSITIONS.values())} allowed, "
+          f"{sum(len(t['forbidden']) for t in TRANSITIONS.values())} explicitly forbidden")
+    print(f"  security    : {len(SECURITY['roles'])} roles x {len(TABLES)} tables = "
+          f"{len(SECURITY['roles']) * len(TABLES)} grants, {len(SECURITY['exceptions'])} exceptions")
+
+
+if __name__ == "__main__":
+    main()

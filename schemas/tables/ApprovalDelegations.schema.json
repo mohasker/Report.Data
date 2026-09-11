@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/ApprovalDelegations.schema.json",
+  "title": "ApprovalDelegations",
+  "description": "Temporary delegation of an approval authority (D-09). Every delegated decision records both the acting user and the original responsible user.",
+  "x-description-ar": "تفويض صلاحيات الاعتماد مؤقتاً",
+  "x-category": "master",
+  "x-scope": "global",
+  "x-sensitivity": "internal",
+  "x-built-in-phase": 1,
+  "x-primary-key": "DelegationID",
+  "x-content-hash-fields": [],
+  "x-unique-together": [],
+  "x-at-least-one": [],
+  "x-notes": [
+    "A delegation is evidence, so it is never deleted — it is revoked, with a timestamp."
+  ],
+  "type": "object",
+  "properties": {
+    "DelegationID": {
+      "type": "string"
+    },
+    "FromUserID": {
+      "type": "string",
+      "x-references": "Users.UserID",
+      "x-source": "user",
+      "description": "The original responsible approver. References Users.UserID"
+    },
+    "ToUserID": {
+      "type": "string",
+      "x-references": "Users.UserID",
+      "x-source": "user",
+      "description": "The acting delegate. May be unassigned until before go-live. References Users.UserID"
+    },
+    "ApprovalStage": {
+      "type": "string",
+      "enum": [
+        "EvidenceReview",
+        "TechnicalReview",
+        "FinanceReview",
+        "Release",
+        "OverrideAuthorisation"
+      ],
+      "x-enum": "ApprovalStage",
+      "x-source": "user",
+      "description": "Null delegates every stage the delegator holds."
+    },
+    "Scope": {
+      "type": "string",
+      "enum": [
+        "AllProjects",
+        "SpecificProjects",
+        "SpecificStage"
+      ],
+      "x-enum": "DelegationScope",
+      "x-source": "user"
+    },
+    "ProjectIDs": {
+      "type": "string",
+      "x-source": "user",
+      "description": "Comma-separated ProjectIDs when Scope = SpecificProjects."
+    },
+    "ValidFrom": {
+      "type": "string",
+      "x-source": "user"
+    },
+    "ValidTo": {
+      "type": "string",
+      "x-source": "user",
+      "description": "Validation: Must be after ValidFrom. An open-ended delegation is not permitted."
+    },
+    "Reason": {
+      "type": "string",
+      "x-source": "user"
+    },
+    "AuthorisedByUserID": {
+      "type": "string",
+      "x-references": "Users.UserID",
+      "x-source": "user",
+      "description": "References Users.UserID"
+    },
+    "RevokedAt": {
+      "type": "string",
+      "x-source": "user"
+    },
+    "RevokedByUserID": {
+      "type": "string",
+      "x-references": "Users.UserID",
+      "x-source": "user",
+      "description": "References Users.UserID"
+    },
+    "IsActive": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "Soft delete. Rows are never hard-deleted; history is evidence."
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "DelegationID",
+    "FromUserID",
+    "ToUserID",
+    "Scope",
+    "ValidFrom",
+    "ValidTo",
+    "Reason",
+    "AuthorisedByUserID",
+    "IsActive",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,6 @@
+BOQItemID,ContractID,ProjectID,ItemNumber,DescriptionEN,DescriptionAR,UnitID,ContractQuantity,UnitRate,ApprovedVariationQuantity,PreviouslyCertifiedQuantity,CurrentQuantity,CumulativeQuantity,RemainingQuantity,QuickBooksItemID,IsActive
+BOQ-0001,CNT-0001,PRJ-0001,1.01,Turf mowing and maintenance,قص وصيانة المسطحات الخضراء,UNIT-M2,12000.000,3.500,0.000,4000.000,0.000,4000.000,8000.000,,TRUE
+BOQ-0002,CNT-0001,PRJ-0001,1.02,Irrigation emitter replacement,استبدال نقاط الري,UNIT-NO,500.000,18.000,50.000,200.000,0.000,200.000,350.000,,TRUE
+BOQ-0003,CNT-0002,PRJ-0002,2.01,Ceiling tile replacement,استبدال ألواح السقف,UNIT-NO,1500.000,26.500,0.000,600.000,0.000,600.000,900.000,,TRUE
+BOQ-0004,CNT-0002,PRJ-0002,2.02,Suspension grid replacement,استبدال شبكة التعليق,UNIT-LM,800.000,42.000,0.000,0.000,0.000,0.000,800.000,,TRUE
+BOQ-0005,CNT-0003,PRJ-0003,3.01,Irrigation network rehabilitation,إعادة تأهيل شبكة الري,UNIT-LS,1.000,85000.000,0.000,0.000,0.000,0.000,1.000,,TRUE

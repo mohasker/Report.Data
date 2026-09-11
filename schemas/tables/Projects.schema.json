@@ -1,0 +1,215 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/Projects.schema.json",
+  "title": "Projects",
+  "description": "A project is pure configuration. Adding one never requires changed logic, a cloned app, duplicated scenarios, rewritten prompts or changed code (D-01).",
+  "x-description-ar": "المشاريع",
+  "x-category": "master",
+  "x-scope": "global",
+  "x-sensitivity": "confidential",
+  "x-built-in-phase": 1,
+  "x-primary-key": "ProjectID",
+  "x-content-hash-fields": [],
+  "x-unique-together": [],
+  "x-at-least-one": [],
+  "x-notes": [
+    "Every project-varying behaviour is a column or a child row here, never a branch in code."
+  ],
+  "type": "object",
+  "properties": {
+    "ProjectID": {
+      "type": "string"
+    },
+    "ProjectCode": {
+      "type": "string",
+      "x-source": "user",
+      "description": "Used in folder and file names. A display code, never a key. Validation: Uppercase, no spaces, filename-safe"
+    },
+    "ProjectNameEN": {
+      "type": "string",
+      "x-source": "user",
+      "x-bilingual-pair": "ProjectNameAR"
+    },
+    "ProjectNameAR": {
+      "type": "string",
+      "x-source": "user",
+      "x-language": "ar"
+    },
+    "LegalEntityID": {
+      "type": "string",
+      "x-references": "LegalEntities.LegalEntityID",
+      "x-source": "user",
+      "description": "Which registered entity issues this project's documents (D-02). References LegalEntities.LegalEntityID"
+    },
+    "ClientID": {
+      "type": "string",
+      "x-references": "Clients.ClientID",
+      "x-source": "user",
+      "description": "References Clients.ClientID"
+    },
+    "ContractID": {
+      "type": "string",
+      "x-references": "Contracts.ContractID",
+      "x-sensitivity": "financial",
+      "x-source": "user",
+      "description": "References Contracts.ContractID"
+    },
+    "LocationSummaryEN": {
+      "type": "string",
+      "x-source": "user",
+      "x-bilingual-pair": "LocationSummaryAR"
+    },
+    "LocationSummaryAR": {
+      "type": "string",
+      "x-source": "user",
+      "x-language": "ar"
+    },
+    "StartDate": {
+      "type": "string",
+      "x-source": "user"
+    },
+    "EndDate": {
+      "type": "string",
+      "x-source": "user",
+      "description": "Validation: Must be >= StartDate when present"
+    },
+    "ReportingFrequency": {
+      "type": "string",
+      "enum": [
+        "Daily",
+        "Weekly",
+        "Monthly",
+        "Quarterly",
+        "OnCompletion",
+        "OnDemand"
+      ],
+      "x-enum": "ReportingFrequency",
+      "x-source": "user"
+    },
+    "ReportingCutoffDay": {
+      "type": "integer",
+      "x-source": "user",
+      "description": "Latest day evidence may be added to a closing period (OQ-02). Validation: 1-28"
+    },
+    "DefaultTemplateID": {
+      "type": "string",
+      "x-references": "DocumentTemplates.TemplateID",
+      "x-source": "user",
+      "description": "References DocumentTemplates.TemplateID"
+    },
+    "DefaultDocumentLanguage": {
+      "type": "string",
+      "enum": [
+        "en",
+        "ar"
+      ],
+      "x-enum": "Language",
+      "x-source": "user"
+    },
+    "ProjectManagerUserID": {
+      "type": "string",
+      "x-references": "Users.UserID",
+      "x-source": "user",
+      "description": "References Users.UserID"
+    },
+    "Currency": {
+      "type": "string",
+      "x-sensitivity": "financial",
+      "x-source": "user",
+      "description": "Must match the contract currency; a mismatch is a validation failure (C-09). Validation: ISO 4217"
+    },
+    "TimeZone": {
+      "type": "string",
+      "x-source": "user"
+    },
+    "BillingMethod": {
+      "type": "string",
+      "enum": [
+        "MonthlyFixed",
+        "MeasuredBOQ",
+        "LumpSumMilestone",
+        "OnCompletion",
+        "TimeAndMaterial"
+      ],
+      "x-enum": "BillingMethod",
+      "x-sensitivity": "financial",
+      "x-source": "user"
+    },
+    "PaymentTermsDays": {
+      "type": "integer",
+      "x-sensitivity": "financial",
+      "x-source": "user"
+    },
+    "AIAnalysisEnabled": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "Set FALSE where a contract or residency rule forbids third-party AI processing (D-12)."
+    },
+    "RetentionDays": {
+      "type": "integer",
+      "x-source": "user",
+      "description": "Overrides the classification default. Expiry flags for review, never auto-deletes."
+    },
+    "DriveFolderKey": {
+      "type": "string",
+      "x-source": "integration",
+      "description": "Provisioned folder reference. Empty in Phase 1 — nothing is connected (D-14)."
+    },
+    "Status": {
+      "type": "string",
+      "enum": [
+        "Draft",
+        "Active",
+        "Suspended",
+        "Completed",
+        "Archived"
+      ],
+      "x-enum": "ProjectStatus",
+      "x-source": "user"
+    },
+    "IsActive": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "Soft delete. Rows are never hard-deleted; history is evidence."
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "ProjectID",
+    "ProjectCode",
+    "ProjectNameEN",
+    "LegalEntityID",
+    "ClientID",
+    "StartDate",
+    "ReportingFrequency",
+    "DefaultDocumentLanguage",
+    "Currency",
+    "TimeZone",
+    "AIAnalysisEnabled",
+    "Status",
+    "IsActive",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

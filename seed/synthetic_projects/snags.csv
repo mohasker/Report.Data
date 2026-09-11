@@ -1,0 +1,3 @@
+SnagID,ProjectID,LocationID,VisitID,VisitActivityID,SourcePhotoID,Category,Severity,DescriptionEN,DescriptionAR,RaisedAt,RaisedBy,ResponsibleParty,TargetDate,Status,ClosureDate,ClosureEvidencePhotoID,VerifiedBy,VerificationDate,IsActive
+SNG-0001,PRJ-0001,LOC-0003,VIS-0002,VAC-0003,PHO-0004,Irrigation,Medium,Emitter leaking at lateral 4 requires replacement.,تسريب في نقطة الري بالخط ٤ ويستلزم الاستبدال.,2026-04-03T10:50:00Z,USR-0005,Maintenance crew,2026-04-10,Open,,,,,TRUE
+SNG-0002,PRJ-0002,LOC-0006,VIS-0004,VAC-0005,PHO-0007,Ceiling,High,Water staining observed on ceiling tiles pending investigation.,آثار تسرب مياه على ألواح السقف قيد الفحص.,2026-04-04T12:30:00Z,USR-0007,Civil crew,2026-04-12,Assigned,,,,,TRUE

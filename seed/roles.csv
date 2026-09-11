@@ -1,0 +1,9 @@
+RoleID,RoleCode,NameEN,NameAR,Description,SeesFinancialData,MayApprove,MayAdministerMasterData,IsActive
+ROLE-SYSADMIN,SystemAdmin,System administrator,مدير النظام,Maintains master data and configuration and works the error queue. Deliberately has no access to financial tables and cannot create an approval.,FALSE,FALSE,TRUE,TRUE
+ROLE-GM,GeneralManager,General manager,المدير العام,Final technical financial and release approver for the MVP. Delegation is supported from the initial architecture.,TRUE,TRUE,TRUE,TRUE
+ROLE-TECHREV,TechnicalReviewer,Technical reviewer,المراجع الفني,Reviews submitted evidence and technical documents for assigned projects.,FALSE,TRUE,FALSE,TRUE
+ROLE-FINREV,FinanceReviewer,Finance reviewer,المراجع المالي,Approves financial calculations and invoice requests. Never approves the evidence behind them.,TRUE,TRUE,FALSE,TRUE
+ROLE-PM,ProjectManager,Project manager,مدير المشروع,Runs assigned projects and acts as first-line reviewer where the approval matrix assigns them.,FALSE,TRUE,FALSE,TRUE
+ROLE-SUPERVISOR,SiteSupervisor,Site supervisor,مشرف الموقع,Captures field evidence and manages snags on assigned projects.,FALSE,FALSE,FALSE,TRUE
+ROLE-FIELD,FieldUser,Field user,مستخدم ميداني,Captures field evidence only and sees only their own submissions.,FALSE,FALSE,FALSE,TRUE
+ROLE-AUDITOR,ReadOnlyAuditor,Read-only auditor,مدقق للاطلاع فقط,Reads everything and changes nothing. Exists so that an audit never requires a write-capable account.,TRUE,FALSE,FALSE,TRUE

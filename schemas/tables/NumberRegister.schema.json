@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/NumberRegister.schema.json",
+  "title": "NumberRegister",
+  "description": "Every number ever reserved, issued or cancelled. A cancelled number is never reused (D-10).",
+  "x-description-ar": "سجل أرقام المستندات",
+  "x-category": "document",
+  "x-scope": "global",
+  "x-sensitivity": "internal",
+  "x-built-in-phase": 5,
+  "x-primary-key": "NumberID",
+  "x-content-hash-fields": [],
+  "x-unique-together": [
+    [
+      "SeriesID",
+      "YearKey",
+      "ScopeKey",
+      "SequenceValue"
+    ]
+  ],
+  "x-at-least-one": [],
+  "x-notes": [],
+  "type": "object",
+  "properties": {
+    "NumberID": {
+      "type": "string"
+    },
+    "SeriesID": {
+      "type": "string",
+      "x-references": "NumberingSeries.SeriesID",
+      "x-source": "system",
+      "description": "References NumberingSeries.SeriesID"
+    },
+    "SequenceValue": {
+      "type": "integer",
+      "x-source": "system"
+    },
+    "FormattedNumber": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "YearKey": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "ScopeKey": {
+      "type": "string",
+      "x-source": "system",
+      "description": "Partition key: company-wide, project or client, per the series configuration."
+    },
+    "State": {
+      "type": "string",
+      "enum": [
+        "Reserved",
+        "Issued",
+        "Cancelled"
+      ],
+      "x-enum": "NumberState",
+      "x-source": "system"
+    },
+    "ReservedForJobID": {
+      "type": "string",
+      "x-references": "DocumentJobs.JobID",
+      "x-source": "system",
+      "description": "References DocumentJobs.JobID"
+    },
+    "IssuedToDocumentID": {
+      "type": "string",
+      "x-references": "Documents.DocumentID",
+      "x-source": "system",
+      "description": "References Documents.DocumentID"
+    },
+    "ReservedAt": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "IssuedAt": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "CancelledAt": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "CancellationReason": {
+      "type": "string",
+      "x-source": "system",
+      "description": "A gap in the register must always be explainable. Validation: Required when State = Cancelled"
+    },
+    "MigratedFromManual": {
+      "type": "boolean",
+      "x-source": "system",
+      "description": "TRUE for numbers imported from the existing manual register."
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "NumberID",
+    "SeriesID",
+    "SequenceValue",
+    "FormattedNumber",
+    "YearKey",
+    "ScopeKey",
+    "State",
+    "ReservedAt",
+    "MigratedFromManual",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

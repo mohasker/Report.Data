@@ -1,0 +1,223 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/SiteVisits.schema.json",
+  "title": "SiteVisits",
+  "description": "One reporting event at a location on a date. The unit of submission and review.",
+  "x-description-ar": "زيارة موقع",
+  "x-category": "operational",
+  "x-scope": "project",
+  "x-sensitivity": "confidential",
+  "x-built-in-phase": 1,
+  "x-primary-key": "VisitID",
+  "x-content-hash-fields": [
+    "ProjectID",
+    "LocationID",
+    "WorkOrderID",
+    "VisitDate",
+    "StartTime",
+    "EndTime",
+    "Weather",
+    "SupervisorUserID",
+    "OverallDescriptionEN",
+    "OverallDescriptionAR",
+    "SafetyObservation",
+    "ClientRepresentative",
+    "ClientAcknowledgementStatus"
+  ],
+  "x-unique-together": [],
+  "x-at-least-one": [],
+  "x-notes": [],
+  "type": "object",
+  "properties": {
+    "VisitID": {
+      "type": "string"
+    },
+    "ProjectID": {
+      "type": "string",
+      "x-references": "Projects.ProjectID",
+      "x-source": "user",
+      "x-in-content-hash": true,
+      "description": "References Projects.ProjectID"
+    },
+    "LocationID": {
+      "type": "string",
+      "x-references": "Locations.LocationID",
+      "x-source": "user",
+      "x-in-content-hash": true,
+      "description": "Validation: Location must belong to ProjectID References Locations.LocationID"
+    },
+    "WorkOrderID": {
+      "type": "string",
+      "x-references": "WorkOrders.WorkOrderID",
+      "x-source": "user",
+      "x-in-content-hash": true,
+      "description": "References WorkOrders.WorkOrderID"
+    },
+    "VisitDate": {
+      "type": "string",
+      "x-source": "user",
+      "x-in-content-hash": true,
+      "description": "Defaults to the device date; correctable by an authorised user (spec 7.3)."
+    },
+    "StartTime": {
+      "type": "string",
+      "x-source": "user",
+      "x-in-content-hash": true
+    },
+    "EndTime": {
+      "type": "string",
+      "x-source": "user",
+      "x-in-content-hash": true,
+      "description": "Validation: Must be after StartTime"
+    },
+    "Weather": {
+      "type": "string",
+      "x-source": "user",
+      "x-in-content-hash": true
+    },
+    "SupervisorUserID": {
+      "type": "string",
+      "x-references": "Users.UserID",
+      "x-source": "system",
+      "x-in-content-hash": true,
+      "description": "Defaults from USEREMAIL(); must hold an active assignment to ProjectID. References Users.UserID"
+    },
+    "GPSLatitude": {
+      "type": "string",
+      "x-decimal-scale": 7,
+      "x-storage": "decimal string; never a float (spec 11)",
+      "x-source": "device"
+    },
+    "GPSLongitude": {
+      "type": "string",
+      "x-decimal-scale": 7,
+      "x-storage": "decimal string; never a float (spec 11)",
+      "x-source": "device"
+    },
+    "OverallDescriptionEN": {
+      "type": "string",
+      "x-source": "user",
+      "x-bilingual-pair": "OverallDescriptionAR",
+      "x-in-content-hash": true
+    },
+    "OverallDescriptionAR": {
+      "type": "string",
+      "x-source": "user",
+      "x-language": "ar",
+      "x-in-content-hash": true,
+      "description": "A supervisor may write in either language; both are carried to the report (D-11)."
+    },
+    "SafetyObservation": {
+      "type": "string",
+      "x-source": "user",
+      "x-in-content-hash": true
+    },
+    "ClientRepresentative": {
+      "type": "string",
+      "x-sensitivity": "personal",
+      "x-source": "user",
+      "x-in-content-hash": true
+    },
+    "ClientAcknowledgementStatus": {
+      "type": "string",
+      "x-source": "user",
+      "x-in-content-hash": true,
+      "description": "A CLAIM recorded on site. Never treated as a client approval (A-20). Validation: NotRequested|Claimed|Declined"
+    },
+    "WorkflowStatus": {
+      "type": "string",
+      "enum": [
+        "Draft",
+        "Submitted",
+        "ValidationFailed",
+        "UnderTechnicalReview",
+        "CorrectionRequired",
+        "TechnicallyApproved",
+        "ReadyForReport",
+        "IncludedInDraft",
+        "Released",
+        "Archived",
+        "Cancelled"
+      ],
+      "x-enum": "WorkflowStatus",
+      "x-source": "system"
+    },
+    "SubmittedAt": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "TechnicalReviewedAt": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "TechnicalReviewedBy": {
+      "type": "string",
+      "x-references": "Users.UserID",
+      "x-source": "system",
+      "description": "References Users.UserID"
+    },
+    "RejectionReason": {
+      "type": "string",
+      "x-source": "user",
+      "description": "Mandatory when returning a record for correction."
+    },
+    "ValidationErrors": {
+      "type": [
+        "object",
+        "array",
+        "string"
+      ],
+      "x-source": "system",
+      "description": "Specific correctable errors from server-side validation, never a generic message."
+    },
+    "CorrelationID": {
+      "type": "string",
+      "x-source": "system",
+      "description": "Links this record to its orchestration jobs and audit entries."
+    },
+    "EntityVersion": {
+      "type": "integer",
+      "x-source": "system",
+      "description": "Incremented on every material change. Referenced by Approvals."
+    },
+    "ContentHash": {
+      "type": "string",
+      "x-source": "system",
+      "description": "SHA-256 over the canonical serialisation of the fields listed in content_hash_fields."
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "VisitID",
+    "ProjectID",
+    "LocationID",
+    "VisitDate",
+    "SupervisorUserID",
+    "WorkflowStatus",
+    "EntityVersion",
+    "ContentHash",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

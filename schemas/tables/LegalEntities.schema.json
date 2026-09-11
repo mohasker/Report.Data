@@ -1,0 +1,185 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/LegalEntities.schema.json",
+  "title": "LegalEntities",
+  "description": "Registered legal entities that issue documents. Multi-entity from the start (D-02).",
+  "x-description-ar": "الكيانات القانونية المسجلة التي تصدر المستندات",
+  "x-category": "master",
+  "x-scope": "global",
+  "x-sensitivity": "internal",
+  "x-built-in-phase": 1,
+  "x-primary-key": "LegalEntityID",
+  "x-content-hash-fields": [],
+  "x-unique-together": [],
+  "x-at-least-one": [],
+  "x-notes": [
+    "Never edited in place for a legal-name correction: a new version is created so that documents already issued remain explainable."
+  ],
+  "type": "object",
+  "properties": {
+    "LegalEntityID": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "EntityCode": {
+      "type": "string",
+      "x-source": "user",
+      "description": "Used in document numbers (D-10). Validation: 2-6 uppercase letters/digits"
+    },
+    "LegalNameEN": {
+      "type": "string",
+      "x-source": "user",
+      "x-bilingual-pair": "LegalNameAR",
+      "description": "From the current Commercial Registration. Placeholder until verified."
+    },
+    "LegalNameAR": {
+      "type": "string",
+      "x-source": "user",
+      "x-language": "ar",
+      "description": "Arabic legal name preserved exactly; never transliterated (D-11)."
+    },
+    "TradeNameEN": {
+      "type": "string",
+      "x-source": "user",
+      "x-bilingual-pair": "TradeNameAR"
+    },
+    "TradeNameAR": {
+      "type": "string",
+      "x-source": "user",
+      "x-language": "ar"
+    },
+    "CommercialRegistrationNumber": {
+      "type": "string",
+      "x-source": "user",
+      "description": "CR number as registered. Verified before any production document (D-02)."
+    },
+    "EstablishmentCardNumber": {
+      "type": "string",
+      "x-source": "user"
+    },
+    "TaxRegistrationNumber": {
+      "type": "string",
+      "x-sensitivity": "financial",
+      "x-source": "user",
+      "description": "Presence does not imply any tax treatment (D-08)."
+    },
+    "TaxRegistrationStatus": {
+      "type": "string",
+      "x-source": "user",
+      "description": "Free text placeholder until the accountant confirms in writing (D-08)."
+    },
+    "RegisteredAddressEN": {
+      "type": "string",
+      "x-source": "user",
+      "x-bilingual-pair": "RegisteredAddressAR"
+    },
+    "RegisteredAddressAR": {
+      "type": "string",
+      "x-source": "user",
+      "x-language": "ar"
+    },
+    "Country": {
+      "type": "string",
+      "x-source": "user"
+    },
+    "Currency": {
+      "type": "string",
+      "x-source": "user",
+      "description": "Validation: ISO 4217"
+    },
+    "OfficialEmail": {
+      "type": "string",
+      "x-source": "user"
+    },
+    "OfficialTelephone": {
+      "type": "string",
+      "x-source": "user"
+    },
+    "OfficialWhatsApp": {
+      "type": "string",
+      "x-source": "user"
+    },
+    "LogoFileKey": {
+      "type": "string",
+      "x-source": "config",
+      "description": "Reference to the approved logo. Aspect ratio preserved (spec 10)."
+    },
+    "DocumentFooterEN": {
+      "type": "string",
+      "x-source": "user",
+      "x-bilingual-pair": "DocumentFooterAR"
+    },
+    "DocumentFooterAR": {
+      "type": "string",
+      "x-source": "user",
+      "x-language": "ar"
+    },
+    "AuthorisedSignatories": {
+      "type": [
+        "object",
+        "array",
+        "string"
+      ],
+      "x-source": "user",
+      "description": "List of {name_en, name_ar, position_en, position_ar, scope}. No specimen signatures stored."
+    },
+    "EffectiveFrom": {
+      "type": "string",
+      "x-source": "user"
+    },
+    "EffectiveTo": {
+      "type": "string",
+      "x-source": "user"
+    },
+    "Version": {
+      "type": "integer",
+      "x-source": "system",
+      "description": "A change to legal identity creates a new version; documents record the version used."
+    },
+    "IsActive": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "Soft delete. Rows are never hard-deleted; history is evidence."
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "LegalEntityID",
+    "EntityCode",
+    "LegalNameEN",
+    "LegalNameAR",
+    "CommercialRegistrationNumber",
+    "TaxRegistrationStatus",
+    "RegisteredAddressEN",
+    "Country",
+    "Currency",
+    "OfficialEmail",
+    "OfficialTelephone",
+    "EffectiveFrom",
+    "Version",
+    "IsActive",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,35 @@
+ActivityTypeID,DisciplineID,ActivityCode,ActivityNameEN,ActivityNameAR,RequiresBeforePhoto,RequiresAfterPhoto,RequiresQuantity,QuantityUnitID,RequiresMaterial,RequiresSnagCheck,MinPhotos,DefaultEvidenceStages,IsActive
+ACT-0001,DIS-LAND,TURF-MAINT,Turf maintenance,صيانة المسطحات الخضراء,TRUE,TRUE,TRUE,UNIT-M2,FALSE,FALSE,2,Before;After,TRUE
+ACT-0002,DIS-LAND,TURF-MOW,Mowing,قص العشب,TRUE,TRUE,TRUE,UNIT-M2,FALSE,FALSE,2,Before;After,TRUE
+ACT-0003,DIS-LAND,TURF-EDGE,Edging,تشذيب الحواف,TRUE,TRUE,TRUE,UNIT-LM,FALSE,FALSE,2,Before;After,TRUE
+ACT-0004,DIS-IRRIG,IRR-INSP,Irrigation inspection,فحص شبكة الري,FALSE,FALSE,FALSE,,FALSE,TRUE,1,Observation,TRUE
+ACT-0005,DIS-IRRIG,IRR-REPAIR,Irrigation repair,إصلاح شبكة الري,TRUE,TRUE,TRUE,UNIT-NO,TRUE,TRUE,2,Before;After;Material,TRUE
+ACT-0006,DIS-IRRIG,IRR-FILTER,Filter cleaning,تنظيف الفلاتر,TRUE,TRUE,TRUE,UNIT-NO,FALSE,FALSE,2,Before;After,TRUE
+ACT-0007,DIS-LAND,TREE-PRUNE,Tree pruning,تقليم الأشجار,TRUE,TRUE,TRUE,UNIT-NO,FALSE,FALSE,2,Before;After,TRUE
+ACT-0008,DIS-LAND,SHRUB-PRUNE,Shrub pruning,تقليم الشجيرات,TRUE,TRUE,TRUE,UNIT-NO,FALSE,FALSE,2,Before;After,TRUE
+ACT-0009,DIS-LAND,PALM-CARE,Palm care,العناية بالنخيل,TRUE,TRUE,TRUE,UNIT-NO,FALSE,FALSE,2,Before;After,TRUE
+ACT-0010,DIS-LAND,FERTILIZE,Fertilization,التسميد,FALSE,TRUE,TRUE,UNIT-KG,TRUE,FALSE,2,During;After;Material,TRUE
+ACT-0011,DIS-LAND,PESTICIDE,Pesticide application,رش المبيدات,FALSE,TRUE,TRUE,UNIT-L,TRUE,FALSE,2,During;After;Material;Safety,TRUE
+ACT-0012,DIS-LAND,FLOWERS,Seasonal flowers,الزهور الموسمية,TRUE,TRUE,TRUE,UNIT-NO,TRUE,FALSE,2,Before;After,TRUE
+ACT-0013,DIS-LAND,PLANTING,Planting,الزراعة,TRUE,TRUE,TRUE,UNIT-NO,TRUE,FALSE,2,Before;After,TRUE
+ACT-0014,DIS-LAND,PLANT-REPL,Plant replacement,استبدال النباتات,TRUE,TRUE,TRUE,UNIT-NO,TRUE,FALSE,2,Before;After,TRUE
+ACT-0015,DIS-LAND,SOIL-IMPROVE,Soil improvement,تحسين التربة,TRUE,TRUE,TRUE,UNIT-M3,TRUE,FALSE,2,Before;After;Material,TRUE
+ACT-0016,DIS-LAND,WEEDING,Manual weeding,إزالة الأعشاب يدوياً,TRUE,TRUE,TRUE,UNIT-M2,FALSE,FALSE,2,Before;After,TRUE
+ACT-0017,DIS-LAND,CLEANING,Cleaning,التنظيف,TRUE,TRUE,FALSE,,FALSE,FALSE,2,Before;After,TRUE
+ACT-0018,DIS-LAND,WASTE-REMOVE,Waste removal,إزالة المخلفات,TRUE,TRUE,TRUE,UNIT-TRIP,FALSE,FALSE,2,Before;After,TRUE
+ACT-0019,DIS-LAND,SNAG-OBS,Snag observation,رصد ملاحظة,FALSE,FALSE,FALSE,,FALSE,TRUE,1,Snag,TRUE
+ACT-0020,DIS-CEIL,CEIL-INSP,Suspended ceiling inspection,فحص الأسقف المستعارة,FALSE,FALSE,FALSE,,FALSE,TRUE,1,Observation,TRUE
+ACT-0021,DIS-CEIL,TILE-REPL,Ceiling tile replacement,استبدال ألواح السقف,TRUE,TRUE,TRUE,UNIT-NO,TRUE,FALSE,2,Before;After;Material,TRUE
+ACT-0022,DIS-CEIL,GRID-REPL,Suspension grid replacement,استبدال شبكة التعليق,TRUE,TRUE,TRUE,UNIT-LM,TRUE,FALSE,2,Before;After;Material,TRUE
+ACT-0023,DIS-CEIL,GYPSUM,Gypsum board work,أعمال ألواح الجبس,TRUE,TRUE,TRUE,UNIT-M2,TRUE,FALSE,2,Before;After,TRUE
+ACT-0024,DIS-CEIL,CEMBOARD,Cement board work,أعمال الألواح الأسمنتية,TRUE,TRUE,TRUE,UNIT-M2,TRUE,FALSE,2,Before;After,TRUE
+ACT-0025,DIS-FINISH,PAINTING,Painting,أعمال الدهان,TRUE,TRUE,TRUE,UNIT-M2,TRUE,FALSE,2,Before;After;Material,TRUE
+ACT-0026,DIS-FINISH,ANTIFUNGAL,Anti-fungal treatment,معالجة مضادة للفطريات,TRUE,TRUE,TRUE,UNIT-M2,TRUE,FALSE,2,Before;After;Material,TRUE
+ACT-0027,DIS-CIVIL,PLASTER,Plaster repair,إصلاح اللياسة,TRUE,TRUE,TRUE,UNIT-M2,TRUE,FALSE,2,Before;After,TRUE
+ACT-0028,DIS-CIVIL,CERAMIC,Ceramic work,أعمال السيراميك,TRUE,TRUE,TRUE,UNIT-M2,TRUE,FALSE,2,Before;After,TRUE
+ACT-0029,DIS-CIVIL,MARBLE,Marble work,أعمال الرخام,TRUE,TRUE,TRUE,UNIT-M2,TRUE,FALSE,2,Before;After,TRUE
+ACT-0030,DIS-CIVIL,EPOXY,Epoxy work,أعمال الإيبوكسي,TRUE,TRUE,TRUE,UNIT-M2,TRUE,FALSE,2,Before;After,TRUE
+ACT-0031,DIS-CIVIL,ALUGLASS,Aluminium and glass work,أعمال الألمنيوم والزجاج,TRUE,TRUE,TRUE,UNIT-M2,TRUE,FALSE,2,Before;After,TRUE
+ACT-0032,DIS-CIVIL,SIGNAGE,Signage,اللوحات الإرشادية,TRUE,TRUE,TRUE,UNIT-NO,TRUE,FALSE,2,Before;After,TRUE
+ACT-0033,DIS-CIVIL,GEN-INSP,General inspection,معاينة عامة,FALSE,FALSE,FALSE,,FALSE,TRUE,1,Observation,TRUE
+ACT-0034,DIS-HSE,HSE-OBS,HSE observation,ملاحظة السلامة,FALSE,FALSE,FALSE,,FALSE,TRUE,1,Safety,TRUE

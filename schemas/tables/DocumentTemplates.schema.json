@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/DocumentTemplates.schema.json",
+  "title": "DocumentTemplates",
+  "description": "Approved templates, keyed by document type, language and optionally project or discipline (D-11, ADR-0007).",
+  "x-description-ar": "القوالب المعتمدة",
+  "x-category": "master",
+  "x-scope": "global",
+  "x-sensitivity": "internal",
+  "x-built-in-phase": 5,
+  "x-primary-key": "TemplateID",
+  "x-content-hash-fields": [],
+  "x-unique-together": [],
+  "x-at-least-one": [],
+  "x-notes": [],
+  "type": "object",
+  "properties": {
+    "TemplateID": {
+      "type": "string"
+    },
+    "DocumentTypeCode": {
+      "type": "string",
+      "enum": [
+        "DailyReport",
+        "WeeklyReport",
+        "MonthlyTechnicalReport",
+        "InspectionReport",
+        "CorrectiveActionReport",
+        "Quotation",
+        "CompletionCertificate",
+        "InvoiceCover",
+        "Transmittal"
+      ],
+      "x-enum": "DocumentTypeCode",
+      "x-source": "config"
+    },
+    "TemplateNameEN": {
+      "type": "string",
+      "x-source": "config",
+      "x-bilingual-pair": "TemplateNameAR"
+    },
+    "TemplateNameAR": {
+      "type": "string",
+      "x-source": "config",
+      "x-language": "ar"
+    },
+    "LanguageCode": {
+      "type": "string",
+      "enum": [
+        "en",
+        "ar"
+      ],
+      "x-enum": "Language",
+      "x-source": "config",
+      "description": "A template is single-language; bilingual output is two approved templates (D-11)."
+    },
+    "TextDirection": {
+      "type": "string",
+      "x-source": "config",
+      "description": "Derived from the language but stored explicitly so RTL is testable. Validation: LTR|RTL"
+    },
+    "ProjectID": {
+      "type": "string",
+      "x-references": "Projects.ProjectID",
+      "x-source": "config",
+      "description": "Null means available to any project. Project-specific templates override (D-15 item 5). References Projects.ProjectID"
+    },
+    "DisciplineID": {
+      "type": "string",
+      "x-references": "Disciplines.DisciplineID",
+      "x-source": "config",
+      "description": "References Disciplines.DisciplineID"
+    },
+    "LegalEntityID": {
+      "type": "string",
+      "x-references": "LegalEntities.LegalEntityID",
+      "x-source": "config",
+      "description": "References LegalEntities.LegalEntityID"
+    },
+    "StorageFileKey": {
+      "type": "string",
+      "x-source": "config",
+      "description": "Reference to the controlled template file. No production file ID exists in Phase 1."
+    },
+    "Version": {
+      "type": "integer",
+      "x-source": "config"
+    },
+    "EffectiveFrom": {
+      "type": "string",
+      "x-source": "config"
+    },
+    "EffectiveTo": {
+      "type": "string",
+      "x-source": "config"
+    },
+    "ApprovedByUserID": {
+      "type": "string",
+      "x-references": "Users.UserID",
+      "x-source": "user",
+      "description": "References Users.UserID"
+    },
+    "Status": {
+      "type": "string",
+      "x-source": "config",
+      "description": "Validation: Draft|Approved|Superseded|Withdrawn"
+    },
+    "IsActive": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "Soft delete. Rows are never hard-deleted; history is evidence."
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "TemplateID",
+    "DocumentTypeCode",
+    "TemplateNameEN",
+    "LanguageCode",
+    "TextDirection",
+    "LegalEntityID",
+    "Version",
+    "EffectiveFrom",
+    "Status",
+    "IsActive",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

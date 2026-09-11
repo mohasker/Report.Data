@@ -1,0 +1,321 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/Photos.schema.json",
+  "title": "Photos",
+  "description": "One photograph per row. The received file is write-once and is never altered (D-13).",
+  "x-description-ar": "الصور الفوتوغرافية كأدلة",
+  "x-category": "operational",
+  "x-scope": "project",
+  "x-sensitivity": "confidential",
+  "x-built-in-phase": 1,
+  "x-primary-key": "PhotoID",
+  "x-content-hash-fields": [
+    "VisitID",
+    "VisitActivityID",
+    "LocationID",
+    "EvidenceStage",
+    "CaptionEN",
+    "CaptionAR",
+    "ApprovedForReport",
+    "ReportSequence"
+  ],
+  "x-unique-together": [],
+  "x-at-least-one": [],
+  "x-notes": [
+    "Advisory AI fields are deliberately excluded from ContentHash: an AI observation arriving later must not void a human approval (C-06)."
+  ],
+  "type": "object",
+  "properties": {
+    "PhotoID": {
+      "type": "string"
+    },
+    "VisitID": {
+      "type": "string",
+      "x-references": "SiteVisits.VisitID",
+      "x-source": "system",
+      "x-in-content-hash": true,
+      "description": "References SiteVisits.VisitID"
+    },
+    "VisitActivityID": {
+      "type": "string",
+      "x-references": "VisitActivities.VisitActivityID",
+      "x-source": "user",
+      "x-in-content-hash": true,
+      "description": "References VisitActivities.VisitActivityID"
+    },
+    "ProjectID": {
+      "type": "string",
+      "x-references": "Projects.ProjectID",
+      "x-source": "system",
+      "description": "Denormalised for row-level security and for folder routing. References Projects.ProjectID"
+    },
+    "LocationID": {
+      "type": "string",
+      "x-references": "Locations.LocationID",
+      "x-source": "system",
+      "x-in-content-hash": true,
+      "description": "References Locations.LocationID"
+    },
+    "CapturedAt": {
+      "type": "string",
+      "x-source": "device",
+      "description": "Device capture time where available. Drives the old-photo warning, never a rejection."
+    },
+    "ReceivedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "When the controlled system first received the file. The anchor of the write-once guarantee (D-13)."
+    },
+    "UploadedAt": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "CapturedBy": {
+      "type": "string",
+      "x-references": "Users.UserID",
+      "x-source": "system",
+      "description": "The uploader identity recorded with the original (D-13). References Users.UserID"
+    },
+    "OriginalFileKey": {
+      "type": "string",
+      "x-source": "system",
+      "description": "WRITE-ONCE. Never overwritten, altered, annotated, resized or deleted."
+    },
+    "OriginalChecksum": {
+      "type": "string",
+      "x-source": "integration",
+      "description": "Taken from the storage provider's own file metadata where available (C-03); computed only as a fallback."
+    },
+    "ChecksumAlgorithm": {
+      "type": "string",
+      "x-source": "integration",
+      "description": "Recorded so the value is interpretable years later."
+    },
+    "OriginalMimeType": {
+      "type": "string",
+      "x-source": "integration"
+    },
+    "OriginalWidth": {
+      "type": "integer",
+      "x-source": "integration"
+    },
+    "OriginalHeight": {
+      "type": "integer",
+      "x-source": "integration"
+    },
+    "OriginalSizeBytes": {
+      "type": "integer",
+      "x-source": "integration"
+    },
+    "IsOriginalDeviceImageVerified": {
+      "type": "boolean",
+      "x-source": "system",
+      "description": "Stays FALSE until real-device testing proves no upstream re-encoding. No file may be described as the original device image while this is FALSE (D-13)."
+    },
+    "EvidenceStage": {
+      "type": "string",
+      "enum": [
+        "Before",
+        "During",
+        "After",
+        "Observation",
+        "Snag",
+        "Material",
+        "Equipment",
+        "Safety",
+        "Other"
+      ],
+      "x-enum": "EvidenceStage",
+      "x-source": "user",
+      "x-in-content-hash": true
+    },
+    "CaptionEN": {
+      "type": "string",
+      "x-source": "user",
+      "x-bilingual-pair": "CaptionAR",
+      "x-in-content-hash": true,
+      "description": "The supervisor's own words. Never overwritten by AI (D-06). Validation: Mandatory for Snag, Observation, Material and Safety stages"
+    },
+    "CaptionAR": {
+      "type": "string",
+      "x-source": "user",
+      "x-language": "ar",
+      "x-in-content-hash": true
+    },
+    "GPSLatitude": {
+      "type": "string",
+      "x-decimal-scale": 7,
+      "x-storage": "decimal string; never a float (spec 11)",
+      "x-source": "device"
+    },
+    "GPSLongitude": {
+      "type": "string",
+      "x-decimal-scale": 7,
+      "x-storage": "decimal string; never a float (spec 11)",
+      "x-source": "device"
+    },
+    "IsDuplicateSuspected": {
+      "type": "boolean",
+      "x-source": "system",
+      "description": "Flag only. A suspected duplicate is never deleted or merged (S-09)."
+    },
+    "DuplicateOfPhotoID": {
+      "type": "string",
+      "x-references": "Photos.PhotoID",
+      "x-source": "system",
+      "description": "References Photos.PhotoID"
+    },
+    "AIAnalysisStatus": {
+      "type": "string",
+      "enum": [
+        "NotRequested",
+        "Queued",
+        "Completed",
+        "Failed",
+        "SchemaInvalid",
+        "Skipped",
+        "Disabled"
+      ],
+      "x-enum": "AIAnalysisStatus",
+      "x-source": "system"
+    },
+    "AIObservation": {
+      "type": [
+        "object",
+        "array",
+        "string"
+      ],
+      "x-source": "ai",
+      "description": "ADVISORY ONLY. Schema-validated output, displayed as an AI observation, visually distinct from the caption and the reviewer decision (D-06)."
+    },
+    "AIConfidence": {
+      "type": "string",
+      "x-decimal-scale": 2,
+      "x-storage": "decimal string; never a float (spec 11)",
+      "x-source": "ai",
+      "description": "Advisory. Never a threshold for automatic approval. Validation: 0.00-1.00"
+    },
+    "AIModel": {
+      "type": "string",
+      "x-source": "ai",
+      "description": "Recorded for reproducibility."
+    },
+    "AIPromptVersion": {
+      "type": "string",
+      "x-source": "ai"
+    },
+    "AIContradictsCaption": {
+      "type": "boolean",
+      "x-source": "ai",
+      "description": "Raised for the reviewer's attention; resolves nothing by itself."
+    },
+    "ReviewerDecision": {
+      "type": "string",
+      "enum": [
+        "Pending",
+        "Approved",
+        "Rejected",
+        "Excluded"
+      ],
+      "x-enum": "ReviewerDecision",
+      "x-source": "user",
+      "description": "Set only by a human reviewer. AI may never write this field."
+    },
+    "ReviewerComment": {
+      "type": "string",
+      "x-source": "user"
+    },
+    "ReviewedByUserID": {
+      "type": "string",
+      "x-references": "Users.UserID",
+      "x-source": "system",
+      "description": "References Users.UserID"
+    },
+    "ReviewedAt": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "ApprovedForReport": {
+      "type": "boolean",
+      "x-source": "system",
+      "x-in-content-hash": true,
+      "description": "Derived from ReviewerDecision = Approved. Only human-approved evidence may appear in an official report (D-06)."
+    },
+    "ReportSequence": {
+      "type": "integer",
+      "x-source": "user",
+      "x-in-content-hash": true
+    },
+    "DerivedFileKey": {
+      "type": "string",
+      "x-source": "system",
+      "description": "Report-ready or downscaled derivative, stored SEPARATELY from the original (D-13)."
+    },
+    "ClassificationCode": {
+      "type": "string",
+      "enum": [
+        "Public",
+        "Internal",
+        "ClientConfidential",
+        "Personal",
+        "Financial",
+        "GovernmentRestricted"
+      ],
+      "x-enum": "DataClassificationCode",
+      "x-source": "system",
+      "description": "Drives residency and sharing decisions (D-12)."
+    },
+    "EntityVersion": {
+      "type": "integer",
+      "x-source": "system",
+      "description": "Incremented on every material change. Referenced by Approvals."
+    },
+    "ContentHash": {
+      "type": "string",
+      "x-source": "system",
+      "description": "SHA-256 over the canonical serialisation of the fields listed in content_hash_fields."
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "PhotoID",
+    "VisitID",
+    "ProjectID",
+    "LocationID",
+    "ReceivedAt",
+    "CapturedBy",
+    "OriginalFileKey",
+    "IsOriginalDeviceImageVerified",
+    "EvidenceStage",
+    "IsDuplicateSuspected",
+    "AIAnalysisStatus",
+    "ReviewerDecision",
+    "ApprovedForReport",
+    "ClassificationCode",
+    "EntityVersion",
+    "ContentHash",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

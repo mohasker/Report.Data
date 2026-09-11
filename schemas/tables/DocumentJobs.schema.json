@@ -1,0 +1,212 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/DocumentJobs.schema.json",
+  "title": "DocumentJobs",
+  "description": "A request to produce a document from a frozen snapshot of approved records.",
+  "x-description-ar": "مهام إنشاء المستندات",
+  "x-category": "document",
+  "x-scope": "project",
+  "x-sensitivity": "internal",
+  "x-built-in-phase": 5,
+  "x-primary-key": "JobID",
+  "x-content-hash-fields": [],
+  "x-unique-together": [],
+  "x-at-least-one": [],
+  "x-notes": [],
+  "type": "object",
+  "properties": {
+    "JobID": {
+      "type": "string"
+    },
+    "ProjectID": {
+      "type": "string",
+      "x-references": "Projects.ProjectID",
+      "x-source": "user",
+      "description": "References Projects.ProjectID"
+    },
+    "LegalEntityID": {
+      "type": "string",
+      "x-references": "LegalEntities.LegalEntityID",
+      "x-source": "system",
+      "description": "References LegalEntities.LegalEntityID"
+    },
+    "DocumentTypeCode": {
+      "type": "string",
+      "enum": [
+        "DailyReport",
+        "WeeklyReport",
+        "MonthlyTechnicalReport",
+        "InspectionReport",
+        "CorrectiveActionReport",
+        "Quotation",
+        "CompletionCertificate",
+        "InvoiceCover",
+        "Transmittal"
+      ],
+      "x-enum": "DocumentTypeCode",
+      "x-source": "user"
+    },
+    "LanguageCode": {
+      "type": "string",
+      "enum": [
+        "en",
+        "ar"
+      ],
+      "x-enum": "Language",
+      "x-source": "user"
+    },
+    "PeriodStart": {
+      "type": "string",
+      "x-source": "user"
+    },
+    "PeriodEnd": {
+      "type": "string",
+      "x-source": "user",
+      "description": "Validation: Must be >= PeriodStart"
+    },
+    "RequestedBy": {
+      "type": "string",
+      "x-references": "Users.UserID",
+      "x-source": "system",
+      "description": "Validation: Must hold MayRequestDocuments on ProjectID References Users.UserID"
+    },
+    "RequestedAt": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "InputValidationStatus": {
+      "type": "string",
+      "x-source": "system",
+      "description": "Validation: NotRun|Passed|Failed"
+    },
+    "InputValidationFindings": {
+      "type": [
+        "object",
+        "array",
+        "string"
+      ],
+      "x-source": "system",
+      "description": "Explicit DATA GAP items rather than silent omissions."
+    },
+    "SnapshotManifest": {
+      "type": [
+        "object",
+        "array",
+        "string"
+      ],
+      "x-source": "system",
+      "description": "Frozen list of included record IDs with their EntityVersion and ContentHash. Later edits cannot silently alter a draft (spec 8 scenario 05)."
+    },
+    "SnapshotFrozenAt": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "WorkflowStatus": {
+      "type": "string",
+      "enum": [
+        "Requested",
+        "Validating",
+        "InputValidationFailed",
+        "SnapshotFrozen",
+        "Generating",
+        "Generated",
+        "Failed",
+        "Cancelled"
+      ],
+      "x-enum": "JobStatus",
+      "x-source": "system"
+    },
+    "AIModel": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "PromptVersion": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "ReservedNumberID": {
+      "type": "string",
+      "x-references": "NumberRegister.NumberID",
+      "x-source": "system",
+      "description": "A number reserved for this job; cancelled if the job fails (D-10). References NumberRegister.NumberID"
+    },
+    "StartedAt": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "FinishedAt": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "ErrorClass": {
+      "type": "string",
+      "enum": [
+        "Validation",
+        "Authentication",
+        "Authorization",
+        "RateLimit",
+        "Network",
+        "ProviderUnavailable",
+        "FileMissing",
+        "SchemaMismatch",
+        "Duplicate",
+        "Conflict",
+        "Unknown"
+      ],
+      "x-enum": "FailureClass",
+      "x-source": "system"
+    },
+    "ErrorMessage": {
+      "type": "string",
+      "x-source": "system",
+      "description": "Sanitised. Never contains a secret."
+    },
+    "RetryCount": {
+      "type": "integer",
+      "x-source": "system"
+    },
+    "CorrelationID": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "JobID",
+    "ProjectID",
+    "LegalEntityID",
+    "DocumentTypeCode",
+    "LanguageCode",
+    "PeriodStart",
+    "PeriodEnd",
+    "RequestedBy",
+    "RequestedAt",
+    "InputValidationStatus",
+    "WorkflowStatus",
+    "RetryCount",
+    "CorrelationID",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

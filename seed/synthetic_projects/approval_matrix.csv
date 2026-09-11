@@ -1,0 +1,11 @@
+ApprovalMatrixID,ProjectID,ApprovalStage,DocumentTypeCode,ResponsibleUserID,BackupUserID,SequenceNumber,SelfApprovalProhibited,IsActive
+APM-0001,,EvidenceReview,,USR-0001,,1,TRUE,TRUE
+APM-0002,,TechnicalReview,,USR-0001,,1,TRUE,TRUE
+APM-0003,,FinanceReview,,USR-0001,USR-0009,1,TRUE,TRUE
+APM-0004,,Release,,USR-0001,,1,TRUE,TRUE
+APM-0005,PRJ-0001,EvidenceReview,,USR-0003,USR-0004,1,TRUE,TRUE
+APM-0006,PRJ-0001,TechnicalReview,MonthlyTechnicalReport,USR-0001,,1,TRUE,TRUE
+APM-0007,PRJ-0002,EvidenceReview,,USR-0003,,1,TRUE,TRUE
+APM-0008,PRJ-0002,TechnicalReview,MonthlyTechnicalReport,USR-0001,,1,TRUE,TRUE
+APM-0009,PRJ-0003,EvidenceReview,,USR-0004,,1,TRUE,TRUE
+APM-0010,PRJ-0003,TechnicalReview,MonthlyTechnicalReport,USR-0001,,1,TRUE,TRUE

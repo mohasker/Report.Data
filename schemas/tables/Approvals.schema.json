@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/Approvals.schema.json",
+  "title": "Approvals",
+  "description": "Every approval decision, bound to the exact content approved (ADR-0006, D-09).",
+  "x-description-ar": "قرارات الاعتماد",
+  "x-category": "control",
+  "x-scope": "project",
+  "x-sensitivity": "internal",
+  "x-built-in-phase": 1,
+  "x-primary-key": "ApprovalID",
+  "x-content-hash-fields": [],
+  "x-unique-together": [],
+  "x-at-least-one": [],
+  "x-notes": [
+    "Self-approval of a restricted transaction is rejected even when the approver is unavailable; the correct path is a recorded delegation (D-09)."
+  ],
+  "type": "object",
+  "properties": {
+    "ApprovalID": {
+      "type": "string"
+    },
+    "EntityType": {
+      "type": "string",
+      "x-source": "system",
+      "description": "Validation: Table name"
+    },
+    "EntityID": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "ProjectID": {
+      "type": "string",
+      "x-references": "Projects.ProjectID",
+      "x-source": "system",
+      "description": "Carried for row-level security even on control records. References Projects.ProjectID"
+    },
+    "ApprovalStage": {
+      "type": "string",
+      "enum": [
+        "EvidenceReview",
+        "TechnicalReview",
+        "FinanceReview",
+        "Release",
+        "OverrideAuthorisation"
+      ],
+      "x-enum": "ApprovalStage",
+      "x-source": "system"
+    },
+    "SequenceNumber": {
+      "type": "integer",
+      "x-source": "system"
+    },
+    "RequestedFromUserID": {
+      "type": "string",
+      "x-references": "Users.UserID",
+      "x-source": "system",
+      "description": "The ACCOUNTABLE approver from the approval matrix. References Users.UserID"
+    },
+    "RequestedAt": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "Decision": {
+      "type": "string",
+      "enum": [
+        "Pending",
+        "Approved",
+        "Rejected",
+        "Delegated",
+        "Withdrawn",
+        "Void"
+      ],
+      "x-enum": "ApprovalDecision",
+      "x-source": "user"
+    },
+    "DecisionAt": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "DecisionByUserID": {
+      "type": "string",
+      "x-references": "Users.UserID",
+      "x-source": "system",
+      "description": "The ACTING user. Differs from RequestedFromUserID only under a valid delegation. References Users.UserID"
+    },
+    "DelegationID": {
+      "type": "string",
+      "x-references": "ApprovalDelegations.DelegationID",
+      "x-source": "system",
+      "description": "Validation: Required when DecisionByUserID != RequestedFromUserID References ApprovalDelegations.DelegationID"
+    },
+    "Comment": {
+      "type": "string",
+      "x-source": "user"
+    },
+    "EntityVersion": {
+      "type": "integer",
+      "x-source": "system"
+    },
+    "ContentHash": {
+      "type": "string",
+      "x-source": "system",
+      "description": "The approval applies to THIS hash only. A change voids it and everything downstream."
+    },
+    "VoidedAt": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "VoidReason": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "IsOverride": {
+      "type": "boolean",
+      "x-source": "system",
+      "description": "An override is recorded AS an override, with a reason. Never silent (SEC-05)."
+    },
+    "OverrideReason": {
+      "type": "string",
+      "x-source": "user",
+      "description": "Validation: Required when IsOverride"
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "ApprovalID",
+    "EntityType",
+    "EntityID",
+    "ApprovalStage",
+    "SequenceNumber",
+    "RequestedFromUserID",
+    "RequestedAt",
+    "Decision",
+    "EntityVersion",
+    "ContentHash",
+    "IsOverride",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

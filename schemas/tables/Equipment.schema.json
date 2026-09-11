@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/Equipment.schema.json",
+  "title": "Equipment",
+  "description": "Equipment register.",
+  "x-description-ar": "سجل المعدات",
+  "x-category": "master",
+  "x-scope": "global",
+  "x-sensitivity": "internal",
+  "x-built-in-phase": 5,
+  "x-primary-key": "EquipmentID",
+  "x-content-hash-fields": [],
+  "x-unique-together": [],
+  "x-at-least-one": [],
+  "x-notes": [],
+  "type": "object",
+  "properties": {
+    "EquipmentID": {
+      "type": "string"
+    },
+    "EquipmentCode": {
+      "type": "string",
+      "x-source": "config"
+    },
+    "NameEN": {
+      "type": "string",
+      "x-source": "config",
+      "x-bilingual-pair": "NameAR"
+    },
+    "NameAR": {
+      "type": "string",
+      "x-source": "config",
+      "x-language": "ar"
+    },
+    "Category": {
+      "type": "string",
+      "x-source": "config"
+    },
+    "IsActive": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "Soft delete. Rows are never hard-deleted; history is evidence."
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "EquipmentID",
+    "EquipmentCode",
+    "NameEN",
+    "IsActive",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/Roles.schema.json",
+  "title": "Roles",
+  "description": "System roles. Authorisation is enforced by security filters and server-side re-validation, never by view visibility (spec 7.4).",
+  "x-description-ar": "أدوار النظام",
+  "x-category": "vocabulary",
+  "x-scope": "global",
+  "x-sensitivity": "internal",
+  "x-built-in-phase": 1,
+  "x-primary-key": "RoleID",
+  "x-content-hash-fields": [],
+  "x-unique-together": [],
+  "x-at-least-one": [],
+  "x-notes": [],
+  "type": "object",
+  "properties": {
+    "RoleID": {
+      "type": "string"
+    },
+    "RoleCode": {
+      "type": "string",
+      "x-source": "config"
+    },
+    "NameEN": {
+      "type": "string",
+      "x-source": "config",
+      "x-bilingual-pair": "NameAR"
+    },
+    "NameAR": {
+      "type": "string",
+      "x-source": "config",
+      "x-language": "ar"
+    },
+    "Description": {
+      "type": "string",
+      "x-source": "config"
+    },
+    "SeesFinancialData": {
+      "type": "boolean",
+      "x-source": "config",
+      "description": "Field roles are FALSE. Financial tables are kept out of the field app entirely (SEC-04)."
+    },
+    "MayApprove": {
+      "type": "boolean",
+      "x-source": "config"
+    },
+    "MayAdministerMasterData": {
+      "type": "boolean",
+      "x-source": "config"
+    },
+    "IsActive": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "Soft delete. Rows are never hard-deleted; history is evidence."
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "RoleID",
+    "RoleCode",
+    "NameEN",
+    "NameAR",
+    "Description",
+    "SeesFinancialData",
+    "MayApprove",
+    "MayAdministerMasterData",
+    "IsActive",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

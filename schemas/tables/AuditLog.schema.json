@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/AuditLog.schema.json",
+  "title": "AuditLog",
+  "description": "Append-only record of every state transition and every consequential action.",
+  "x-description-ar": "سجل التدقيق",
+  "x-category": "control",
+  "x-scope": "global",
+  "x-sensitivity": "internal",
+  "x-built-in-phase": 1,
+  "x-primary-key": "AuditID",
+  "x-content-hash-fields": [],
+  "x-unique-together": [],
+  "x-at-least-one": [],
+  "x-notes": [
+    "Append-only. No update or delete path exists for any role, including SystemAdmin.",
+    "Never stores an access token, a credential or a full sensitive payload."
+  ],
+  "type": "object",
+  "properties": {
+    "AuditID": {
+      "type": "string"
+    },
+    "TimestampUTC": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "UserOrService": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "Action": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "EntityType": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "EntityID": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "ProjectID": {
+      "type": "string",
+      "x-references": "Projects.ProjectID",
+      "x-source": "system",
+      "description": "References Projects.ProjectID"
+    },
+    "BeforeHash": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "AfterHash": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "SourceIPOrDevice": {
+      "type": "string",
+      "x-source": "system",
+      "description": "Where available. Not fabricated."
+    },
+    "CorrelationID": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "Result": {
+      "type": "string",
+      "x-source": "system",
+      "description": "Validation: Success|Failure|Denied"
+    },
+    "Reason": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "AuditID",
+    "TimestampUTC",
+    "UserOrService",
+    "Action",
+    "EntityType",
+    "EntityID",
+    "Result"
+  ],
+  "additionalProperties": false
+}

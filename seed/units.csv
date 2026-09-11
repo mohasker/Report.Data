@@ -1,0 +1,12 @@
+UnitID,UnitCode,NameEN,NameAR,DecimalPlaces,IsActive
+UNIT-M2,m2,Square metre,متر مربع,2,TRUE
+UNIT-M3,m3,Cubic metre,متر مكعب,2,TRUE
+UNIT-LM,lm,Linear metre,متر طولي,2,TRUE
+UNIT-NO,no,Number,عدد,0,TRUE
+UNIT-HR,hr,Hour,ساعة,2,TRUE
+UNIT-DAY,day,Day,يوم,2,TRUE
+UNIT-KG,kg,Kilogram,كيلوجرام,2,TRUE
+UNIT-L,l,Litre,لتر,2,TRUE
+UNIT-BAG,bag,Bag,كيس,0,TRUE
+UNIT-TRIP,trip,Trip,نقلة,0,TRUE
+UNIT-LS,ls,Lump sum,مقطوع,2,TRUE

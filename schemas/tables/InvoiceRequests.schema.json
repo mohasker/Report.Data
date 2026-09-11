@@ -1,0 +1,221 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/InvoiceRequests.schema.json",
+  "title": "InvoiceRequests",
+  "description": "A calculated billing request. Drafts only until Phase 7; never posted from Phase 1 or 6.",
+  "x-description-ar": "طلبات إصدار الفواتير",
+  "x-category": "financial",
+  "x-scope": "project",
+  "x-sensitivity": "financial",
+  "x-built-in-phase": 6,
+  "x-primary-key": "InvoiceRequestID",
+  "x-content-hash-fields": [],
+  "x-unique-together": [
+    [
+      "ClientID",
+      "ProjectID",
+      "ContractID",
+      "BillingPeriodStart",
+      "BillingPeriodEnd",
+      "SourceDocumentID"
+    ]
+  ],
+  "x-at-least-one": [],
+  "x-notes": [
+    "The unique key is the duplicate-billing control (spec 11)."
+  ],
+  "type": "object",
+  "properties": {
+    "InvoiceRequestID": {
+      "type": "string"
+    },
+    "LegalEntityID": {
+      "type": "string",
+      "x-references": "LegalEntities.LegalEntityID",
+      "x-source": "system",
+      "description": "References LegalEntities.LegalEntityID"
+    },
+    "ClientID": {
+      "type": "string",
+      "x-references": "Clients.ClientID",
+      "x-source": "system",
+      "description": "References Clients.ClientID"
+    },
+    "ProjectID": {
+      "type": "string",
+      "x-references": "Projects.ProjectID",
+      "x-source": "system",
+      "description": "References Projects.ProjectID"
+    },
+    "ContractID": {
+      "type": "string",
+      "x-references": "Contracts.ContractID",
+      "x-source": "system",
+      "description": "References Contracts.ContractID"
+    },
+    "BillingPeriodStart": {
+      "type": "string",
+      "x-source": "user"
+    },
+    "BillingPeriodEnd": {
+      "type": "string",
+      "x-source": "user"
+    },
+    "Currency": {
+      "type": "string",
+      "x-source": "system",
+      "description": "From the contract. A mismatch anywhere is a validation failure (C-09)."
+    },
+    "PaymentTermsDays": {
+      "type": "integer",
+      "x-source": "system"
+    },
+    "InvoiceDate": {
+      "type": "string",
+      "x-source": "user"
+    },
+    "DueDate": {
+      "type": "string",
+      "x-source": "system",
+      "description": "InvoiceDate + PaymentTermsDays, per contract."
+    },
+    "TaxRuleID": {
+      "type": "string",
+      "x-references": "TaxRules.TaxRuleID",
+      "x-source": "system",
+      "description": "References TaxRules.TaxRuleID"
+    },
+    "TaxRuleVersion": {
+      "type": "integer",
+      "x-source": "system",
+      "description": "The version applied, preserved forever (D-08)."
+    },
+    "Subtotal": {
+      "type": "string",
+      "x-decimal-scale": 3,
+      "x-storage": "decimal string; never a float (spec 11)",
+      "x-source": "calculation"
+    },
+    "Discount": {
+      "type": "string",
+      "x-decimal-scale": 3,
+      "x-storage": "decimal string; never a float (spec 11)",
+      "x-source": "calculation"
+    },
+    "TaxAmount": {
+      "type": "string",
+      "x-decimal-scale": 3,
+      "x-storage": "decimal string; never a float (spec 11)",
+      "x-source": "calculation"
+    },
+    "RetentionAmount": {
+      "type": "string",
+      "x-decimal-scale": 3,
+      "x-storage": "decimal string; never a float (spec 11)",
+      "x-source": "calculation"
+    },
+    "AdvanceRecovery": {
+      "type": "string",
+      "x-decimal-scale": 3,
+      "x-storage": "decimal string; never a float (spec 11)",
+      "x-source": "calculation"
+    },
+    "NetPayable": {
+      "type": "string",
+      "x-decimal-scale": 3,
+      "x-storage": "decimal string; never a float (spec 11)",
+      "x-source": "calculation"
+    },
+    "CalculationTrace": {
+      "type": [
+        "object",
+        "array",
+        "string"
+      ],
+      "x-source": "calculation",
+      "description": "Ordered record of every step and rounding decision, reproducible from stored inputs."
+    },
+    "SourceDocumentID": {
+      "type": "string",
+      "x-references": "Documents.DocumentID",
+      "x-source": "system",
+      "description": "The completion certificate or report this billing derives from. References Documents.DocumentID"
+    },
+    "FinanceStatus": {
+      "type": "string",
+      "x-source": "system",
+      "description": "Validation: Draft|PendingFinanceApproval|FinanceApproved|Rejected|Void"
+    },
+    "QuickBooksStatus": {
+      "type": "string",
+      "x-source": "system",
+      "description": "Validation: NotSent|Draft|Posted|Failed|ReconciliationFailed"
+    },
+    "QuickBooksInvoiceID": {
+      "type": "string",
+      "x-source": "integration"
+    },
+    "DraftInvoiceNumber": {
+      "type": "string",
+      "x-source": "system",
+      "description": "Internal. Separate from the final accounting number (spec 11)."
+    },
+    "FinalInvoiceNumber": {
+      "type": "string",
+      "x-source": "integration"
+    },
+    "ContentHash": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "EntityVersion": {
+      "type": "integer",
+      "x-source": "system"
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "InvoiceRequestID",
+    "LegalEntityID",
+    "ClientID",
+    "ProjectID",
+    "ContractID",
+    "BillingPeriodStart",
+    "BillingPeriodEnd",
+    "Currency",
+    "PaymentTermsDays",
+    "Subtotal",
+    "Discount",
+    "TaxAmount",
+    "RetentionAmount",
+    "AdvanceRecovery",
+    "NetPayable",
+    "FinanceStatus",
+    "QuickBooksStatus",
+    "ContentHash",
+    "EntityVersion",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

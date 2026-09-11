@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/DocumentTypes.schema.json",
+  "title": "DocumentTypes",
+  "description": "Controlled document types. Adding a type is configuration, not development (D-10).",
+  "x-description-ar": "أنواع المستندات المعتمدة",
+  "x-category": "vocabulary",
+  "x-scope": "global",
+  "x-sensitivity": "internal",
+  "x-built-in-phase": 1,
+  "x-primary-key": "DocumentTypeCode",
+  "x-content-hash-fields": [],
+  "x-unique-together": [],
+  "x-at-least-one": [],
+  "x-notes": [],
+  "type": "object",
+  "properties": {
+    "DocumentTypeCode": {
+      "type": "string",
+      "enum": [
+        "DailyReport",
+        "WeeklyReport",
+        "MonthlyTechnicalReport",
+        "InspectionReport",
+        "CorrectiveActionReport",
+        "Quotation",
+        "CompletionCertificate",
+        "InvoiceCover",
+        "Transmittal"
+      ],
+      "x-enum": "DocumentTypeCode"
+    },
+    "NameEN": {
+      "type": "string",
+      "x-source": "config",
+      "x-bilingual-pair": "NameAR"
+    },
+    "NameAR": {
+      "type": "string",
+      "x-source": "config",
+      "x-language": "ar"
+    },
+    "RequiresTechnicalApproval": {
+      "type": "boolean",
+      "x-source": "config"
+    },
+    "RequiresFinanceApproval": {
+      "type": "boolean",
+      "x-source": "config"
+    },
+    "RequiresReleaseApproval": {
+      "type": "boolean",
+      "x-source": "config"
+    },
+    "IsExternallyIssued": {
+      "type": "boolean",
+      "x-source": "config"
+    },
+    "BuiltInPhase": {
+      "type": "string",
+      "x-source": "config",
+      "description": "MonthlyTechnicalReport is the only type produced in the MVP."
+    },
+    "IsActive": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "Soft delete. Rows are never hard-deleted; history is evidence."
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "DocumentTypeCode",
+    "NameEN",
+    "NameAR",
+    "RequiresTechnicalApproval",
+    "RequiresFinanceApproval",
+    "RequiresReleaseApproval",
+    "IsExternallyIssued",
+    "BuiltInPhase",
+    "IsActive",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

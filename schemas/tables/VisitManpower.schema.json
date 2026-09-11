@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/VisitManpower.schema.json",
+  "title": "VisitManpower",
+  "description": "Manpower present during a visit, for resource summaries only.",
+  "x-description-ar": "العمالة في الزيارة",
+  "x-category": "operational",
+  "x-scope": "project",
+  "x-sensitivity": "internal",
+  "x-built-in-phase": 5,
+  "x-primary-key": "VisitManpowerID",
+  "x-content-hash-fields": [],
+  "x-unique-together": [],
+  "x-at-least-one": [],
+  "x-notes": [
+    "Never exposes payroll detail to field roles."
+  ],
+  "type": "object",
+  "properties": {
+    "VisitManpowerID": {
+      "type": "string"
+    },
+    "VisitID": {
+      "type": "string",
+      "x-references": "SiteVisits.VisitID",
+      "x-source": "user",
+      "description": "References SiteVisits.VisitID"
+    },
+    "ProjectID": {
+      "type": "string",
+      "x-references": "Projects.ProjectID",
+      "x-source": "system",
+      "description": "References Projects.ProjectID"
+    },
+    "EmployeeID": {
+      "type": "string",
+      "x-references": "Employees.EmployeeID",
+      "x-source": "user",
+      "description": "References Employees.EmployeeID"
+    },
+    "TradeEN": {
+      "type": "string",
+      "x-source": "user",
+      "x-bilingual-pair": "TradeAR"
+    },
+    "TradeAR": {
+      "type": "string",
+      "x-source": "user",
+      "x-language": "ar"
+    },
+    "HeadCount": {
+      "type": "integer",
+      "x-source": "user",
+      "description": "Validation: >= 0"
+    },
+    "Hours": {
+      "type": "string",
+      "x-decimal-scale": 2,
+      "x-storage": "decimal string; never a float (spec 11)",
+      "x-source": "user"
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "VisitManpowerID",
+    "VisitID",
+    "ProjectID",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

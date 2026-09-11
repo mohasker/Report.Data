@@ -1,0 +1,7 @@
+SeriesID,LegalEntityID,DocumentTypeCode,ScopeKind,ProjectID,ClientID,YearBasis,FinancialYearStartMonth,FormatPattern,PadWidth,StartNumber,ResetRule,MigratedFromManualRegister,LastManualNumber,AlignedToAccountingProcess,IsActive
+SER-0001,LE-0001,MonthlyTechnicalReport,CompanyWide,,,Calendar,,{ENTITY}-TR-{YYYY}-{NNN},3,1,PerYear,FALSE,,FALSE,TRUE
+SER-0002,LE-0001,Quotation,CompanyWide,,,Calendar,,{ENTITY}-QT-{YYYY}-{NNN},3,1,PerYear,FALSE,,FALSE,TRUE
+SER-0003,LE-0001,CompletionCertificate,CompanyWide,,,Calendar,,{ENTITY}-CC-{YYYY}-{NNN},3,1,PerYear,FALSE,,FALSE,TRUE
+SER-0004,LE-0001,MonthlyTechnicalReport,PerProject,PRJ-0003,,Calendar,,{ENTITY}-{PROJECT}-TR-{YYYY}-{NNN},3,1,PerYear,FALSE,,FALSE,TRUE
+SER-0005,LE-0001,InvoiceCover,CompanyWide,,,Financial,4,{ENTITY}-INV-{YYYY}-{NNN},4,1,PerYear,FALSE,,TRUE,TRUE
+SER-0006,LE-0002,MonthlyTechnicalReport,CompanyWide,,,Calendar,,{ENTITY}-TR-{YYYY}-{NNN},3,1,PerYear,FALSE,,FALSE,TRUE

@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/ActivityTypes.schema.json",
+  "title": "ActivityTypes",
+  "description": "Catalogue of activities with their default evidence and quantity rules. Per-project overrides live in ProjectActivityRules.",
+  "x-description-ar": "أنواع الأنشطة وقواعد الأدلة الافتراضية",
+  "x-category": "master",
+  "x-scope": "global",
+  "x-sensitivity": "internal",
+  "x-built-in-phase": 1,
+  "x-primary-key": "ActivityTypeID",
+  "x-content-hash-fields": [],
+  "x-unique-together": [],
+  "x-at-least-one": [],
+  "x-notes": [],
+  "type": "object",
+  "properties": {
+    "ActivityTypeID": {
+      "type": "string"
+    },
+    "DisciplineID": {
+      "type": "string",
+      "x-references": "Disciplines.DisciplineID",
+      "x-source": "config",
+      "description": "References Disciplines.DisciplineID"
+    },
+    "ActivityCode": {
+      "type": "string",
+      "x-source": "config"
+    },
+    "ActivityNameEN": {
+      "type": "string",
+      "x-source": "config",
+      "x-bilingual-pair": "ActivityNameAR"
+    },
+    "ActivityNameAR": {
+      "type": "string",
+      "x-source": "config",
+      "x-language": "ar"
+    },
+    "RequiresBeforePhoto": {
+      "type": "boolean",
+      "x-source": "config"
+    },
+    "RequiresAfterPhoto": {
+      "type": "boolean",
+      "x-source": "config"
+    },
+    "RequiresQuantity": {
+      "type": "boolean",
+      "x-source": "config"
+    },
+    "QuantityUnitID": {
+      "type": "string",
+      "x-references": "Units.UnitID",
+      "x-source": "config",
+      "description": "Validation: Required when RequiresQuantity is TRUE References Units.UnitID"
+    },
+    "RequiresMaterial": {
+      "type": "boolean",
+      "x-source": "config"
+    },
+    "RequiresSnagCheck": {
+      "type": "boolean",
+      "x-source": "config"
+    },
+    "MinPhotos": {
+      "type": "integer",
+      "x-source": "config"
+    },
+    "DefaultEvidenceStages": {
+      "type": "string",
+      "x-source": "config",
+      "description": "Comma-separated EvidenceStage codes suggested in the form."
+    },
+    "IsActive": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "Soft delete. Rows are never hard-deleted; history is evidence."
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "ActivityTypeID",
+    "DisciplineID",
+    "ActivityCode",
+    "ActivityNameEN",
+    "ActivityNameAR",
+    "RequiresBeforePhoto",
+    "RequiresAfterPhoto",
+    "RequiresQuantity",
+    "RequiresMaterial",
+    "RequiresSnagCheck",
+    "MinPhotos",
+    "IsActive",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

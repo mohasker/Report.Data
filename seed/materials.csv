@@ -1,0 +1,4 @@
+MaterialID,ItemCode,DescriptionEN,DescriptionAR,UnitID,ApprovedSpecification,ApprovedBrand,Supplier,QuickBooksItemID,IsActive
+MAT-0001,SYN-FERT-01,Synthetic fertiliser placeholder,سماد اصطناعي للاختبار,UNIT-KG,SYNTHETIC SPEC,SYNTHETIC BRAND,SYNTHETIC SUPPLIER,,TRUE
+MAT-0002,SYN-TILE-01,Synthetic ceiling tile placeholder,لوح سقف اصطناعي للاختبار,UNIT-NO,SYNTHETIC SPEC,SYNTHETIC BRAND,SYNTHETIC SUPPLIER,,TRUE
+MAT-0003,SYN-EMIT-01,Synthetic irrigation emitter placeholder,نقاط ري اصطناعية للاختبار,UNIT-NO,SYNTHETIC SPEC,SYNTHETIC BRAND,SYNTHETIC SUPPLIER,,TRUE

@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/Documents.schema.json",
+  "title": "Documents",
+  "description": "A produced document revision. Approval binds to ContentHash (ADR-0006).",
+  "x-description-ar": "المستندات المنتجة",
+  "x-category": "document",
+  "x-scope": "project",
+  "x-sensitivity": "confidential",
+  "x-built-in-phase": 5,
+  "x-primary-key": "DocumentID",
+  "x-content-hash-fields": [],
+  "x-unique-together": [],
+  "x-at-least-one": [],
+  "x-notes": [],
+  "type": "object",
+  "properties": {
+    "DocumentID": {
+      "type": "string"
+    },
+    "JobID": {
+      "type": "string",
+      "x-references": "DocumentJobs.JobID",
+      "x-source": "system",
+      "description": "References DocumentJobs.JobID"
+    },
+    "ProjectID": {
+      "type": "string",
+      "x-references": "Projects.ProjectID",
+      "x-source": "system",
+      "description": "References Projects.ProjectID"
+    },
+    "LegalEntityID": {
+      "type": "string",
+      "x-references": "LegalEntities.LegalEntityID",
+      "x-source": "system",
+      "description": "References LegalEntities.LegalEntityID"
+    },
+    "DocumentTypeCode": {
+      "type": "string",
+      "enum": [
+        "DailyReport",
+        "WeeklyReport",
+        "MonthlyTechnicalReport",
+        "InspectionReport",
+        "CorrectiveActionReport",
+        "Quotation",
+        "CompletionCertificate",
+        "InvoiceCover",
+        "Transmittal"
+      ],
+      "x-enum": "DocumentTypeCode",
+      "x-source": "system"
+    },
+    "TemplateID": {
+      "type": "string",
+      "x-references": "DocumentTemplates.TemplateID",
+      "x-source": "system",
+      "description": "References DocumentTemplates.TemplateID"
+    },
+    "LanguageCode": {
+      "type": "string",
+      "enum": [
+        "en",
+        "ar"
+      ],
+      "x-enum": "Language",
+      "x-source": "system"
+    },
+    "DocumentNumber": {
+      "type": "string",
+      "x-source": "system",
+      "description": "Issued by the numbering service at creation (D-10)."
+    },
+    "VersionNumber": {
+      "type": "integer",
+      "x-source": "system"
+    },
+    "RevisionLabel": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "DraftFileKey": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "PDFFileKey": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "ContentHash": {
+      "type": "string",
+      "x-source": "system",
+      "description": "Recomputed and compared before any release, posting or send."
+    },
+    "TechnicalApprovalStatus": {
+      "type": "string",
+      "x-source": "system",
+      "description": "Validation: Pending|Approved|Rejected|Void"
+    },
+    "FinancialApprovalStatus": {
+      "type": "string",
+      "x-source": "system",
+      "description": "Validation: NotRequired|Pending|Approved|Rejected|Void"
+    },
+    "ReleaseStatus": {
+      "type": "string",
+      "enum": [
+        "Draft",
+        "PendingTechnicalApproval",
+        "TechnicallyApproved",
+        "RevisionRequired",
+        "PendingRelease",
+        "Released",
+        "Superseded",
+        "Cancelled"
+      ],
+      "x-enum": "DocumentStatus",
+      "x-source": "system"
+    },
+    "ReleasedAt": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "ReleasedBy": {
+      "type": "string",
+      "x-references": "Users.UserID",
+      "x-source": "system",
+      "description": "References Users.UserID"
+    },
+    "RecipientSnapshot": {
+      "type": [
+        "object",
+        "array",
+        "string"
+      ],
+      "x-source": "system",
+      "description": "Authorised recipients as they were AT RELEASE. Later contact edits cannot rewrite history."
+    },
+    "SupersedesDocumentID": {
+      "type": "string",
+      "x-references": "Documents.DocumentID",
+      "x-source": "system",
+      "description": "References Documents.DocumentID"
+    },
+    "ClassificationCode": {
+      "type": "string",
+      "enum": [
+        "Public",
+        "Internal",
+        "ClientConfidential",
+        "Personal",
+        "Financial",
+        "GovernmentRestricted"
+      ],
+      "x-enum": "DataClassificationCode",
+      "x-source": "system"
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "DocumentID",
+    "JobID",
+    "ProjectID",
+    "LegalEntityID",
+    "DocumentTypeCode",
+    "TemplateID",
+    "LanguageCode",
+    "VersionNumber",
+    "ContentHash",
+    "TechnicalApprovalStatus",
+    "FinancialApprovalStatus",
+    "ReleaseStatus",
+    "ClassificationCode",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

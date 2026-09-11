@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/Materials.schema.json",
+  "title": "Materials",
+  "description": "Approved materials catalogue.",
+  "x-description-ar": "كتالوج المواد",
+  "x-category": "master",
+  "x-scope": "global",
+  "x-sensitivity": "internal",
+  "x-built-in-phase": 5,
+  "x-primary-key": "MaterialID",
+  "x-content-hash-fields": [],
+  "x-unique-together": [],
+  "x-at-least-one": [],
+  "x-notes": [],
+  "type": "object",
+  "properties": {
+    "MaterialID": {
+      "type": "string"
+    },
+    "ItemCode": {
+      "type": "string",
+      "x-source": "config"
+    },
+    "DescriptionEN": {
+      "type": "string",
+      "x-source": "config",
+      "x-bilingual-pair": "DescriptionAR"
+    },
+    "DescriptionAR": {
+      "type": "string",
+      "x-source": "config",
+      "x-language": "ar"
+    },
+    "UnitID": {
+      "type": "string",
+      "x-references": "Units.UnitID",
+      "x-source": "config",
+      "description": "References Units.UnitID"
+    },
+    "ApprovedSpecification": {
+      "type": "string",
+      "x-source": "config"
+    },
+    "ApprovedBrand": {
+      "type": "string",
+      "x-source": "config"
+    },
+    "Supplier": {
+      "type": "string",
+      "x-source": "config"
+    },
+    "QuickBooksItemID": {
+      "type": "string",
+      "x-sensitivity": "financial",
+      "x-source": "integration"
+    },
+    "IsActive": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "Soft delete. Rows are never hard-deleted; history is evidence."
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "MaterialID",
+    "ItemCode",
+    "DescriptionEN",
+    "UnitID",
+    "IsActive",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

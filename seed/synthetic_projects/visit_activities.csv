@@ -1,0 +1,8 @@
+VisitActivityID,VisitID,ProjectID,ActivityTypeID,DescriptionEN,DescriptionAR,Quantity,UnitID,PercentComplete,EvidenceStatus,SupervisorConfirmation,TechnicalReviewerComment,Status,EntityVersion
+VAC-0001,VIS-0001,PRJ-0001,ACT-0002,Mowing of Block A lawns.,قص مسطحات القطاع أ.,1200.000,UNIT-M2,100,Complete,TRUE,Evidence sufficient.,Approved,2
+VAC-0002,VIS-0001,PRJ-0001,ACT-0016,Manual weeding around bed edges.,إزالة الأعشاب يدوياً حول الأحواض.,180.000,UNIT-M2,100,Complete,TRUE,,Approved,1
+VAC-0003,VIS-0002,PRJ-0001,ACT-0004,Inspection of irrigation laterals.,فحص خطوط الري الفرعية.,12.000,UNIT-NO,100,Complete,TRUE,,UnderReview,1
+VAC-0004,VIS-0003,PRJ-0002,ACT-0021,Replacement of damaged ceiling tiles.,استبدال ألواح السقف التالفة.,24.000,UNIT-NO,100,Complete,TRUE,Approved with photographs.,Approved,3
+VAC-0005,VIS-0004,PRJ-0002,ACT-0020,Inspection of suspended ceiling condition.,فحص حالة الأسقف المستعارة.,,,100,Incomplete,FALSE,Caption missing on the snag photograph.,CorrectionRequired,2
+VAC-0006,VIS-0005,PRJ-0003,ACT-0005,Replacement of irrigation emitters in zone 1.,استبدال نقاط الري في المنطقة ١.,45.000,UNIT-NO,60,Complete,TRUE,,Submitted,1
+VAC-0007,VIS-0006,PRJ-0001,ACT-0017,Cleaning of pathways.,تنظيف الممرات.,,,50,Incomplete,FALSE,,Draft,1

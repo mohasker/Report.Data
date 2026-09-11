@@ -1,0 +1,7 @@
+ClassificationCode,NameEN,NameAR,Description,MayLeaveTenant,MayBeSharedExternally,DefaultRetentionDays,IsActive
+Public,Public,عام,Material already published by the company.,TRUE,TRUE,,TRUE
+Internal,Internal,داخلي,Operational data with no client confidentiality attached.,TRUE,FALSE,2555,TRUE
+ClientConfidential,Client confidential,سري للعميل,Default for photographic evidence and project records. Never shared beyond authorised recipients.,FALSE,FALSE,2555,TRUE
+Personal,Personal data,بيانات شخصية,Identifies an individual. Minimised wherever the process does not require it.,FALSE,FALSE,1095,TRUE
+Financial,Financial,مالي,Rates invoices and accounting identifiers. Absent from the field data set entirely.,FALSE,FALSE,3650,TRUE
+GovernmentRestricted,Government restricted,مقيد حكومياً,Handling imposed by a government contract. Requires a residency assignment before production upload.,FALSE,FALSE,3650,TRUE

@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/NumberingSeries.schema.json",
+  "title": "NumberingSeries",
+  "description": "One configurable series per legal entity x document type x year x scope x optional client requirement. Never one undifferentiated sequence (D-10).",
+  "x-description-ar": "تسلسلات ترقيم المستندات القابلة للتهيئة",
+  "x-category": "master",
+  "x-scope": "global",
+  "x-sensitivity": "internal",
+  "x-built-in-phase": 5,
+  "x-primary-key": "SeriesID",
+  "x-content-hash-fields": [],
+  "x-unique-together": [
+    [
+      "LegalEntityID",
+      "DocumentTypeCode",
+      "ScopeKind",
+      "ProjectID",
+      "ClientID",
+      "YearBasis"
+    ]
+  ],
+  "x-at-least-one": [],
+  "x-notes": [],
+  "type": "object",
+  "properties": {
+    "SeriesID": {
+      "type": "string"
+    },
+    "LegalEntityID": {
+      "type": "string",
+      "x-references": "LegalEntities.LegalEntityID",
+      "x-source": "config",
+      "description": "References LegalEntities.LegalEntityID"
+    },
+    "DocumentTypeCode": {
+      "type": "string",
+      "enum": [
+        "DailyReport",
+        "WeeklyReport",
+        "MonthlyTechnicalReport",
+        "InspectionReport",
+        "CorrectiveActionReport",
+        "Quotation",
+        "CompletionCertificate",
+        "InvoiceCover",
+        "Transmittal"
+      ],
+      "x-enum": "DocumentTypeCode",
+      "x-source": "config"
+    },
+    "ScopeKind": {
+      "type": "string",
+      "x-source": "config",
+      "description": "Determines whether the counter is shared or partitioned. Validation: CompanyWide|PerProject|PerClient"
+    },
+    "ProjectID": {
+      "type": "string",
+      "x-references": "Projects.ProjectID",
+      "x-source": "config",
+      "description": "Validation: Required when ScopeKind = PerProject References Projects.ProjectID"
+    },
+    "ClientID": {
+      "type": "string",
+      "x-references": "Clients.ClientID",
+      "x-source": "config",
+      "description": "Validation: Required when ScopeKind = PerClient References Clients.ClientID"
+    },
+    "YearBasis": {
+      "type": "string",
+      "x-source": "config",
+      "description": "Validation: Calendar|Financial|None"
+    },
+    "FinancialYearStartMonth": {
+      "type": "integer",
+      "x-source": "config",
+      "description": "Validation: 1-12 when YearBasis=Financial"
+    },
+    "FormatPattern": {
+      "type": "string",
+      "x-source": "config",
+      "description": "Tokens: {ENTITY} {TYPE} {YYYY} {YY} {PROJECT} {CLIENT} {NNN} {REV}. Illustrative only until the existing manual register is reviewed (D-10)."
+    },
+    "PadWidth": {
+      "type": "integer",
+      "x-source": "config"
+    },
+    "StartNumber": {
+      "type": "integer",
+      "x-source": "config",
+      "description": "Continues the existing manual register rather than restarting it (A-18)."
+    },
+    "ResetRule": {
+      "type": "string",
+      "x-source": "config",
+      "description": "Validation: PerYear|Never"
+    },
+    "MigratedFromManualRegister": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "TRUE once the existing manual series has been reviewed and its last number recorded."
+    },
+    "LastManualNumber": {
+      "type": "integer",
+      "x-source": "user",
+      "description": "The final number used manually, so the system continues rather than collides."
+    },
+    "AlignedToAccountingProcess": {
+      "type": "boolean",
+      "x-source": "config",
+      "description": "TRUE for invoice-related series: numbering follows the approved accounting process (D-10)."
+    },
+    "IsActive": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "Soft delete. Rows are never hard-deleted; history is evidence."
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "SeriesID",
+    "LegalEntityID",
+    "DocumentTypeCode",
+    "ScopeKind",
+    "YearBasis",
+    "FormatPattern",
+    "PadWidth",
+    "StartNumber",
+    "ResetRule",
+    "MigratedFromManualRegister",
+    "AlignedToAccountingProcess",
+    "IsActive",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

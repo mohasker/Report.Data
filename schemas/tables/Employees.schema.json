@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/Employees.schema.json",
+  "title": "Employees",
+  "description": "Crew register for resource reporting. Payroll data is deliberately excluded (spec 5.13).",
+  "x-description-ar": "سجل العمالة",
+  "x-category": "master",
+  "x-scope": "global",
+  "x-sensitivity": "personal",
+  "x-built-in-phase": 5,
+  "x-primary-key": "EmployeeID",
+  "x-content-hash-fields": [],
+  "x-unique-together": [],
+  "x-at-least-one": [],
+  "x-notes": [
+    "No salary, rate, passport, visa or personal document field exists in this table."
+  ],
+  "type": "object",
+  "properties": {
+    "EmployeeID": {
+      "type": "string"
+    },
+    "EmployeeCode": {
+      "type": "string",
+      "x-source": "config"
+    },
+    "FullNameEN": {
+      "type": "string",
+      "x-source": "config",
+      "x-bilingual-pair": "FullNameAR"
+    },
+    "FullNameAR": {
+      "type": "string",
+      "x-source": "config",
+      "x-language": "ar"
+    },
+    "TradeEN": {
+      "type": "string",
+      "x-source": "config",
+      "x-bilingual-pair": "TradeAR"
+    },
+    "TradeAR": {
+      "type": "string",
+      "x-source": "config",
+      "x-language": "ar"
+    },
+    "CrewCode": {
+      "type": "string",
+      "x-source": "config"
+    },
+    "IsActive": {
+      "type": "boolean",
+      "x-source": "user",
+      "description": "Soft delete. Rows are never hard-deleted; history is evidence."
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "EmployeeID",
+    "EmployeeCode",
+    "FullNameEN",
+    "IsActive",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

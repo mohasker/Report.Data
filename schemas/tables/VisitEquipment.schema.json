@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/tables/VisitEquipment.schema.json",
+  "title": "VisitEquipment",
+  "description": "Equipment present during a visit.",
+  "x-description-ar": "المعدات المستخدمة في الزيارة",
+  "x-category": "operational",
+  "x-scope": "project",
+  "x-sensitivity": "internal",
+  "x-built-in-phase": 5,
+  "x-primary-key": "VisitEquipmentID",
+  "x-content-hash-fields": [],
+  "x-unique-together": [],
+  "x-at-least-one": [],
+  "x-notes": [],
+  "type": "object",
+  "properties": {
+    "VisitEquipmentID": {
+      "type": "string"
+    },
+    "VisitID": {
+      "type": "string",
+      "x-references": "SiteVisits.VisitID",
+      "x-source": "user",
+      "description": "References SiteVisits.VisitID"
+    },
+    "ProjectID": {
+      "type": "string",
+      "x-references": "Projects.ProjectID",
+      "x-source": "system",
+      "description": "References Projects.ProjectID"
+    },
+    "EquipmentID": {
+      "type": "string",
+      "x-references": "Equipment.EquipmentID",
+      "x-source": "user",
+      "description": "References Equipment.EquipmentID"
+    },
+    "Hours": {
+      "type": "string",
+      "x-decimal-scale": 2,
+      "x-storage": "decimal string; never a float (spec 11)",
+      "x-source": "user"
+    },
+    "Remarks": {
+      "type": "string",
+      "x-source": "user"
+    },
+    "CreatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Set once on insert."
+    },
+    "CreatedBy": {
+      "type": "string",
+      "x-source": "system",
+      "description": "USEREMAIL() or the service identity."
+    },
+    "UpdatedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "UTC. Excluded from ContentHash."
+    },
+    "UpdatedBy": {
+      "type": "string",
+      "x-source": "system"
+    }
+  },
+  "required": [
+    "VisitEquipmentID",
+    "VisitID",
+    "ProjectID",
+    "EquipmentID",
+    "CreatedAt",
+    "CreatedBy",
+    "UpdatedAt",
+    "UpdatedBy"
+  ],
+  "additionalProperties": false
+}

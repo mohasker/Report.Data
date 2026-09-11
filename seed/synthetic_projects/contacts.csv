@@ -1,0 +1,5 @@
+ContactID,ClientID,NameEN,NameAR,PositionEN,PositionAR,Email,Mobile,PreferredLanguage,IsAuthorizedRecipient,Status,IsActive
+CON-0001,CLI-0001,Synthetic Contact One,جهة اتصال اصطناعية ١,Maintenance Engineer,مهندس صيانة,contact1@synthetic.example,+974 30000001,en,TRUE,Active,TRUE
+CON-0002,CLI-0001,Synthetic Contact Two,جهة اتصال اصطناعية ٢,Site Coordinator,منسق موقع,contact2@synthetic.example,+974 30000002,ar,FALSE,Active,TRUE
+CON-0003,CLI-0002,Synthetic Contact Three,جهة اتصال اصطناعية ٣,Facilities Manager,مدير مرافق,contact3@synthetic.example,+974 30000003,ar,TRUE,Active,TRUE
+CON-0004,CLI-0003,Synthetic Contact Four,جهة اتصال اصطناعية ٤,Project Engineer,مهندس مشروع,contact4@synthetic.example,+974 30000004,en,TRUE,Active,TRUE

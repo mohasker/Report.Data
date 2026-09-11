@@ -1,0 +1,4 @@
+DelegationID,FromUserID,ToUserID,ApprovalStage,Scope,ProjectIDs,ValidFrom,ValidTo,Reason,AuthorisedByUserID,RevokedAt,RevokedByUserID,IsActive
+DEL-0001,USR-0001,USR-0004,TechnicalReview,SpecificProjects,PRJ-0001,2026-04-01T00:00:00Z,2026-04-14T23:59:59Z,Synthetic delegation covering planned absence,USR-0001,,,TRUE
+DEL-0002,USR-0001,USR-0003,EvidenceReview,AllProjects,,2026-01-01T00:00:00Z,2026-01-31T23:59:59Z,Synthetic expired delegation used to prove expiry is enforced,USR-0001,,,TRUE
+DEL-0003,USR-0001,USR-0004,Release,AllProjects,,2026-05-01T00:00:00Z,2026-05-31T23:59:59Z,Synthetic revoked delegation used to prove revocation is enforced,USR-0001,2026-05-02T08:00:00Z,USR-0001,TRUE

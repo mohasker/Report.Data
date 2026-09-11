@@ -1,0 +1,11 @@
+LocationID,ProjectID,LocationCode,LocationNameEN,LocationNameAR,ParentLocationID,LocationKind,GPSLatitude,GPSLongitude,GeofenceRadiusM,DisplayOrder,IsActive
+LOC-0001,PRJ-0001,SITE,Synthetic Park Site,موقع الحديقة الاصطناعية,,Site,25.2854,51.5310,500,10,TRUE
+LOC-0002,PRJ-0001,BLK-A,Block A,القطاع أ,LOC-0001,Zone,25.2856,51.5312,150,20,TRUE
+LOC-0003,PRJ-0001,BLK-B,Block B,القطاع ب,LOC-0001,Zone,25.2858,51.5315,150,30,TRUE
+LOC-0004,PRJ-0001,BLK-A-L1,Block A Lawn 1,مسطح القطاع أ ١,LOC-0002,Zone,,,50,40,TRUE
+LOC-0005,PRJ-0002,SITE,Synthetic School Complex,مجمع المدارس الاصطناعي,,Site,25.3000,51.5000,800,10,TRUE
+LOC-0006,PRJ-0002,BLK-A,Block A,المبنى أ,LOC-0005,Building,25.3002,51.5002,200,20,TRUE
+LOC-0007,PRJ-0002,BLK-A-F1,Block A First Floor,الدور الأول مبنى أ,LOC-0006,Floor,,,,30,TRUE
+LOC-0008,PRJ-0002,BLK-A-F1-R12,Block A Room 12,غرفة ١٢ مبنى أ,LOC-0007,Room,,,,40,TRUE
+LOC-0009,PRJ-0003,SITE,Synthetic Compound,المجمع الاصطناعي,,Site,25.2700,51.5400,400,10,TRUE
+LOC-0010,PRJ-0003,ZONE-1,Irrigation Zone 1,منطقة الري ١,LOC-0009,Zone,,,100,20,TRUE

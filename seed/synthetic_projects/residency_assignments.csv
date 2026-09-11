@@ -1,0 +1,4 @@
+ResidencyAssignmentID,ResidencyRequirementID,AppliesToKind,ClientID,ContractID,ProjectID,EffectiveFrom,EffectiveTo,VerifiedFromContract,IsActive
+RSA-0001,RES-0001,Project,,,PRJ-0001,2026-01-01,,FALSE,TRUE
+RSA-0002,RES-0004,Client,CLI-0002,,,2026-02-01,,FALSE,TRUE
+RSA-0003,RES-0002,Project,,,PRJ-0003,2026-03-01,,FALSE,TRUE

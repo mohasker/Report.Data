@@ -1,0 +1,4 @@
+ClientID,LegalNameEN,LegalNameAR,DisplayNameEN,DisplayNameAR,ClientKind,BillingAddressEN,BillingAddressAR,TaxRegistrationNumber,PrimaryContactID,PaymentTermsDays,Currency,DefaultClassificationCode,QuickBooksCustomerID,Status,IsActive
+CLI-0001,SYNTHETIC MUNICIPAL AUTHORITY (TEST),هيئة بلدية اصطناعية للاختبار,Synthetic Municipal Authority,الهيئة البلدية الاصطناعية,Government,SYNTHETIC ADDRESS DOHA,عنوان اصطناعي الدوحة,,CON-0001,60,QAR,GovernmentRestricted,,Active,TRUE
+CLI-0002,,شركة اصطناعية للمدارس ذ.م.م,Synthetic Schools Client,شركة المدارس الاصطناعية,SemiGovernment,SYNTHETIC ADDRESS DOHA,عنوان اصطناعي الدوحة,,CON-0003,45,QAR,GovernmentRestricted,,Active,TRUE
+CLI-0003,SYNTHETIC MAIN CONTRACTOR LLC (TEST),مقاول رئيسي اصطناعي ذ.م.م,Synthetic Main Contractor,المقاول الرئيسي الاصطناعي,MainContractor,SYNTHETIC ADDRESS DOHA,عنوان اصطناعي الدوحة,,CON-0004,30,USD,ClientConfidential,,Active,TRUE

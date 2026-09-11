@@ -1,0 +1,7 @@
+DisciplineID,DisciplineCode,NameEN,NameAR,IsActive
+DIS-LAND,LANDSCAPE,Landscaping,تنسيق الحدائق,TRUE
+DIS-IRRIG,IRRIGATION,Irrigation,الري,TRUE
+DIS-CIVIL,CIVIL,Civil maintenance,الصيانة المدنية,TRUE
+DIS-CEIL,CEILING,Suspended ceilings and partitions,الأسقف المستعارة والقواطع,TRUE
+DIS-FINISH,FINISHES,Finishes and coatings,التشطيبات والدهانات,TRUE
+DIS-HSE,HSE,Health safety and environment,الصحة والسلامة والبيئة,TRUE
