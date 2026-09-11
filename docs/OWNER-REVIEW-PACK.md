@@ -1,6 +1,6 @@
 # Phase 1 — Owner Review Pack
 
-**Document ID:** AH-SYS-REV-001 · **Revision:** 1 · **Date:** 2026-09-11
+**Document ID:** AH-SYS-REV-001 · **Revision:** 2 · **Date:** 2026-09-11
 **Status:** Completed · Validated Locally · **Submitted for Owner Review**
 **Purpose:** everything needed to approve, conditionally approve, or send back the Phase 1 design — without reading the repository.
 
@@ -10,6 +10,8 @@ not need to open unless something here provokes a question.
 | | |
 |---|---|
 | **What was built** | A complete data foundation: 46 tables, 829 columns, 11 status lifecycles, 10 roles, 460 access grants |
+| **What gets built first** | A **lean 17-table MVP**; the other 29 tables stay as the reference architecture and are added additively ([`02a-plan/11-lean-mvp-scope.md`](02a-plan/11-lean-mvp-scope.md)) |
+| **Expected incremental cost** | **USD 0** for the pilot. Workspace is already paid and AppSheet is assumed included, pending a 15-minute Admin Console check |
 | **What was executed** | 172 automated checks, all passing, against synthetic data on a local machine |
 | **What was connected** | **Nothing.** No Google account, no AppSheet app, no Make scenario, no Claude API call, no QuickBooks connection, no real data, no email |
 | **Recommendation** | **Conditional approval** — see §14 |
@@ -602,7 +604,7 @@ production, not to the system.
 | # | Risk | Why it is top-five | What reduces it | What you would see first |
 |---|---|---|---|---|
 | **1** | **Field adoption.** If supervisors find the app slower than sending photographs to a messaging group, evidence starves and everything downstream is worthless | This is the most likely cause of total failure, and it is not technical | Minimum fields, dependent dropdowns, choices over typing, offline capture. Measured with real supervisors at the Phase 2 gate as an acceptance criterion, not a training issue | Submissions per supervisor per week falling in month one |
-| **2** | **Platform capability is unverified.** Security filters, webhooks and API access are all `UNVERIFIED`; any one missing at an economic tier breaks the pipeline | Three of sixteen requirements are pipeline-blocking, and official sources were unreachable from the build environment | The requirements matrix and a twenty-minute verification script (§5 of `12-…`). Verify **before** Phase 2 begins, not after | A tier that satisfies two of the three blocking requirements but not the third |
+| **2** | **Platform entitlement is unverified.** Whether AppSheet is included, and whether security filters and offline image capture are available on it | Two of these have **no** Make fallback. Vendor pages are unreachable from the build environment, but the authoritative answer is in the company's own Admin Console anyway | The 15-minute checklist in [`02a-plan/12-appsheet-entitlement-checklist.md`](02a-plan/12-appsheet-entitlement-checklist.md). Do it **before** any app is built | Security filters absent — which changes the capture layer, not the budget |
 | **3** | **Image fidelity and offline behaviour are entirely untested.** Nothing is known about what the platform actually stores, or how it behaves offline on the company's phones | Touches the write-once evidence guarantee and the one workflow that cannot be retried — a supervisor who has left site | The approved D-13 wording claims only what can be defended. Real-device testing at the Phase 2 gate before any claim | A stored file materially smaller than the camera original |
 | **4** | **Key-person concentration.** One general manager approves everything; administrator identities are still unassigned | The company's own assessment names reliance on the owner as a weakness. A system with one approver reproduces it | Delegation modelled and tested from day one; recovery plan with a go-live blocker; break-glass with reason, expiry, notification and audit | A month where approvals stall because one person is travelling |
 | **5** | **Store ceiling as the estate grows.** The spreadsheet store has a practical limit, and the platform is sized for dozens-to-hundreds of projects | The photograph table grows fastest, and the volume assumption is an estimate, not a measurement | Five measurable migration signals defined; monitoring starts in Phase 2, before the threshold can be reached | Sync duration on a field phone creeping past fifteen seconds |
@@ -620,7 +622,8 @@ all — only by watching real supervisors use it.
 | # | Decision | Why it cannot wait |
 |---|---|---|
 | **D-A** | **Approve, conditionally approve, or send back** the Phase 1 design (§14) | Nothing proceeds without it |
-| **D-B** | **EF-03:** perform or delegate the twenty-minute platform verification | Three blocking requirements are unverified; the answer may change the capture layer |
+| **D-B** | **Entitlement check:** fifteen minutes in the Google Admin Console ([checklist](02a-plan/12-appsheet-entitlement-checklist.md)) | Decides whether the app can be built at all. **Not a purchase decision** |
+| **D-B2** | **Approve the lean 17-table MVP scope**, or ask for tables to be added back | Determines what gets built first. The main trade-off is deferred delegation: with no delegate, approvals wait while you are away |
 | **D-C** | **EF-01:** name the owning Workspace account and the Shared Drive | First thing Phase 2 touches |
 | **D-D** | **EF-06:** name a system administrator **and** a backup, or approve the documented recovery route instead | The go-live blocker stays set until one exists |
 | **D-E** | **EF-05:** confirm the device inventory and which supervisors will take part in the field test | The field test is the Phase 2 gate |
@@ -656,8 +659,8 @@ remaining uncertainty is in the platforms, not the design.
 
 **Conditional on four things**, in this order:
 
-1. **Platform verification before Phase 2 begins (D-B).** Three of sixteen requirements are pipeline-blocking and unverified. If security filters, webhooks or the API are unavailable at an economic tier, the right response is to reconsider the capture layer — which is cheap now and expensive after an app exists.
-2. **A recovery route before any go-live (D-D).** Either a second administrator or a documented, tested route. The system currently records this as an unresolved go-live blocker, which is where it should stay until you decide.
+1. **The Admin Console entitlement check before Phase 2B begins (D-B).** Fifteen minutes. Security filters and offline image capture have no workaround; webhooks and the API both have Make fallbacks that cost nothing. **No purchase is proposed under any outcome** — a missing convenience is a workaround, not a licence.
+2. **A recovery route before any go-live (D-D).** Either a second administrator or a documented, tested route. In the lean build this is two administrator accounts in the Workspace plus a written runbook, since the recovery table itself is deferred.
 3. **Your review of three artifacts** — the data dictionary, the transition matrix and the security matrix. §6 above is the summary; the detail is where an error would hide. The exception most likely to provoke disagreement is that neither administrator can read evidence or documents at all.
 4. **No Phase 2 external connection** until you say so in writing. Phase 2A — plan, workbook, expressions, security-filter specification, disabled blueprints, offline test plan — proceeds on synthetic data and connects nothing.
 
@@ -701,3 +704,8 @@ nothing.
 | Outstanding external facts | [`16-external-facts-register.md`](01-data-foundation/16-external-facts-register.md) |
 | Status vocabulary | [`STATUS-DEFINITIONS.md`](STATUS-DEFINITIONS.md) |
 | Phase 2A plan | [`02a-plan/00-PHASE-2A-PLAN.md`](02a-plan/00-PHASE-2A-PLAN.md) |
+| **Lean MVP scope and deferred tables** | [`02a-plan/11-lean-mvp-scope.md`](02a-plan/11-lean-mvp-scope.md) |
+| **Entitlement checklist** | [`02a-plan/12-appsheet-entitlement-checklist.md`](02a-plan/12-appsheet-entitlement-checklist.md) |
+| **Field workflow and tap count** | [`02a-plan/13-field-workflow-and-taps.md`](02a-plan/13-field-workflow-and-taps.md) |
+| **Storage and image volume** | [`02a-plan/14-storage-and-image-volume.md`](02a-plan/14-storage-and-image-volume.md) |
+| **Revised cost matrix** | [`02a-plan/09-cost-and-licensing-matrix.md`](02a-plan/09-cost-and-licensing-matrix.md) |

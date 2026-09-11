@@ -36,55 +36,55 @@ not started, or has ended contributes nothing.
 
 | Table | Security filter | Rationale |
 |---|---|---|
-| `LegalEntities` | `OR(ROLE_IN("SystemAdministrator", "BusinessAdministrator", "GeneralManager", "TechnicalReviewer", "FinanceReviewer", "ProjectManager", "SiteSupervisor", "FieldUser"), AND(ROLE_IN("ReadOnlyAuditor", "EmergencyAccess"), COUNT(MY_GRANT()) > 0))` | grant-dependent roles read nothing without an active grant |
-| `Languages` | `OR(ROLE_IN("SystemAdministrator", "BusinessAdministrator", "GeneralManager", "TechnicalReviewer", "FinanceReviewer", "ProjectManager", "SiteSupervisor", "FieldUser"), AND(ROLE_IN("ReadOnlyAuditor", "EmergencyAccess"), COUNT(MY_GRANT()) > 0))` | grant-dependent roles read nothing without an active grant |
-| `Roles` | `OR(ROLE_IN("SystemAdministrator", "BusinessAdministrator", "GeneralManager", "TechnicalReviewer", "FinanceReviewer", "ProjectManager", "SiteSupervisor", "FieldUser"), AND(ROLE_IN("ReadOnlyAuditor", "EmergencyAccess"), COUNT(MY_GRANT()) > 0))` | grant-dependent roles read nothing without an active grant |
 | `Users` | `OR(ROLE_IN("SystemAdministrator", "BusinessAdministrator", "GeneralManager", "TechnicalReviewer", "FinanceReviewer", "ProjectManager", "SiteSupervisor"), AND(ROLE_IN("ReadOnlyAuditor", "EmergencyAccess"), COUNT(MY_GRANT()) > 0), AND(ROLE_IN("FieldUser"), [UserID] = ME()))` | grant-dependent roles read nothing without an active grant; own rows only |
-| `Units` | `OR(ROLE_IN("SystemAdministrator", "BusinessAdministrator", "GeneralManager", "TechnicalReviewer", "FinanceReviewer", "ProjectManager", "SiteSupervisor", "FieldUser"), AND(ROLE_IN("ReadOnlyAuditor", "EmergencyAccess"), COUNT(MY_GRANT()) > 0))` | grant-dependent roles read nothing without an active grant |
-| `Disciplines` | `OR(ROLE_IN("SystemAdministrator", "BusinessAdministrator", "GeneralManager", "TechnicalReviewer", "FinanceReviewer", "ProjectManager", "SiteSupervisor", "FieldUser"), AND(ROLE_IN("ReadOnlyAuditor", "EmergencyAccess"), COUNT(MY_GRANT()) > 0))` | grant-dependent roles read nothing without an active grant |
-| `ActivityTypes` | `OR(ROLE_IN("SystemAdministrator", "BusinessAdministrator", "GeneralManager", "TechnicalReviewer", "FinanceReviewer", "ProjectManager", "SiteSupervisor", "FieldUser"), AND(ROLE_IN("ReadOnlyAuditor", "EmergencyAccess"), COUNT(MY_GRANT()) > 0))` | grant-dependent roles read nothing without an active grant |
-| `DocumentTypes` | `OR(ROLE_IN("SystemAdministrator", "BusinessAdministrator", "GeneralManager", "TechnicalReviewer", "FinanceReviewer", "ProjectManager", "SiteSupervisor", "FieldUser"), AND(ROLE_IN("ReadOnlyAuditor", "EmergencyAccess"), COUNT(MY_GRANT()) > 0))` | grant-dependent roles read nothing without an active grant |
-| `DataClassifications` | `OR(ROLE_IN("SystemAdministrator", "BusinessAdministrator", "GeneralManager", "TechnicalReviewer", "FinanceReviewer", "ProjectManager", "SiteSupervisor", "FieldUser"), AND(ROLE_IN("ReadOnlyAuditor", "EmergencyAccess"), COUNT(MY_GRANT()) > 0))` | grant-dependent roles read nothing without an active grant |
-| `ResidencyRequirements` | `OR(ROLE_IN("SystemAdministrator", "BusinessAdministrator", "GeneralManager", "TechnicalReviewer", "FinanceReviewer", "ProjectManager", "SiteSupervisor", "FieldUser"), AND(ROLE_IN("ReadOnlyAuditor", "EmergencyAccess"), COUNT(MY_GRANT()) > 0))` | grant-dependent roles read nothing without an active grant |
-| `Clients` | `OR(ROLE_IN("BusinessAdministrator", "GeneralManager", "TechnicalReviewer", "FinanceReviewer", "ProjectManager"), AND(ROLE_IN("ReadOnlyAuditor"), COUNT(MY_GRANT()) > 0), ROLE_IN("SiteSupervisor"))` | grant-dependent roles read nothing without an active grant |
-| `Contacts` | `OR(ROLE_IN("BusinessAdministrator", "GeneralManager", "TechnicalReviewer", "FinanceReviewer", "ProjectManager", "SiteSupervisor"), AND(ROLE_IN("ReadOnlyAuditor"), COUNT(MY_GRANT()) > 0))` | grant-dependent roles read nothing without an active grant |
 | `Projects` | `OR(ROLE_IN("SystemAdministrator", "BusinessAdministrator", "GeneralManager", "FinanceReviewer"), AND(ROLE_IN("ReadOnlyAuditor", "EmergencyAccess"), COUNT(MY_GRANT()) > 0), ROLE_IN("TechnicalReviewer", "ProjectManager", "SiteSupervisor", "FieldUser"))` | grant-dependent roles read nothing without an active grant |
 | `ProjectAssignments` | `OR(ROLE_IN("SystemAdministrator", "BusinessAdministrator", "GeneralManager", "FinanceReviewer"), AND(ROLE_IN("ReadOnlyAuditor", "EmergencyAccess"), COUNT(MY_GRANT()) > 0), AND(ROLE_IN("TechnicalReviewer", "ProjectManager", "SiteSupervisor", "FieldUser"), IN([ProjectID], MY_PROJECTS())))` | grant-dependent roles read nothing without an active grant; assignment-scoped |
 | `Locations` | `OR(ROLE_IN("SystemAdministrator", "BusinessAdministrator", "GeneralManager", "FinanceReviewer"), AND(ROLE_IN("ReadOnlyAuditor", "EmergencyAccess"), COUNT(MY_GRANT()) > 0), AND(ROLE_IN("TechnicalReviewer", "ProjectManager", "SiteSupervisor", "FieldUser"), IN([ProjectID], MY_PROJECTS())))` | grant-dependent roles read nothing without an active grant; assignment-scoped |
+| `ActivityTypes` | `OR(ROLE_IN("SystemAdministrator", "BusinessAdministrator", "GeneralManager", "TechnicalReviewer", "FinanceReviewer", "ProjectManager", "SiteSupervisor", "FieldUser"), AND(ROLE_IN("ReadOnlyAuditor", "EmergencyAccess"), COUNT(MY_GRANT()) > 0))` | grant-dependent roles read nothing without an active grant |
 | `ProjectActivityRules` | `OR(ROLE_IN("SystemAdministrator", "BusinessAdministrator", "GeneralManager", "FinanceReviewer"), AND(ROLE_IN("ReadOnlyAuditor", "EmergencyAccess"), COUNT(MY_GRANT()) > 0), AND(ROLE_IN("TechnicalReviewer", "ProjectManager", "SiteSupervisor", "FieldUser"), IN([ProjectID], MY_PROJECTS())))` | grant-dependent roles read nothing without an active grant; assignment-scoped |
-| `ApprovalMatrix` | `OR(ROLE_IN("SystemAdministrator", "BusinessAdministrator", "GeneralManager", "FinanceReviewer"), AND(ROLE_IN("ReadOnlyAuditor", "EmergencyAccess"), COUNT(MY_GRANT()) > 0), AND(ROLE_IN("TechnicalReviewer", "ProjectManager", "SiteSupervisor", "FieldUser"), IN([ProjectID], MY_PROJECTS())))` | grant-dependent roles read nothing without an active grant; assignment-scoped |
-| `ApprovalDelegations` | `OR(ROLE_IN("SystemAdministrator", "BusinessAdministrator", "GeneralManager", "FinanceReviewer"), AND(ROLE_IN("ReadOnlyAuditor", "EmergencyAccess"), COUNT(MY_GRANT()) > 0), ROLE_IN("TechnicalReviewer", "ProjectManager", "SiteSupervisor", "FieldUser"))` | grant-dependent roles read nothing without an active grant |
-| `ResidencyAssignments` | `OR(ROLE_IN("SystemAdministrator", "BusinessAdministrator", "GeneralManager", "FinanceReviewer"), AND(ROLE_IN("ReadOnlyAuditor", "EmergencyAccess"), COUNT(MY_GRANT()) > 0), AND(ROLE_IN("TechnicalReviewer", "ProjectManager", "SiteSupervisor", "FieldUser"), IN([ProjectID], MY_PROJECTS())))` | grant-dependent roles read nothing without an active grant; assignment-scoped |
-| `TemporaryAccessGrants` | `OR(ROLE_IN("SystemAdministrator", "GeneralManager"), AND(ROLE_IN("ReadOnlyAuditor", "EmergencyAccess"), COUNT(MY_GRANT()) > 0))` | grant-dependent roles read nothing without an active grant |
-| `SystemRecoveryPlan` | `OR(ROLE_IN("SystemAdministrator", "GeneralManager"), AND(ROLE_IN("ReadOnlyAuditor", "EmergencyAccess"), COUNT(MY_GRANT()) > 0))` | grant-dependent roles read nothing without an active grant |
 | `SiteVisits` | `OR(ROLE_IN("GeneralManager"), AND(ROLE_IN("ReadOnlyAuditor"), COUNT(MY_GRANT()) > 0), AND(ROLE_IN("TechnicalReviewer", "FinanceReviewer", "ProjectManager", "SiteSupervisor"), IN([ProjectID], MY_PROJECTS())), AND(ROLE_IN("FieldUser"), [SupervisorUserID] = ME()))` | grant-dependent roles read nothing without an active grant; assignment-scoped; own rows only |
 | `VisitActivities` | `OR(ROLE_IN("GeneralManager"), AND(ROLE_IN("ReadOnlyAuditor"), COUNT(MY_GRANT()) > 0), AND(ROLE_IN("TechnicalReviewer", "FinanceReviewer", "ProjectManager", "SiteSupervisor"), IN([ProjectID], MY_PROJECTS())), AND(ROLE_IN("FieldUser"), [CreatedBy] = ME()))` | grant-dependent roles read nothing without an active grant; assignment-scoped; own rows only |
 | `Photos` | `OR(ROLE_IN("GeneralManager"), AND(ROLE_IN("ReadOnlyAuditor"), COUNT(MY_GRANT()) > 0), AND(ROLE_IN("TechnicalReviewer", "FinanceReviewer", "ProjectManager", "SiteSupervisor"), IN([ProjectID], MY_PROJECTS())), AND(ROLE_IN("FieldUser"), [CapturedBy] = ME()))` | grant-dependent roles read nothing without an active grant; assignment-scoped; own rows only |
 | `Snags` | `OR(ROLE_IN("GeneralManager"), AND(ROLE_IN("ReadOnlyAuditor"), COUNT(MY_GRANT()) > 0), AND(ROLE_IN("TechnicalReviewer", "FinanceReviewer", "ProjectManager", "SiteSupervisor"), IN([ProjectID], MY_PROJECTS())), AND(ROLE_IN("FieldUser"), [RaisedBy] = ME()))` | grant-dependent roles read nothing without an active grant; assignment-scoped; own rows only |
 | `Approvals` | `OR(ROLE_IN("SystemAdministrator", "GeneralManager", "FinanceReviewer"), AND(ROLE_IN("ReadOnlyAuditor", "EmergencyAccess"), COUNT(MY_GRANT()) > 0), AND(ROLE_IN("TechnicalReviewer", "ProjectManager"), IN([ProjectID], MY_PROJECTS())))` | grant-dependent roles read nothing without an active grant; assignment-scoped |
-| `EntityVersions` | `OR(ROLE_IN("SystemAdministrator", "GeneralManager", "FinanceReviewer"), AND(ROLE_IN("ReadOnlyAuditor", "EmergencyAccess"), COUNT(MY_GRANT()) > 0), AND(ROLE_IN("TechnicalReviewer", "ProjectManager"), IN([ProjectID], MY_PROJECTS())))` | grant-dependent roles read nothing without an active grant; assignment-scoped |
+| `DocumentJobs` | `OR(ROLE_IN("GeneralManager", "FinanceReviewer"), AND(ROLE_IN("ReadOnlyAuditor"), COUNT(MY_GRANT()) > 0), AND(ROLE_IN("TechnicalReviewer", "ProjectManager"), IN([ProjectID], MY_PROJECTS())))` | grant-dependent roles read nothing without an active grant; assignment-scoped |
+| `Documents` | `OR(ROLE_IN("GeneralManager", "FinanceReviewer"), AND(ROLE_IN("ReadOnlyAuditor"), COUNT(MY_GRANT()) > 0), AND(ROLE_IN("TechnicalReviewer", "ProjectManager"), IN([ProjectID], MY_PROJECTS())))` | grant-dependent roles read nothing without an active grant; assignment-scoped |
+| `NumberRegister` | `OR(ROLE_IN("GeneralManager", "FinanceReviewer"), AND(ROLE_IN("ReadOnlyAuditor"), COUNT(MY_GRANT()) > 0), ROLE_IN("TechnicalReviewer", "ProjectManager"))` | grant-dependent roles read nothing without an active grant |
+| `LegalEntities` | `OR(ROLE_IN("SystemAdministrator", "BusinessAdministrator", "GeneralManager", "TechnicalReviewer", "FinanceReviewer", "ProjectManager", "SiteSupervisor", "FieldUser"), AND(ROLE_IN("ReadOnlyAuditor", "EmergencyAccess"), COUNT(MY_GRANT()) > 0))` | grant-dependent roles read nothing without an active grant |
 | `AuditLog` | `OR(ROLE_IN("SystemAdministrator", "GeneralManager", "FinanceReviewer"), AND(ROLE_IN("ReadOnlyAuditor", "EmergencyAccess"), COUNT(MY_GRANT()) > 0))` | grant-dependent roles read nothing without an active grant |
+| `IntegrationJobs` | `OR(ROLE_IN("SystemAdministrator", "GeneralManager", "FinanceReviewer"), AND(ROLE_IN("ReadOnlyAuditor", "EmergencyAccess"), COUNT(MY_GRANT()) > 0), ROLE_IN("TechnicalReviewer", "ProjectManager"))` | grant-dependent roles read nothing without an active grant |
 
 ## Tables deliberately absent from the application
 
 These are not filtered — they are **not present in the app's data set at all**, which is the
 strongest form of the control: data that is not there cannot leak.
 
+- `ApprovalDelegations` — Temporary delegation of an approval authority (D-09). Every delegated decision records both the acting user and the original responsible user.
+- `ApprovalMatrix` — Who approves what, per project and stage (D-09, D-15 item 6). The GM is the MVP approver, and the structure supports delegation without redesign.
 - `BOQItems` — Bill of quantities. Cumulative quantity is controlled, never merely recorded.
+- `Clients` — Clients the company works for. Bilingual names preserved exactly (D-11).
+- `Contacts` — Client contacts. Only an authorised recipient may receive a released document.
 - `Contracts` — Commercial agreement governing a project. Hidden from field roles entirely.
-- `DocumentJobs` — A request to produce a document from a frozen snapshot of approved records.
+- `DataClassifications` — Sensitivity classes applied to records and files, driving residency and sharing rules (D-12).
+- `Disciplines` — Work disciplines. A project may permit one or many.
 - `DocumentTemplates` — Approved templates, keyed by document type, language and optionally project or discipline (D-11, ADR-0007).
-- `Documents` — A produced document revision. Approval binds to ContentHash (ADR-0006).
+- `DocumentTypes` — Controlled document types. Adding a type is configuration, not development (D-10).
 - `Employees` — Crew register for resource reporting. Payroll data is deliberately excluded (spec 5.13).
+- `EntityVersions` — Immutable version history of hashable entities. Supports proving what a decision applied to.
 - `Equipment` — Equipment register.
-- `IntegrationJobs` — One row per external call attempt, with idempotency and failure classification.
 - `InvoiceLines` — Calculated invoice lines. No figure originates from a language model (invariant I-4).
 - `InvoiceRequests` — A calculated billing request. Drafts only until Phase 7; never posted from Phase 1 or 6.
+- `Languages` — Supported languages and their direction. Bilingual capability is architectural (D-11).
 - `MaterialUsage` — Material consumed against a visit activity. Never creates an accounting transaction (spec 5.12).
 - `Materials` — Approved materials catalogue.
-- `NumberRegister` — Every number ever reserved, issued or cancelled. A cancelled number is never reused (D-10).
 - `NumberingSeries` — One configurable series per legal entity x document type x year x scope x optional client requirement. Never one undifferentiated sequence (D-10).
+- `ResidencyAssignments` — Binds a residency requirement to a client, contract or project (D-12).
+- `ResidencyRequirements` — Storage and processing restrictions that may be assigned to a client, contract or project (D-12).
+- `Roles` — System roles. Authorisation is enforced by security filters and server-side re-validation, never by view visibility (spec 7.4).
+- `SystemRecoveryPlan` — How administrative control is recovered when no administrator is available. The system must not become unrecoverable because one person is unreachable.
 - `TaxRules` — Configurable tax rules. NO CLASSIFICATION IS NAMED OR ASSUMED before the accountant confirms it in writing (D-08).
+- `TemporaryAccessGrants` — Time-bound, explicitly authorised access. Covers auditor access and break-glass emergency access. Without an active grant, the roles that depend on one resolve to no access at all.
+- `Units` — Units of measure for quantities.
 - `VisitEquipment` — Equipment present during a visit.
 - `VisitManpower` — Manpower present during a visit, for resource summaries only.
 - `WorkOrders` — A discrete instruction under a contract, or a one-off job.

@@ -8,16 +8,41 @@
 
 | | |
 |---|---|
-| **Commit tested** | `9aa327fe9cf52ec878703d04ba3f1d3ec7ab181e` |
-| **Commit subject** | Regenerate validation evidence against the clean tree |
+| **Commit tested** | `cf9ffed19efe437a305b6d1d68593439e4bb1901` |
+| **Commit subject** | Validation evidence: clean-tree reproduction record |
 | **Command executed** | `python3 tools/run_validation.py` |
-| **Executed at** | 2026-09-11 07:53:50 UTC |
+| **Executed at** | 2026-09-11 08:23:03 UTC |
 | **Python** | 3.11.15 (CPython, GCC 13.3.0) |
 | **Operating system** | Linux 6.18.44-fc-v24 (x86_64) |
 | **Environment** | Ephemeral Linux container. This run made no network call, used no credential and contacted no external service |
 | **Third-party dependencies** | **None.** Python standard library only |
 | **Model version** | 1.0.0 |
-| **Working tree before the run** | clean |
+| **Working tree before the run** | MODIFIED — see below |
+
+```
+M README.md
+ M docs/01-data-foundation/17-validation-evidence.md
+ M docs/02a-plan/00-PHASE-2A-PLAN.md
+ M docs/02a-plan/01-appsheet-workbook.md
+ M docs/02a-plan/02-security-filter-specification.md
+ M docs/02a-plan/09-cost-and-licensing-matrix.md
+ M docs/OWNER-REVIEW-PACK.md
+ M docs/VERSION-MANIFEST.md
+ M model/model.json
+ M tools/build_model.py
+ M tools/evidence_meta.py
+ M tools/gen_appsheet_workbook.py
+ M tools/run_validation.py
+ M tools/test_configurability.py
+?? docs/02a-plan/11-lean-mvp-scope.md
+?? docs/02a-plan/12-appsheet-entitlement-checklist.md
+?? docs/02a-plan/13-field-workflow-and-taps.md
+?? docs/02a-plan/14-storage-and-image-volume.md
+?? tools/test_lean_mvp.py
+```
+
+> The run was executed against a working tree containing uncommitted changes. The commit recorded above is the parent commit, not the exact state tested. Re-run after committing to obtain a clean reproduction record.
+
 
 ### Byte-identical regeneration
 
@@ -27,28 +52,30 @@ Every generated artifact was hashed (SHA-256) before regeneration, regenerated f
 
 ## 2. Summary
 
-**172 of 172 checks passed.**
+**185 of 185 checks passed.**
 
 | # | Suite | Kind | Checks | Passed | Failed |
 |---|---|---|---|---|---|
 | 1 | Seed conformance | structural | 3 | 3 | 0 |
-| 2 | Configurability and unbounded width | structural | 12 | 12 | 0 |
-| 3 | Project segregation | logic | 12 | 12 | 0 |
-| 4 | Role separation, time-bound access and recoverability | logic | 31 | 31 | 0 |
-| 5 | Evidence rules | logic | 14 | 14 | 0 |
-| 6 | Status transitions, approvals and delegation | structural | 20 | 20 | 0 |
-| 7 | Content hashing and approval binding | logic | 14 | 14 | 0 |
-| 8 | Document numbering | simulation | 13 | 13 | 0 |
-| 9 | Deterministic calculation | logic | 22 | 22 | 0 |
-| 10 | Bilingual and right-to-left readiness | structural | 13 | 13 | 0 |
-| 11 | Governance and safety rules | structural | 18 | 18 | 0 |
-| | **Total** | | **172** | **172** | **0** |
+| 2 | Lean operational MVP | structural | 13 | 13 | 0 |
+| 3 | Configurability and unbounded width | structural | 12 | 12 | 0 |
+| 4 | Project segregation | logic | 12 | 12 | 0 |
+| 5 | Role separation, time-bound access and recoverability | logic | 31 | 31 | 0 |
+| 6 | Evidence rules | logic | 14 | 14 | 0 |
+| 7 | Status transitions, approvals and delegation | structural | 20 | 20 | 0 |
+| 8 | Content hashing and approval binding | logic | 14 | 14 | 0 |
+| 9 | Document numbering | simulation | 13 | 13 | 0 |
+| 10 | Deterministic calculation | logic | 22 | 22 | 0 |
+| 11 | Bilingual and right-to-left readiness | structural | 13 | 13 | 0 |
+| 12 | Governance and safety rules | structural | 18 | 18 | 0 |
+| | **Total** | | **185** | **185** | **0** |
 
 ### Console output
 
 ```
 ========================================================================
   Seed conformance                                       3 passed   0 failed
+  Lean operational MVP                                  13 passed   0 failed
   Configurability and unbounded width                   12 passed   0 failed
   Project segregation                                   12 passed   0 failed
   Role separation, time-bound access and recoverability  31 passed   0 failed
@@ -60,7 +87,7 @@ Every generated artifact was hashed (SHA-256) before regeneration, regenerated f
   Bilingual and right-to-left readiness                 13 passed   0 failed
   Governance and safety rules                           18 passed   0 failed
 ========================================================================
-  TOTAL 172/172 checks passed
+  TOTAL 185/185 checks passed
 ```
 
 ### Artifact regeneration output
@@ -73,6 +100,7 @@ wrote /home/user/Report.Data/model/model.json
   enums       : 26
   transitions : 82 allowed, 36 explicitly forbidden
   security    : 10 roles x 46 tables = 460 grants, 20 exceptions
+  lean MVP    : 17 tables built first, 29 deferred but designed
 $ python3 tools/gen_schemas.py
 wrote 46 table schemas to schemas/tables/
 $ python3 tools/gen_data_dictionary.py
@@ -105,6 +133,7 @@ Recorded at the owner's instruction. **Local model validation must never be repr
 | Suite | Kind | What it does and does not establish |
 |---|---|---|
 | Seed conformance | `structural` | Validates the synthetic data against the canonical model. Says nothing about any platform. |
+| Lean operational MVP | `structural` | Asserts that the 12-18 table build subset holds together, that no lean table requires a deferred one, and that every deferred table keeps its schema. Says nothing about whether the app built from it is fast enough - that is the Phase 2B field measurement. |
 | Configurability and unbounded width | `structural` | Scans the model, schemas, security matrix and logic files for hard-coded identifiers, and exercises the rule engines with a fourth project added in memory. |
 | Project segregation | `logic` | Runs the reference access rules against synthetic rows. It proves the RULE is correct. It does NOT prove that AppSheet security filters implement it — that is a Phase 2 integration test on the real platform. |
 | Role separation, time-bound access and recoverability | `logic` | Runs the reference access rules and grant validation. Proves the rule, not its enforcement by any platform. |
@@ -153,6 +182,26 @@ Every seed file conforms to the canonical model: columns, types, formats, vocabu
 | `SEED-02` | PASS | Every foreign key resolves within the seeded data | 0 unresolvable-by-design references (tables not built until a later phase) |
 | `SEED-03` | PASS | At least three materially different projects are present | 3 projects with 3 clients, 3 reporting frequencies, 3 billing methods, 2 document languages |
 
+### Lean operational MVP  ·  `structural`  ·  13/13 passed
+
+A 12-18 table subset is built first, the 46-table model stays the reference architecture, and every deferred table keeps a schema so adding it later is additive.
+
+| Check | Result | Description | Evidence produced |
+|---|---|---|---|
+| `LEAN-01` | PASS | The lean MVP is within the size the owner asked for | 17 tables (target 12-18); 29 deferred |
+| `LEAN-02` | PASS | Every capability the owner listed is carried by a lean table | all 11 listed capabilities covered |
+| `LEAN-03` | PASS | Every required reference to a deferred table has a declared lean replacement column | 6 replacements declared: ActivityTypes.DisciplineID -> DisciplineCode; Documents.TemplateID -> TemplateFileKey, LanguageCode; NumberRegister.SeriesID -> SeriesKey; ProjectAssignments.RoleID -> RoleCode; Projects.ClientID -> ClientNameEN, ClientNameAR, ClientKind; Users.RoleID -> RoleCode |
+| `LEAN-13` | PASS | Every lean replacement names its column and explains what it carries | 6 overrides, each with a named column and a stated consequence |
+| `LEAN-04` | PASS | Optional references to deferred tables are identified, so they can be left empty in the lean build | columns pointing at deferred tables, all optional: ApprovalDelegations, Contracts, DocumentTemplates, Units, WorkOrders |
+| `LEAN-05` | PASS | Every deferred table is either folded into a lean table or scheduled to a named phase | 29 deferred tables, all accounted for |
+| `LEAN-06` | PASS | Every fold-in states what is lost and when the table returns | 12 fold-ins, each with a stated cost and a restore trigger |
+| `LEAN-07` | PASS | Every deferred table keeps its full schema, so returning it is additive | 29 deferred tables retain 452 designed columns |
+| `LEAN-08` | PASS | Every load-bearing control survives the trim | segregation, approval binding, audit, numbering register, legal identity, evidence rules and failure visibility all retained |
+| `LEAN-09` | PASS | Every project-scoped lean table still carries ProjectID | row-level security is unaffected by the trim |
+| `LEAN-10` | PASS | Content hashing survives in the lean subset | hashable lean tables: Photos, SiteVisits, VisitActivities |
+| `LEAN-11` | PASS | The cost of deferring delegation is stated plainly, not glossed | **This is the real cost of the lean build.** If the approver is away, approvals stop. Accepted only because no delegate has been named yet. |
+| `LEAN-12` | PASS | No table is listed as both built and deferred | the two lists are disjoint |
+
 ### Configurability and unbounded width  ·  `structural`  ·  12/12 passed
 
 Adding a project must require only controlled master-data configuration: no modified logic, no cloned application, no duplicated scenario, no rewritten prompt, no changed formula or code (D-01).
@@ -169,7 +218,7 @@ Adding a project must require only controlled master-data configuration: no modi
 | `CFG-08` | PASS | The new project is invisible to users who are not assigned to it | USR-0006 has no assignment to PRJ-0004 and cannot see it |
 | `CFG-09` | PASS | The new project can belong to a different legal entity by configuration | PRJ-0004 issues documents under LE-0002 with its own numbering series |
 | `CFG-10` | PASS | The evidence engine serves a brand-new project from the global catalogue | no configuration rows required before a new project can capture evidence |
-| `CFG-11` | PASS | Nothing in the model encodes a project count or limit | no project-count assumption anywhere in the canonical model |
+| `CFG-11` | PASS | Nothing in the model encodes a maximum project count | limit constructs found: none — the model carries no ceiling on how many projects exist |
 | `CFG-12` | PASS | Multi-entity operation is structural, not incidental | 2 legal entities across the fixture |
 
 ### Project segregation  ·  `logic`  ·  12/12 passed
@@ -397,7 +446,7 @@ The operating rules the owner approved, expressed as assertions so that weakenin
 ## 6. Reproducing this run
 
 ```
-git checkout 9aa327fe9cf52ec878703d04ba3f1d3ec7ab181e
+git checkout cf9ffed19efe437a305b6d1d68593439e4bb1901
 python3 tools/run_validation.py
 ```
 

@@ -13,8 +13,8 @@ Implementation repository for the system specified in [`MASTER_SPEC.md`](MASTER_
 |---|---|
 | **Phase 0 — Discovery** | **Approved 2026-09-11** subject to owner decisions D-01 … D-15 ([decision record](docs/00-discovery/10-owner-decisions.md)). |
 | **Phase 1 — Data foundation** | **Completed · Validated Locally · Submitted for Owner Review.** 172 of 172 checks executed and passing. Start with the [Owner Review Pack](docs/OWNER-REVIEW-PACK.md). |
-| **Phase 2A — Plan and synthetic prototype design** | **Completed · Submitted for Owner Review.** Connects nothing. See [`docs/02a-plan/`](docs/02a-plan/00-PHASE-2A-PLAN.md). |
-| **Phase 2B — first external connection** | **Not authorised.** Requires written owner approval plus EF-01, EF-03 and EF-06. |
+| **Phase 2A — Plan and synthetic prototype design** | **Completed · Submitted for Owner Review.** Connects nothing and costs nothing. Builds a **lean 17-table MVP** from the 46-table reference architecture. See [`docs/02a-plan/`](docs/02a-plan/00-PHASE-2A-PLAN.md). |
+| **Phase 2B — first external connection** | **Not authorised.** Requires the owner's written approval, a 15-minute Admin Console entitlement check, and EF-01/EF-06. **No purchase is proposed.** |
 | **Production systems touched** | **None.** No Google account, Drive folder, AppSheet app, Make scenario, API connection, QuickBooks company or credential has been created or connected. |
 | **Real data** | **None.** All data in this repository is synthetic and marked as such. |
 | **Tests executed** | Phase 1 validation checks run locally against synthetic data; results recorded in [`17-validation-evidence.md`](docs/01-data-foundation/17-validation-evidence.md). No claim is made about any system that has not been built. |

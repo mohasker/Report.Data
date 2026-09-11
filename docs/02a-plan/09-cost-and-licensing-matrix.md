@@ -1,84 +1,143 @@
 # Cost and Licensing Matrix
 
-**Document ID:** AH-SYS-P2A-009 · **Revision:** 1 · **Date:** 2026-09-11
-**Status:** Completed · Submitted for Owner Review · **EVERY FIGURE IS UNVERIFIED**
-
-> **No price in this document has been verified against an official source.** The build environment's
-> network egress policy blocks the vendors' own pricing pages. Third-party aggregator figures are
-> reproduced only so the owner can size the decision, and **must not be used to purchase anything.**
-> Operating rule 2 forbids inventing prices, and repeating an unofficial figure confidently is the
-> same failure.
+**Document ID:** AH-SYS-P2A-009 · **Revision:** 2 · **Date:** 2026-09-11
+**Status:** Completed · Submitted for Owner Review
+**Supersedes:** revision 1, whose USD 2,600–5,000 annual estimate the owner did not accept
 
 ---
 
-## 1. What the system needs a licence for
+## 1. What changed, and why the previous estimate was wrong
 
-| Component | Licensing model | Needed from | Verified? |
+Revision 1 priced AppSheet as a **new** per-user subscription for 14–23 users. That was the error:
+Al-Haram already pays for Google Workspace, and AppSheet Core may already be included in that
+subscription. Pricing an included component as a new purchase inflated the whole estimate.
+
+**Revision 2 treats Google Workspace as an existing cost and AppSheet as USD 0 incremental** until
+the exact entitlement is confirmed in the Admin Console
+([`12-appsheet-entitlement-checklist.md`](12-appsheet-entitlement-checklist.md)).
+
+The previous figure is withdrawn. It is not corrected downward — it is withdrawn, because it was
+built on the wrong question.
+
+---
+
+## 2. Category 1 — Existing subscriptions already paid by Al-Haram
+
+**Incremental cost of this project: nil.** These exist whether or not the system is built.
+
+| Item | Status | What the project uses it for | Incremental |
 |---|---|---|---|
-| Google Workspace | Per user per month; Shared Drive capability depends on the edition | Phase 2 | **No** |
-| Capture platform (AppSheet) | Per user per month; features gated by tier | Phase 2 | **No** — see `12-appsheet-feature-to-plan-matrix.md` |
-| Orchestration (Make) | Per operation, tiered; Data Stores may be tier-gated | Phase 3 | **No** |
-| AI (Claude API) | Per token consumed, with a hard monthly cap set by the owner | Phase 4 | **No** — cap not yet set (EF-04) |
-| Accounting (QuickBooks Online) | Already licensed and in use | Phase 7 | Existing cost, unchanged |
-| Storage | Included in the Workspace edition up to a quota | Phase 3 | **No** |
+| **Google Workspace** (active paid subscription) | Existing | Identity and sign-in; Sheets as the operational store; Drive for evidence and documents; Docs for report templates; Gmail for internal notification | **USD 0** |
+| **AppSheet** | **Assumed included** in the Workspace subscription, pending Admin Console confirmation (E-2, E-3) | The field capture and review application | **USD 0** *(assumed)* |
+| **Google Drive pooled storage** | Included in the Workspace subscription | ~80 GB/year at 20 active projects — see [`14-storage-and-image-volume.md`](14-storage-and-image-volume.md) | **USD 0** unless the pool is already near full (E-7) |
+| **QuickBooks Online** | Existing and in use | Accounting, from Phase 7 only | **USD 0** |
 
-## 2. User counts — the number that actually drives cost
+**If the Admin Console shows AppSheet is *not* included**, that becomes a decision to bring back to
+the owner with a specific feature justification — not a purchase to assume. See §7.
 
-| Group | Count | Why |
-|---|---|---|
-| Office and review | 5 | GM, business administrator, technical reviewer, finance reviewer, project manager |
-| Technical administration | 2 | Administrator plus the backup that the recovery plan requires |
-| Field capture | 6–15 | Scales with active projects |
-| Break-glass | 1 | Licensed only if the platform requires a licence for a dormant account |
-| **Total** | **14–23** | |
+---
 
-**The decisive question is not the tier, it is whether a capture-only field user can sit on a cheaper
-tier than an office user.** At fifteen field users, a few dollars a month each is the difference
-between a rounding error and a real annual line item. It is the first question in the verification
-script.
+## 3. Category 2 — New mandatory costs
 
-## 3. Indicative annual cost — UNVERIFIED
+**Honest answer for the lean MVP: none identified.**
 
-Third-party aggregators consulted on 2026-09-11 describe capture-platform tiers in the region of
-**$5, $10 and $20 per user per month**. Working arithmetic on those unverified figures, for scale
-only:
+| Item | Needed for | Cost | Basis |
+|---|---|---|---|
+| Make.com | Orchestration from Phase 3: validation, evidence registration, notification | **Possibly USD 0 for the pilot.** At three projects the design consumes roughly **800 operations a month**, which may sit inside a free tier | Operation count computed in `14-storage-and-image-volume.md` §6. **The tier and its limits are unverified** — make.com is also unreachable from this environment |
+| Everything else | — | **USD 0** | |
 
-| Scenario | Capture platform | Workspace | Orchestration | AI | Indicative annual |
-|---|---|---|---|---|---|
-| **Lean** — office on a middle tier, field on the lowest | ~$1,740 | existing | lowest tier | capped low | **~$2,000–3,000 + orchestration** |
-| **Uniform** — everyone on a middle tier | ~$2,640 | existing | lowest tier | capped low | **~$3,000–4,000 + orchestration** |
-| **Premium** — everyone on the highest listed tier | ~$5,280 | existing | mid tier | capped | **~$6,000–8,000** |
+Two things follow:
 
-Orchestration is deliberately left as a range: it bills per operation, and per-photograph processing
-multiplies operations quickly (P-05). **The only honest way to size it is to measure real
-consumption in Phase 3 and then choose a tier**, not to guess now.
+1. **Phase 2A costs nothing.** It is design on synthetic data, plus optionally the free development tier.
+2. **Phase 2B may cost nothing either**, if AppSheet is included and the pilot's orchestration fits a free tier. That is a genuinely plausible outcome, not optimism.
 
-AI cost is bounded by construction: a hard monthly cap, analysis of downscaled derivatives only,
-one analysis per photograph, and per-project usage tracking. The cap is the number, not the estimate.
+---
 
-## 4. Cost controls built into the design
+## 4. Category 3 — Optional costs
 
-| Control | Effect |
+Each is a capability the owner may choose. **None is required for the system to work.**
+
+| Item | What it buys | Cost | If skipped |
+|---|---|---|---|
+| **Claude API** (AI evidence analysis and report drafting) | Advisory analysis to assist the reviewer; narrative drafting from approved records | **Usage-based, bounded by a hard monthly cap the owner sets** (EF-04) | The pipeline works unchanged. Reviewers read the evidence themselves and the report narrative is written by hand. **AI is assistance, never a control** |
+| A higher AppSheet tier | Only a specific feature proven unavailable | Unknown | See §7. Not proposed |
+| Professional report template design | A designer's polish on the monthly report | One-off, external | The template is built from the company's existing report format |
+| Paid Make tier during the pilot | Headroom above a free tier | Unknown | Measure first, then decide |
+
+---
+
+## 5. Category 4 — Future scaling costs
+
+These arrive with growth, not at go-live. Each has a **trigger** so it is a planned decision rather
+than a surprise invoice.
+
+| Item | Trigger | Likely timing | Note |
+|---|---|---|---|
+| **Make tier upgrade** | Operations exceed the free or current tier: ~2,600/month at 10 projects, ~5,200 at 20 | Year 1 at 10+ projects | **The fastest-growing cost line.** Grows with photographs, not with users |
+| **Store migration off Sheets** | 40,000 rows in Photos, or median sync above 15 seconds: ~year 1.4 at 20 projects | Year 1–2 | Archiving closed periods first is cheaper and usually enough for a while |
+| **Additional Workspace licences** | New office or field staff | With headcount | Existing per-user cost, not a project cost |
+| **Storage beyond the pool** | Pooled storage exhausted | Unlikely within 3 years | ~80 GB/year at 20 projects |
+| **AI usage growth** | More projects with analysis enabled | With adoption | Capped by construction; per-project on/off switch |
+
+---
+
+## 6. Category 5 — One-time implementation costs
+
+**No external cash outlay is identified.** The build is done in this workspace; the costs are the
+company's own time.
+
+| Item | Who | Effort | Cash |
+|---|---|---|---|
+| Admin Console entitlement check | Owner or administrator | ~15 minutes | **USD 0** |
+| Workspace and Shared Drive setup | Administrator | ~1 hour | **USD 0** |
+| App build against synthetic data | This workspace | — | **USD 0** |
+| Report template built from the company's existing format | Owner supplies the format; built here | ~2 hours of owner review | **USD 0** unless a designer is engaged (optional) |
+| Master-data entry: projects, locations, activity rules, users | Administrator | ~2–4 hours for the first three projects, then ~20 minutes per project | **USD 0** |
+| **Field testing with real supervisors** | 2–3 supervisors, half a day | Their time | **USD 0** |
+| Legal identity, numbering register and tax confirmation | Owner, accountant | A few hours spread over weeks | **USD 0** |
+| Parallel month alongside the existing manual process | Owner and reviewers | One reporting cycle | **USD 0**, and the cheapest insurance available |
+
+---
+
+## 7. The only circumstance in which a purchase is proposed
+
+Per the owner's instruction, no additional AppSheet licence is to be bought unless **all four** hold:
+
+1. A **specific required feature** is unavailable on the existing entitlement — named, not generalised.
+2. The feature is genuinely required, not merely convenient.
+3. **Make cannot handle it safely.** Both of the likely gaps have fallbacks: no webhooks → Make polls on a schedule; no API → Make writes to the Sheet directly. Neither needs a licence.
+4. The owner approves the purchase in writing, with the cost stated.
+
+The two features with **no** Make fallback are **security filters** and **offline image capture**. If
+either is unavailable, that is not a purchase decision — it is a signal to re-evaluate the capture
+layer before anything is built.
+
+---
+
+## 8. Summary
+
+| Category | Amount |
 |---|---|
-| Field users may sit on a cheaper tier if the platform permits | Largest single lever |
-| AI analyses derivatives, never originals | Vision cost scales with image size |
-| One analysis per photograph, cached | No re-analysis without an explicit request |
-| Ineligible evidence never sent | Duplicates and AI-disabled projects cost nothing |
-| Hard monthly AI cap | A bulk upload cannot produce a surprise bill |
-| Batch orchestration where safe; no per-row polling | Operation consumption |
-| Google Sheets as the MVP store | No database licence until the migration threshold is crossed |
-| Per-project usage tracking | Cost is attributable to the contract that generated it |
+| 1 · Existing subscriptions | **USD 0 incremental** — Workspace, AppSheet (assumed included), Drive storage, QuickBooks |
+| 2 · New mandatory | **None identified.** Make may be USD 0 at pilot volume |
+| 3 · Optional | Claude API, capped by the owner. Nothing else |
+| 4 · Future scaling | Make tier first, then store migration — both with defined triggers |
+| 5 · One-time | **No cash outlay.** Company time: roughly one day of administrator effort plus half a day of field testing |
 
-## 5. Cost of *not* verifying
+**Expected incremental monthly cost for the pilot: USD 0, possibly plus a modest orchestration tier
+if the free allowance is exceeded.**
 
-The spread between the lean and premium scenarios is roughly **$2,600–5,000 a year**. The
-verification script in `12-appsheet-feature-to-plan-matrix.md` §5 takes about twenty minutes. It is
-the highest-return twenty minutes available in this phase.
+## 9. What is still unverified
 
-## 6. What must happen before any purchase
+| Unknown | How it gets answered | Blocks |
+|---|---|---|
+| Whether AppSheet is included, and on what plan | Admin Console, ~15 minutes (E-1 … E-8) | The build |
+| Make's free-tier operation allowance and whether Data Stores are included | The owner's Make account, or make.com when reachable | Phase 3 sizing |
+| Real operation consumption | Measured in Phase 3 | The tier decision |
+| Pooled storage headroom | Admin Console (E-7) | Nothing immediately |
+| Photographs per visit in real use | One month of real usage | Every number in §5 |
 
-1. Complete the verification script; record each answer with its official URL and the date.
-2. Confirm whether capture-only users can sit on a cheaper tier, and whether that tier still includes offline use and image capture.
-3. Confirm the free development tier's limits, so Phase 2A prototyping costs nothing.
-4. Set the AI monthly cap (EF-04).
-5. Re-run the arithmetic above with verified figures; only then does a recommendation by tier name become legitimate.
+**Vendor pages are unreachable from the build environment** — Google and make.com are both blocked by
+the network egress policy. That is recorded rather than papered over with a third-party figure, and
+it matters less than it sounds: the authoritative answer for this company is in the Admin Console,
+not on a public page.

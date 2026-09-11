@@ -12,14 +12,10 @@ import modeldef
 OUT = os.path.join(modeldef.ROOT, "docs", "02a-plan")
 TODAY = datetime.date.today().isoformat()
 
-# Tables the MVP application actually carries. Everything else is designed but not built.
-MVP_TABLES = [
-    "LegalEntities", "Languages", "Roles", "Users", "Units", "Disciplines", "ActivityTypes",
-    "DocumentTypes", "DataClassifications", "ResidencyRequirements", "Clients", "Contacts",
-    "Projects", "ProjectAssignments", "Locations", "ProjectActivityRules", "ApprovalMatrix",
-    "ApprovalDelegations", "ResidencyAssignments", "TemporaryAccessGrants", "SystemRecoveryPlan",
-    "SiteVisits", "VisitActivities", "Photos", "Snags", "Approvals", "EntityVersions", "AuditLog",
-]
+# The tables the application actually carries come from the lean MVP manifest in the
+# model, so this specification and the scope decision can never disagree.
+def mvp_tables(model):
+    return list(model["lean_mvp"]["tables"])
 
 TYPE_MAP = {
     "id": "Text", "text": "Text", "longtext": "LongText", "email": "Email", "phone": "Phone",
@@ -111,15 +107,27 @@ def workbook(model):
     w("> on the platform — see `12-appsheet-feature-to-plan-matrix.md`, where the platform's")
     w("> capabilities remain UNVERIFIED.")
     w("")
+    lean = model["lean_mvp"]
     w("## Workbook structure")
     w("")
     w("One worksheet per table, named exactly as the table. Header row exactly as the column names")
     w("in the data dictionary. No formulas in cells: every derivation is an app formula or a")
     w("virtual column, so the store stays a store.")
     w("")
-    w(f"**{len(MVP_TABLES)} worksheets** are built for the MVP application. The remaining")
-    w(f"{len(model['tables']) - len(MVP_TABLES)} tables are designed and will be added in their own")
-    w("phase without a migration, because their schemas already exist.")
+    w(f"**{len(lean['tables'])} worksheets** are built (the lean operational MVP). The remaining")
+    w(f"{len(model['tables']) - len(lean['tables'])} tables of the reference architecture are")
+    w("designed and deferred; adding one later is additive, never a migration. Scope and rationale:")
+    w("[`11-lean-mvp-scope.md`](11-lean-mvp-scope.md).")
+    w("")
+    w("### Lean replacements")
+    w("")
+    w("Where a lean table would otherwise require a deferred one, a replacement column carries the")
+    w("job instead:")
+    w("")
+    w("| Reference-architecture column | Lean replacement | Carries |")
+    w("|---|---|---|")
+    for key, v in lean.get("column_overrides", {}).items():
+        w(f"| `{key}` | `{v['lean_column']}` ({v['lean_type']}) | {v['note']} |")
     w("")
     w("## Column conventions")
     w("")
@@ -132,7 +140,7 @@ def workbook(model):
     w("| `Valid_If` | Mirrors the model's validation and referential rules |")
     w("| Sensitivity | Columns marked financial or personal are omitted entirely from field-role slices, not merely hidden |")
     w("")
-    for tname in MVP_TABLES:
+    for tname in mvp_tables(model):
         t = model["tables"][tname]
         w(f"## {tname}")
         w("")
@@ -225,7 +233,7 @@ def security_filters(model):
     w("| Table | Security filter | Rationale |")
     w("|---|---|---|")
     grant_roles = sec.get("grant_required_roles", [])
-    for tname in MVP_TABLES:
+    for tname in mvp_tables(model):
         t = model["tables"][tname]
         # roles by the scope they hold on this table
         by_scope = {}
@@ -274,7 +282,7 @@ def security_filters(model):
     w("These are not filtered — they are **not present in the app's data set at all**, which is the")
     w("strongest form of the control: data that is not there cannot leak.")
     w("")
-    for tname in sorted(set(model["tables"]) - set(MVP_TABLES)):
+    for tname in sorted(set(model["tables"]) - set(mvp_tables(model))):
         t = model["tables"][tname]
         w(f"- `{tname}` — {t['description_en']}")
     w("")

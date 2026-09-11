@@ -2,6 +2,7 @@
 
 **Document ID:** AH-SYS-P2A-000 · **Revision:** 1 · **Date:** 2026-09-11
 **Status:** Completed · **Submitted for Owner Review**
+**Revision 2** — incorporates the owner's simplification and cost corrections of 2026-09-11
 **Authorisation:** the owner's Phase 2A boundary of 2026-09-11
 
 ---
@@ -40,9 +41,27 @@ platform**, and the platform's capabilities themselves remain unverified (see
 | 8 | Deployment and rollback checklists | [`08-deployment-and-rollback.md`](08-deployment-and-rollback.md) | Hand-written |
 | 9 | Cost and licensing matrix | [`09-cost-and-licensing-matrix.md`](09-cost-and-licensing-matrix.md) | Hand-written; **costs unverified** |
 | 10 | How synthetic data is loaded into a prototype | [`10-synthetic-data-loading.md`](10-synthetic-data-loading.md) | Hand-written |
+| 11 | **Lean MVP scope: 17 tables built, 29 deferred with fold-ins** | [`11-lean-mvp-scope.md`](11-lean-mvp-scope.md) | **Yes — from the model's lean manifest** |
+| 12 | **AppSheet entitlement verification checklist** | [`12-appsheet-entitlement-checklist.md`](12-appsheet-entitlement-checklist.md) | Hand-written |
+| 13 | **Field workflow, tap count and multi-photograph capture** | [`13-field-workflow-and-taps.md`](13-field-workflow-and-taps.md) | Hand-written |
+| 14 | **Expected storage and image volume** | [`14-storage-and-image-volume.md`](14-storage-and-image-volume.md) | Hand-written |
 
-Items 1 and 2 regenerate from `model/model.json`, so the application specification cannot drift from
-the data foundation. Run `python3 tools/gen_appsheet_workbook.py` after any model change.
+Items 1, 2 and 11 regenerate from `model/model.json`, so the application specification, the security
+filters and the scope decision can never disagree with each other or with the data foundation. Run
+`python3 tools/gen_appsheet_workbook.py` after any model change.
+
+## 2b. What the owner asked for before requesting a production connection
+
+| Requested | Delivered in |
+|---|---|
+| Lean MVP table list | [`11-lean-mvp-scope.md`](11-lean-mvp-scope.md) §1 — **17 tables** |
+| Deferred-table list | [`11-lean-mvp-scope.md`](11-lean-mvp-scope.md) §3 — **29 tables**, each folded in or scheduled |
+| AppSheet entitlement verification checklist | [`12-appsheet-entitlement-checklist.md`](12-appsheet-entitlement-checklist.md) |
+| Revised itemised monthly cost | [`09-cost-and-licensing-matrix.md`](09-cost-and-licensing-matrix.md) rev 2 — five categories, **USD 0 incremental expected** |
+| Expected storage and image volume | [`14-storage-and-image-volume.md`](14-storage-and-image-volume.md) |
+| Field-user workflow and number of taps | [`13-field-workflow-and-taps.md`](13-field-workflow-and-taps.md) §2 — **9–13 interface taps plus 6 shutter presses** |
+| Multiple-photo capture method | [`13-field-workflow-and-taps.md`](13-field-workflow-and-taps.md) §3 — three methods, one recommended, decided by measurement |
+| Phase 2A implementation plan | This document |
 
 ## 3. Sequence, and what gates each step
 
@@ -50,24 +69,33 @@ Phase 2A is entirely local. **Phase 2B — the first build that touches a real a
 on the owner's written approval**, and only after the three prerequisites below.
 
 ```
-2A.1  Workbook and expressions           done, generated
-2A.2  Security filters                   done, generated
-2A.3  Views, slices, actions             done
-2A.4  Offline test plan                  done, awaiting devices
-2A.5  Drive and Make design              done, nothing connected
-2A.6  Deployment and rollback            done
-2A.7  Cost matrix                        done, costs UNVERIFIED
- ---- gate: owner approval + EF-01 + EF-03 + EF-06 ----
-2B.1  Create the workbook in a company Workspace
-2B.2  Build the app against synthetic data only
-2B.3  Security testing before any real person is added
-2B.4  Field test with real supervisors and devices
-2B.5  Segregation and configurability gate evidence
+2A.1  Lean scope decided: 17 built, 29 deferred      done, in the model and tested
+2A.2  Workbook and expressions for the lean set      done, generated
+2A.3  Security filters for the lean set              done, generated
+2A.4  Views, slices, actions                         done
+2A.5  Field workflow and tap budget                  done, target ~60s, NOT yet measured
+2A.6  Multi-photograph capture: 3 methods            done, A recommended, decided by measurement
+2A.7  Offline test plan                              done, awaiting devices
+2A.8  Drive and Make design                          done, nothing connected
+2A.9  Storage and volume projection                  done, from stated assumptions
+2A.10 Deployment and rollback                        done
+2A.11 Cost matrix, five categories                   done, USD 0 incremental expected
+2A.12 Entitlement checklist                          done, AWAITING the owner's console check
+ ---- gate: owner's WRITTEN approval + entitlement check (E-2, E-3, F-1, F-4) + EF-01 + EF-06 ----
+2B.1  Create the workbook in the company Workspace
+2B.2  Build the 17-table app against synthetic data only
+2B.3  Security testing BEFORE any real person is added
+2B.4  Field test: measure the one-minute target on the oldest handset
+2B.5  Segregation, configurability and recovery gate evidence
 ```
+
+**The entitlement check is now the first gate, not a parallel task.** If security filters or offline
+image capture are unavailable, that is a capture-layer decision and no app should be built at all —
+which is cheap to discover now and expensive to discover after a build.
 
 | Prerequisite | Why Phase 2B cannot start without it |
 |---|---|
-| **EF-03** platform verification | Three requirements are pipeline-blocking and unverified. If security filters, webhooks or the API are unavailable at an economic tier, the capture layer should change *before* an app exists |
+| **Entitlement check** (E-2, E-3, F-1, F-4) | Fifteen minutes in the Admin Console. Security filters and offline image capture have **no** Make fallback; webhooks and the API both do. A gap in the first two changes the capture layer; a gap in the second two changes one scenario and costs nothing |
 | **EF-01** Workspace account and Shared Drive | The first thing 2B.1 touches |
 | **EF-06** administrator and backup, or an approved recovery route | The recovery go-live blocker stays set until one exists |
 
@@ -93,7 +121,9 @@ is a bug.
 
 | Risk | Handling |
 |---|---|
-| Platform capability differs from the specification | Every expression is a specification, not a tested artifact. Expect rework at 2B.2, and verify EF-03 first to bound it |
+| Platform capability differs from the specification | Every expression is a specification, not a tested artifact. Expect rework at 2B.2, and do the entitlement check first to bound it |
+| **The one-minute target is missed** | It is a tap-count derivation, not a measurement. If the field test exceeds 90 seconds, switch capture method, then simplify the form — before the phase closes |
+| **Deferring delegation bites** | With no delegate, approvals wait while the general manager is away. One table and one named person fixes it; the schema already exists |
 | Offline behaviour is entirely unknown | The test plan is written per profile so the unknown is measured rather than assumed |
 | Field usability | Measured at gate 6 as an acceptance criterion, not treated as a training problem |
 | Adding real users too early | Structurally prevented: gates 1–3 run on synthetic accounts |
@@ -101,6 +131,7 @@ is a bug.
 ## 6. Standing constraints
 
 1. No real client, project, photograph, employee or financial record enters any environment during Phase 2A or 2B until the residency review (EF-16) permits it for that project.
+0. **No purchase of any kind, and no external production connection, without the owner's written approval.** Phase 2A costs nothing: it is design on synthetic data, plus optionally the free development tier.
 2. No production document number is issued until the existing manual register is reviewed (EF-08).
 3. No invoice is calculated for production until the tax treatment is confirmed in writing (EF-17).
 4. No credential is stored in this repository, at any point, for any reason.

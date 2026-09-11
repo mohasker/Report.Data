@@ -161,3 +161,53 @@ blocker.
 
 **Status:** Phase 1 and Phase 2A are **Submitted for Owner Review**. Phase 2B — the first build that
 touches a real account — requires written owner approval plus EF-01, EF-03 and EF-06.
+
+---
+
+## [0.3.0] — 2026-09-11 — Lean MVP scope, corrected cost basis
+
+Responds to the owner's simplification and cost corrections of 2026-09-11. No purchase is proposed,
+nothing external is connected, and no real data was introduced.
+
+**Corrected — cost basis**
+
+The revision 1 estimate of USD 2,600–5,000 a year is **withdrawn**, not adjusted. It priced AppSheet
+as a new per-user subscription when Al-Haram already pays for Google Workspace and AppSheet Core may
+be included in it. Pricing an included component as a new purchase inflated the entire figure.
+
+`09-cost-and-licensing-matrix.md` revision 2 rebuilds it in the five categories the owner specified:
+
+- **Existing subscriptions** — Workspace, AppSheet (assumed included, pending an Admin Console check), Drive storage, QuickBooks. **USD 0 incremental.**
+- **New mandatory** — none identified. Orchestration may sit inside a free tier at pilot volume.
+- **Optional** — the AI API, bounded by a cap the owner sets. Nothing else.
+- **Future scaling** — orchestration tier first, then the store migration, each with a numeric trigger.
+- **One-time** — no cash outlay; roughly one day of administrator time plus half a day of field testing.
+
+A purchase is proposed only if a specific required feature is proven unavailable **and** Make cannot
+handle it safely. Security filters and offline image capture have no fallback — a gap there changes
+the capture layer, not the budget. Webhooks and the API both have Make fallbacks that cost nothing.
+
+**Added — lean operational MVP**
+
+The 46-table model stays the long-term reference architecture; the build is a **17-table subset**
+covering every capability the owner listed. Defined in `model/model.json` so scope, workbook and
+security filters are generated from one source and cannot disagree.
+
+- `11-lean-mvp-scope.md` — the 17 built tables, the 29 deferred ones, six lean replacement columns, and what each deferral actually costs. The largest is delegation: with no delegate, approvals wait while the general manager is away. Stated plainly rather than buried.
+- `tools/test_lean_mvp.py` — 13 checks confirming the subset holds together: no lean table requires a deferred one without a declared replacement, every deferred table keeps its schema (620 columns in reserve), and every load-bearing control survives the trim.
+
+**Added — the deliverables requested before any production connection**
+
+- `12-appsheet-entitlement-checklist.md` — 15 minutes in the Admin Console, 8 subscription questions and 8 feature questions, with a decision rule that proposes no purchase under any outcome.
+- `13-field-workflow-and-taps.md` — the one-minute target derived tap by tap: **9–13 interface taps plus 6 shutter presses**, with the nine design decisions that get it there and the 35-tap version that would kill adoption. Three multi-photograph capture methods with trade-offs, one recommended, decided by measurement rather than argument.
+- `14-storage-and-image-volume.md` — ~332 MB and ~200 rows per project per month, scaled to 3, 10, 20 and 50 projects, with the spreadsheet-migration threshold reached at roughly year 1.4 at 20 projects, and orchestration operations identified as the fastest-growing cost line.
+
+**Fixed — two defects the checks found**
+
+- Six lean tables had required references to deferred tables, which would have made the subset unbuildable. Each now has a declared replacement column with its consequence stated.
+- A configurability check flagged any mention of a project count as a limit, and caught a restore trigger that was not one. It now looks for limit constructs specifically.
+
+**Validation:** 185 checks across 12 suites, all passing.
+
+**Status:** Phase 2A is **Completed · Submitted for Owner Review**. Phase 2B requires the owner's
+written approval and the Admin Console entitlement check. Nothing is purchased or connected.

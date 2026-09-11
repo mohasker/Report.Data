@@ -1954,6 +1954,126 @@ CANONICAL = {
 }
 
 # --------------------------------------------------------------------------
+# 9b. Lean operational MVP (owner instruction, 2026-09-11)
+#
+# The 46-table model remains the long-term REFERENCE ARCHITECTURE. What gets BUILT
+# first is a lean subset, so a supervisor can submit a visit in about a minute and the
+# app stays maintainable by one person. Deferring a table never means losing its
+# design: every deferred table already has a schema, so adding it later is additive.
+# --------------------------------------------------------------------------
+LEAN_MVP = {
+    "target_range": [12, 18],
+    "tables": [
+        "Users", "Projects", "ProjectAssignments", "Locations", "ActivityTypes",
+        "ProjectActivityRules", "SiteVisits", "VisitActivities", "Photos", "Snags",
+        "Approvals", "DocumentJobs", "Documents", "NumberRegister", "LegalEntities",
+        "AuditLog", "IntegrationJobs",
+    ],
+    # A deferred table's job still has to be done. Each entry says how, and what is lost.
+    "fold_ins": {
+        "Roles": {
+            "into": "Users.RoleCode and ProjectAssignments.RoleCode as an enumerated column",
+            "cost": "Role descriptions and capability flags live in documentation rather than "
+                    "data. Acceptable while the role set is fixed at ten.",
+            "restore_when": "A role's capabilities need to be edited by an administrator "
+                            "without a rebuild."},
+        "Units": {
+            "into": "An enumerated UnitCode column on ActivityTypes and VisitActivities",
+            "cost": "Per-unit decimal places become a convention rather than configuration.",
+            "restore_when": "A unit needs project-specific rounding, or the list grows past "
+                            "what a dropdown carries comfortably."},
+        "Clients": {
+            "into": "ClientNameEN, ClientNameAR and ClientKind columns on Projects",
+            "cost": "One client with several projects is repeated per project. Billing "
+                    "address, tax number and accounting identifier are absent - none is "
+                    "needed before invoicing.",
+            "restore_when": "Phase 6, or the first client holding several projects at once."},
+        "Contacts": {
+            "into": "Deferred entirely. MVP release is manual, so no recipient list is stored",
+            "cost": "No authorised-recipient control in the app. The control still exists, "
+                    "because a person sends the document deliberately.",
+            "restore_when": "Automated delivery, Phase 7."},
+        "DocumentTemplates": {
+            "into": "TemplateFileKey and DefaultDocumentLanguage columns on Projects",
+            "cost": "Template versioning becomes file-level rather than record-level.",
+            "restore_when": "A second template revision must be provable after issue, or a "
+                            "project needs more than one template."},
+        "NumberingSeries": {
+            "into": "Format columns on LegalEntities. NumberRegister IS retained",
+            "cost": "Series configuration is per entity rather than per entity x type x scope.",
+            "restore_when": "A client requires their own numbering run, or a second entity "
+                            "issues documents."},
+        "ApprovalMatrix": {
+            "into": "ReviewerUserID on Projects; the general manager approves everything else",
+            "cost": "No multi-step approval and no per-document-type routing.",
+            "restore_when": "A delegate is named, or a project needs a different approver."},
+        "ApprovalDelegations": {
+            "into": "Deferred. The general manager approves; absence is handled by waiting",
+            "cost": "**This is the real cost of the lean build.** If the approver is away, "
+                    "approvals stop. Accepted only because no delegate has been named yet.",
+            "restore_when": "Before go-live if a delegate exists; immediately if approvals "
+                            "ever stall."},
+        "EntityVersions": {
+            "into": "EntityVersion and ContentHash stay on the records; AuditLog carries "
+                    "before and after hashes",
+            "cost": "Version history is reconstructed from the audit log rather than read "
+                    "directly.",
+            "restore_when": "A dispute requires the version chain as a first-class record."},
+        "TemporaryAccessGrants": {
+            "into": "Deferred. No auditor or break-glass role is enabled in the lean build",
+            "cost": "Time-bound audit access is unavailable.",
+            "restore_when": "An external audit is scheduled, or break-glass is needed."},
+        "SystemRecoveryPlan": {
+            "into": "Two administrator accounts in the Workspace, plus a written runbook",
+            "cost": "The go-live blocker is tracked in the runbook rather than in data.",
+            "restore_when": "The estate is large enough that the plan needs testing evidence "
+                            "recorded against it."},
+        "Languages, Disciplines, DocumentTypes, DataClassifications": {
+            "into": "Enumerated columns",
+            "cost": "Vocabularies change by editing the app rather than a row.",
+            "restore_when": "A vocabulary changes more than about twice a year."},
+    },
+    # Required references from a lean table to a deferred one. Each must be replaced by a
+    # concrete lean column, or the subset does not actually build.
+    "column_overrides": {
+        "Users.RoleID": {
+            "lean_column": "RoleCode",
+            "lean_type": "enum of the ten role codes",
+            "note": "The role vocabulary is fixed for the MVP, so an enum carries it."},
+        "ProjectAssignments.RoleID": {
+            "lean_column": "RoleCode",
+            "lean_type": "enum of the ten role codes",
+            "note": "The role held ON THIS PROJECT, which is what the security filter reads."},
+        "Projects.ClientID": {
+            "lean_column": "ClientNameEN, ClientNameAR, ClientKind",
+            "lean_type": "text columns on Projects",
+            "note": "Enough for a report header and a dashboard. Billing address, tax number "
+                    "and accounting identifier are absent until Phase 6, where they are needed."},
+        "ActivityTypes.DisciplineID": {
+            "lean_column": "DisciplineCode",
+            "lean_type": "enum of six disciplines",
+            "note": "Used to group the activity picker; not referenced anywhere else."},
+        "Documents.TemplateID": {
+            "lean_column": "TemplateFileKey, LanguageCode",
+            "lean_type": "columns on Documents, copied from the project at generation",
+            "note": "Records which template file actually produced the document, which is the "
+                    "part that matters for reproducibility."},
+        "NumberRegister.SeriesID": {
+            "lean_column": "SeriesKey",
+            "lean_type": "text key composed of entity, document type and year",
+            "note": "The register keeps its reserved/issued/cancelled control; only the series "
+                    "CONFIGURATION moves to the legal entity."},
+    },
+    "deferred_phases": {
+        "Materials": 5, "MaterialUsage": 5, "Equipment": 5, "VisitEquipment": 5,
+        "Employees": 5, "VisitManpower": 5,
+        "Contracts": 6, "WorkOrders": 6, "BOQItems": 6, "TaxRules": 6,
+        "InvoiceRequests": 6, "InvoiceLines": 6,
+        "ResidencyRequirements": 3, "ResidencyAssignments": 3,
+    },
+}
+
+# --------------------------------------------------------------------------
 # 10. Assemble and write
 # --------------------------------------------------------------------------
 def main():
@@ -2002,6 +2122,17 @@ def main():
         if spec["field"] not in cols:
             problems.append(f"transitions reference unknown column {key}")
 
+    for t in LEAN_MVP["tables"]:
+        if t not in TABLES:
+            problems.append(f"lean MVP names unknown table {t}")
+    lo, hi = LEAN_MVP["target_range"]
+    if not lo <= len(LEAN_MVP["tables"]) <= hi:
+        problems.append(f"lean MVP has {len(LEAN_MVP['tables'])} tables, outside {lo}-{hi}")
+    for t in list(LEAN_MVP["fold_ins"]) + list(LEAN_MVP["deferred_phases"]):
+        for name in [x.strip() for x in t.split(",")]:
+            if name in TABLES and name in LEAN_MVP["tables"]:
+                problems.append(f"{name} is both lean and deferred")
+
     if problems:
         print("MODEL PROBLEMS:", file=sys.stderr)
         for p in problems:
@@ -2021,6 +2152,7 @@ def main():
         "transitions": TRANSITIONS,
         "security": SECURITY,
         "canonical_hash": CANONICAL,
+        "lean_mvp": LEAN_MVP,
     }
     out = os.path.join(ROOT, "model", "model.json")
     os.makedirs(os.path.dirname(out), exist_ok=True)
@@ -2035,6 +2167,8 @@ def main():
           f"{sum(len(t['forbidden']) for t in TRANSITIONS.values())} explicitly forbidden")
     print(f"  security    : {len(SECURITY['roles'])} roles x {len(TABLES)} tables = "
           f"{len(SECURITY['roles']) * len(TABLES)} grants, {len(SECURITY['exceptions'])} exceptions")
+    print(f"  lean MVP    : {len(LEAN_MVP['tables'])} tables built first, "
+          f"{len(TABLES) - len(LEAN_MVP['tables'])} deferred but designed")
 
 
 if __name__ == "__main__":

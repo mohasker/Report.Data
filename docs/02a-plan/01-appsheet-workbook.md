@@ -15,9 +15,24 @@ One worksheet per table, named exactly as the table. Header row exactly as the c
 in the data dictionary. No formulas in cells: every derivation is an app formula or a
 virtual column, so the store stays a store.
 
-**28 worksheets** are built for the MVP application. The remaining
-18 tables are designed and will be added in their own
-phase without a migration, because their schemas already exist.
+**17 worksheets** are built (the lean operational MVP). The remaining
+29 tables of the reference architecture are
+designed and deferred; adding one later is additive, never a migration. Scope and rationale:
+[`11-lean-mvp-scope.md`](11-lean-mvp-scope.md).
+
+### Lean replacements
+
+Where a lean table would otherwise require a deferred one, a replacement column carries the
+job instead:
+
+| Reference-architecture column | Lean replacement | Carries |
+|---|---|---|
+| `Users.RoleID` | `RoleCode` (enum of the ten role codes) | The role vocabulary is fixed for the MVP, so an enum carries it. |
+| `ProjectAssignments.RoleID` | `RoleCode` (enum of the ten role codes) | The role held ON THIS PROJECT, which is what the security filter reads. |
+| `Projects.ClientID` | `ClientNameEN, ClientNameAR, ClientKind` (text columns on Projects) | Enough for a report header and a dashboard. Billing address, tax number and accounting identifier are absent until Phase 6, where they are needed. |
+| `ActivityTypes.DisciplineID` | `DisciplineCode` (enum of six disciplines) | Used to group the activity picker; not referenced anywhere else. |
+| `Documents.TemplateID` | `TemplateFileKey, LanguageCode` (columns on Documents, copied from the project at generation) | Records which template file actually produced the document, which is the part that matters for reproducibility. |
+| `NumberRegister.SeriesID` | `SeriesKey` (text key composed of entity, document type and year) | The register keeps its reserved/issued/cancelled control; only the series CONFIGURATION moves to the legal entity. |
 
 ## Column conventions
 
@@ -29,85 +44,6 @@ phase without a migration, because their schemas already exist.
 | `Required_If` | Mirrors the model's required flag, plus any conditional rule stated in the dictionary |
 | `Valid_If` | Mirrors the model's validation and referential rules |
 | Sensitivity | Columns marked financial or personal are omitted entirely from field-role slices, not merely hidden |
-
-## LegalEntities
-
-Registered legal entities that issue documents. Multi-entity from the start (D-02).
-
-**Key:** `LegalEntityID` · **Scope:** global · **Sensitivity:** internal
-
-| Column | AppSheet type | Required | Editable | Expression / rule |
-|---|---|---|---|---|
-| `LegalEntityID` | Text | Yes | No | `UNIQUEID()` initial value; key; not editable |
-| `EntityCode` | Text | Yes | Yes | 2-6 uppercase letters/digits |
-| `LegalNameEN` | Text | Yes | Yes |  |
-| `LegalNameAR` | Text | Yes | Yes |  |
-| `TradeNameEN` | Text |  | Yes |  |
-| `TradeNameAR` | Text |  | Yes |  |
-| `CommercialRegistrationNumber` | Text | Yes | Yes |  |
-| `EstablishmentCardNumber` | Text |  | Yes |  |
-| `TaxRegistrationNumber` | Text |  | Yes | **[financial]** |
-| `TaxRegistrationStatus` | Text | Yes | Yes | Initial value `PENDING_ACCOUNTANT_CONFIRMATION` |
-| `RegisteredAddressEN` | LongText | Yes | Yes |  |
-| `RegisteredAddressAR` | LongText |  | Yes |  |
-| `Country` | Text | Yes | Yes |  |
-| `Currency` | Text | Yes | Yes | ISO 4217 |
-| `OfficialEmail` | Email | Yes | Yes |  |
-| `OfficialTelephone` | Phone | Yes | Yes |  |
-| `OfficialWhatsApp` | Phone |  | Yes |  |
-| `LogoFileKey` | Text |  | Yes |  |
-| `DocumentFooterEN` | LongText |  | Yes |  |
-| `DocumentFooterAR` | LongText |  | Yes |  |
-| `AuthorisedSignatories` | LongText |  | Yes |  |
-| `EffectiveFrom` | Date | Yes | Yes |  |
-| `EffectiveTo` | Date |  | Yes |  |
-| `Version` | Number | Yes | No | Initial value `1` |
-| `IsActive` | Yes/No | Yes | Yes | Initial value `TRUE` |
-| `CreatedAt` | DateTime | Yes | No |  |
-| `CreatedBy` | Email | Yes | No |  |
-| `UpdatedAt` | DateTime | Yes | No |  |
-| `UpdatedBy` | Email | Yes | No |  |
-
-## Languages
-
-Supported languages and their direction. Bilingual capability is architectural (D-11).
-
-**Key:** `LanguageCode` · **Scope:** global · **Sensitivity:** internal
-
-| Column | AppSheet type | Required | Editable | Expression / rule |
-|---|---|---|---|---|
-| `LanguageCode` | Enum (en, ar) | Yes | Yes | `UNIQUEID()` initial value; key; not editable |
-| `NameEN` | Text | Yes | Yes |  |
-| `NameAR` | Text | Yes | Yes |  |
-| `Direction` | Text | Yes | Yes | LTR\|RTL |
-| `IsDocumentLanguage` | Yes/No | Yes | Yes |  |
-| `IsActive` | Yes/No | Yes | Yes | Initial value `TRUE` |
-| `CreatedAt` | DateTime | Yes | No |  |
-| `CreatedBy` | Email | Yes | No |  |
-| `UpdatedAt` | DateTime | Yes | No |  |
-| `UpdatedBy` | Email | Yes | No |  |
-
-## Roles
-
-System roles. Authorisation is enforced by security filters and server-side re-validation, never by view visibility (spec 7.4).
-
-**Key:** `RoleID` · **Scope:** global · **Sensitivity:** internal
-
-| Column | AppSheet type | Required | Editable | Expression / rule |
-|---|---|---|---|---|
-| `RoleID` | Text | Yes | Yes | `UNIQUEID()` initial value; key; not editable |
-| `RoleCode` | Text | Yes | Yes |  |
-| `NameEN` | Text | Yes | Yes |  |
-| `NameAR` | Text | Yes | Yes |  |
-| `Description` | LongText | Yes | Yes |  |
-| `SeesFinancialData` | Yes/No | Yes | Yes | Initial value `FALSE` |
-| `MayApprove` | Yes/No | Yes | Yes | Initial value `FALSE` |
-| `MayAdministerMasterData` | Yes/No | Yes | Yes | Initial value `FALSE` |
-| `IsActive` | Yes/No | Yes | Yes | Initial value `TRUE` |
-| `CreatedAt` | DateTime | Yes | No |  |
-| `CreatedBy` | Email | Yes | No |  |
-| `UpdatedAt` | DateTime | Yes | No |  |
-| `UpdatedBy` | Email | Yes | No |  |
 
 ## Users
 
@@ -127,189 +63,6 @@ People who may sign in. One identity per person — shared accounts destroy attr
 | `DefaultProjectID` | Ref → Projects |  | Yes |  |
 | `Language` | Enum (en, ar) | Yes | Yes | Initial value `en` |
 | `LastLoginAt` | DateTime |  | No |  |
-| `IsActive` | Yes/No | Yes | Yes | Initial value `TRUE` |
-| `CreatedAt` | DateTime | Yes | No |  |
-| `CreatedBy` | Email | Yes | No |  |
-| `UpdatedAt` | DateTime | Yes | No |  |
-| `UpdatedBy` | Email | Yes | No |  |
-
-## Units
-
-Units of measure for quantities.
-
-**Key:** `UnitID` · **Scope:** global · **Sensitivity:** internal
-
-| Column | AppSheet type | Required | Editable | Expression / rule |
-|---|---|---|---|---|
-| `UnitID` | Text | Yes | Yes | `UNIQUEID()` initial value; key; not editable |
-| `UnitCode` | Text | Yes | Yes |  |
-| `NameEN` | Text | Yes | Yes |  |
-| `NameAR` | Text | Yes | Yes |  |
-| `DecimalPlaces` | Number | Yes | Yes | Initial value `2` |
-| `IsActive` | Yes/No | Yes | Yes | Initial value `TRUE` |
-| `CreatedAt` | DateTime | Yes | No |  |
-| `CreatedBy` | Email | Yes | No |  |
-| `UpdatedAt` | DateTime | Yes | No |  |
-| `UpdatedBy` | Email | Yes | No |  |
-
-## Disciplines
-
-Work disciplines. A project may permit one or many.
-
-**Key:** `DisciplineID` · **Scope:** global · **Sensitivity:** internal
-
-| Column | AppSheet type | Required | Editable | Expression / rule |
-|---|---|---|---|---|
-| `DisciplineID` | Text | Yes | Yes | `UNIQUEID()` initial value; key; not editable |
-| `DisciplineCode` | Text | Yes | Yes |  |
-| `NameEN` | Text | Yes | Yes |  |
-| `NameAR` | Text | Yes | Yes |  |
-| `IsActive` | Yes/No | Yes | Yes | Initial value `TRUE` |
-| `CreatedAt` | DateTime | Yes | No |  |
-| `CreatedBy` | Email | Yes | No |  |
-| `UpdatedAt` | DateTime | Yes | No |  |
-| `UpdatedBy` | Email | Yes | No |  |
-
-## ActivityTypes
-
-Catalogue of activities with their default evidence and quantity rules. Per-project overrides live in ProjectActivityRules.
-
-**Key:** `ActivityTypeID` · **Scope:** global · **Sensitivity:** internal
-
-| Column | AppSheet type | Required | Editable | Expression / rule |
-|---|---|---|---|---|
-| `ActivityTypeID` | Text | Yes | Yes | `UNIQUEID()` initial value; key; not editable |
-| `DisciplineID` | Ref → Disciplines | Yes | Yes |  |
-| `ActivityCode` | Text | Yes | Yes |  |
-| `ActivityNameEN` | Text | Yes | Yes |  |
-| `ActivityNameAR` | Text | Yes | Yes |  |
-| `RequiresBeforePhoto` | Yes/No | Yes | Yes | Initial value `FALSE` |
-| `RequiresAfterPhoto` | Yes/No | Yes | Yes | Initial value `FALSE` |
-| `RequiresQuantity` | Yes/No | Yes | Yes | Initial value `FALSE` |
-| `QuantityUnitID` | Ref → Units |  | Yes | Required when RequiresQuantity is TRUE |
-| `RequiresMaterial` | Yes/No | Yes | Yes | Initial value `FALSE` |
-| `RequiresSnagCheck` | Yes/No | Yes | Yes | Initial value `FALSE` |
-| `MinPhotos` | Number | Yes | Yes | Initial value `0` |
-| `DefaultEvidenceStages` | Text |  | Yes |  |
-| `IsActive` | Yes/No | Yes | Yes | Initial value `TRUE` |
-| `CreatedAt` | DateTime | Yes | No |  |
-| `CreatedBy` | Email | Yes | No |  |
-| `UpdatedAt` | DateTime | Yes | No |  |
-| `UpdatedBy` | Email | Yes | No |  |
-
-## DocumentTypes
-
-Controlled document types. Adding a type is configuration, not development (D-10).
-
-**Key:** `DocumentTypeCode` · **Scope:** global · **Sensitivity:** internal
-
-| Column | AppSheet type | Required | Editable | Expression / rule |
-|---|---|---|---|---|
-| `DocumentTypeCode` | Enum (DailyReport, WeeklyReport, MonthlyTechnicalReport, InspectionReport…) | Yes | Yes | `UNIQUEID()` initial value; key; not editable |
-| `NameEN` | Text | Yes | Yes |  |
-| `NameAR` | Text | Yes | Yes |  |
-| `RequiresTechnicalApproval` | Yes/No | Yes | Yes | Initial value `TRUE` |
-| `RequiresFinanceApproval` | Yes/No | Yes | Yes | Initial value `FALSE` |
-| `RequiresReleaseApproval` | Yes/No | Yes | Yes | Initial value `TRUE` |
-| `IsExternallyIssued` | Yes/No | Yes | Yes | Initial value `TRUE` |
-| `BuiltInPhase` | Text | Yes | Yes |  |
-| `IsActive` | Yes/No | Yes | Yes | Initial value `TRUE` |
-| `CreatedAt` | DateTime | Yes | No |  |
-| `CreatedBy` | Email | Yes | No |  |
-| `UpdatedAt` | DateTime | Yes | No |  |
-| `UpdatedBy` | Email | Yes | No |  |
-
-## DataClassifications
-
-Sensitivity classes applied to records and files, driving residency and sharing rules (D-12).
-
-**Key:** `ClassificationCode` · **Scope:** global · **Sensitivity:** internal
-
-| Column | AppSheet type | Required | Editable | Expression / rule |
-|---|---|---|---|---|
-| `ClassificationCode` | Enum (Public, Internal, ClientConfidential, Personal…) | Yes | Yes | `UNIQUEID()` initial value; key; not editable |
-| `NameEN` | Text | Yes | Yes |  |
-| `NameAR` | Text | Yes | Yes |  |
-| `Description` | LongText | Yes | Yes |  |
-| `MayLeaveTenant` | Yes/No | Yes | Yes | Initial value `FALSE` |
-| `MayBeSharedExternally` | Yes/No | Yes | Yes | Initial value `FALSE` |
-| `DefaultRetentionDays` | Number |  | Yes |  |
-| `IsActive` | Yes/No | Yes | Yes | Initial value `TRUE` |
-| `CreatedAt` | DateTime | Yes | No |  |
-| `CreatedBy` | Email | Yes | No |  |
-| `UpdatedAt` | DateTime | Yes | No |  |
-| `UpdatedBy` | Email | Yes | No |  |
-
-## ResidencyRequirements
-
-Storage and processing restrictions that may be assigned to a client, contract or project (D-12).
-
-**Key:** `ResidencyRequirementID` · **Scope:** global · **Sensitivity:** internal
-
-| Column | AppSheet type | Required | Editable | Expression / rule |
-|---|---|---|---|---|
-| `ResidencyRequirementID` | Text | Yes | Yes | `UNIQUEID()` initial value; key; not editable |
-| `RuleCode` | Enum (NoRestriction, RegionRestricted, CountryRestricted, NoThirdPartyAI…) | Yes | Yes |  |
-| `NameEN` | Text | Yes | Yes |  |
-| `NameAR` | Text | Yes | Yes |  |
-| `AllowedRegions` | Text |  | Yes |  |
-| `BlocksProductionUpload` | Yes/No | Yes | Yes | Initial value `FALSE` |
-| `BlocksThirdPartyAI` | Yes/No | Yes | Yes | Initial value `FALSE` |
-| `SourceClauseReference` | Text |  | Yes |  |
-| `IsActive` | Yes/No | Yes | Yes | Initial value `TRUE` |
-| `CreatedAt` | DateTime | Yes | No |  |
-| `CreatedBy` | Email | Yes | No |  |
-| `UpdatedAt` | DateTime | Yes | No |  |
-| `UpdatedBy` | Email | Yes | No |  |
-
-## Clients
-
-Clients the company works for. Bilingual names preserved exactly (D-11).
-
-**Key:** `ClientID` · **Scope:** global · **Sensitivity:** confidential
-
-| Column | AppSheet type | Required | Editable | Expression / rule |
-|---|---|---|---|---|
-| `ClientID` | Text | Yes | Yes | `UNIQUEID()` initial value; key; not editable |
-| `LegalNameEN` | Text |  | Yes |  |
-| `LegalNameAR` | Text |  | Yes |  |
-| `DisplayNameEN` | Text |  | Yes |  |
-| `DisplayNameAR` | Text |  | Yes |  |
-| `ClientKind` | Text | Yes | Yes | Government\|SemiGovernment\|Private\|MainContractor |
-| `BillingAddressEN` | LongText |  | Yes | **[financial]** |
-| `BillingAddressAR` | LongText |  | Yes | **[financial]** |
-| `TaxRegistrationNumber` | Text |  | Yes | **[financial]** |
-| `PrimaryContactID` | Ref → Contacts |  | Yes |  |
-| `PaymentTermsDays` | Number |  | Yes | **[financial]** |
-| `Currency` | Text |  | Yes | ISO 4217 **[financial]** |
-| `DefaultClassificationCode` | Enum (Public, Internal, ClientConfidential, Personal…) |  | Yes |  |
-| `QuickBooksCustomerID` | Text |  | No | **[financial]** |
-| `Status` | Text | Yes | Yes | Active\|Suspended\|Closed |
-| `IsActive` | Yes/No | Yes | Yes | Initial value `TRUE` |
-| `CreatedAt` | DateTime | Yes | No |  |
-| `CreatedBy` | Email | Yes | No |  |
-| `UpdatedAt` | DateTime | Yes | No |  |
-| `UpdatedBy` | Email | Yes | No |  |
-
-## Contacts
-
-Client contacts. Only an authorised recipient may receive a released document.
-
-**Key:** `ContactID` · **Scope:** global · **Sensitivity:** personal
-
-| Column | AppSheet type | Required | Editable | Expression / rule |
-|---|---|---|---|---|
-| `ContactID` | Text | Yes | Yes | `UNIQUEID()` initial value; key; not editable |
-| `ClientID` | Ref → Clients | Yes | Yes |  |
-| `NameEN` | Text |  | Yes |  |
-| `NameAR` | Text |  | Yes |  |
-| `PositionEN` | Text |  | Yes |  |
-| `PositionAR` | Text |  | Yes |  |
-| `Email` | Email |  | Yes | **[personal]** |
-| `Mobile` | Phone |  | Yes | **[personal]** |
-| `PreferredLanguage` | Enum (en, ar) | Yes | Yes | Initial value `en` |
-| `IsAuthorizedRecipient` | Yes/No | Yes | Yes | Initial value `FALSE` |
-| `Status` | Text | Yes | Yes | Active\|Inactive |
 | `IsActive` | Yes/No | Yes | Yes | Initial value `TRUE` |
 | `CreatedAt` | DateTime | Yes | No |  |
 | `CreatedBy` | Email | Yes | No |  |
@@ -402,6 +155,33 @@ Hierarchical locations within a project. Choices are always filtered by project 
 | `UpdatedAt` | DateTime | Yes | No |  |
 | `UpdatedBy` | Email | Yes | No |  |
 
+## ActivityTypes
+
+Catalogue of activities with their default evidence and quantity rules. Per-project overrides live in ProjectActivityRules.
+
+**Key:** `ActivityTypeID` · **Scope:** global · **Sensitivity:** internal
+
+| Column | AppSheet type | Required | Editable | Expression / rule |
+|---|---|---|---|---|
+| `ActivityTypeID` | Text | Yes | Yes | `UNIQUEID()` initial value; key; not editable |
+| `DisciplineID` | Ref → Disciplines | Yes | Yes |  |
+| `ActivityCode` | Text | Yes | Yes |  |
+| `ActivityNameEN` | Text | Yes | Yes |  |
+| `ActivityNameAR` | Text | Yes | Yes |  |
+| `RequiresBeforePhoto` | Yes/No | Yes | Yes | Initial value `FALSE` |
+| `RequiresAfterPhoto` | Yes/No | Yes | Yes | Initial value `FALSE` |
+| `RequiresQuantity` | Yes/No | Yes | Yes | Initial value `FALSE` |
+| `QuantityUnitID` | Ref → Units |  | Yes | Required when RequiresQuantity is TRUE |
+| `RequiresMaterial` | Yes/No | Yes | Yes | Initial value `FALSE` |
+| `RequiresSnagCheck` | Yes/No | Yes | Yes | Initial value `FALSE` |
+| `MinPhotos` | Number | Yes | Yes | Initial value `0` |
+| `DefaultEvidenceStages` | Text |  | Yes |  |
+| `IsActive` | Yes/No | Yes | Yes | Initial value `TRUE` |
+| `CreatedAt` | DateTime | Yes | No |  |
+| `CreatedBy` | Email | Yes | No |  |
+| `UpdatedAt` | DateTime | Yes | No |  |
+| `UpdatedBy` | Email | Yes | No |  |
+
 ## ProjectActivityRules
 
 Per-project overrides of the global activity and evidence rules (D-15 item 4). A project that needs a different rule gets a row, never a code change.
@@ -421,138 +201,6 @@ Per-project overrides of the global activity and evidence rules (D-15 item 4). A
 | `MinPhotos` | Number |  | Yes |  |
 | `RequiresCaption` | Yes/No |  | Yes |  |
 | `BOQItemHint` | Text |  | Yes | **[financial]** |
-| `IsActive` | Yes/No | Yes | Yes | Initial value `TRUE` |
-| `CreatedAt` | DateTime | Yes | No |  |
-| `CreatedBy` | Email | Yes | No |  |
-| `UpdatedAt` | DateTime | Yes | No |  |
-| `UpdatedBy` | Email | Yes | No |  |
-
-## ApprovalMatrix
-
-Who approves what, per project and stage (D-09, D-15 item 6). The GM is the MVP approver, and the structure supports delegation without redesign.
-
-**Key:** `ApprovalMatrixID` · **Scope:** project · **Sensitivity:** internal
-
-| Column | AppSheet type | Required | Editable | Expression / rule |
-|---|---|---|---|---|
-| `ApprovalMatrixID` | Text | Yes | Yes | `UNIQUEID()` initial value; key; not editable |
-| `ProjectID` | Ref → Projects |  | Yes |  |
-| `ApprovalStage` | Enum (EvidenceReview, TechnicalReview, FinanceReview, Release…) | Yes | Yes |  |
-| `DocumentTypeCode` | Enum (DailyReport, WeeklyReport, MonthlyTechnicalReport, InspectionReport…) |  | Yes |  |
-| `ResponsibleUserID` | Ref → Users | Yes | Yes |  |
-| `BackupUserID` | Ref → Users |  | Yes |  |
-| `SequenceNumber` | Number | Yes | Yes | Initial value `1` |
-| `SelfApprovalProhibited` | Yes/No | Yes | Yes | Initial value `TRUE` |
-| `IsActive` | Yes/No | Yes | Yes | Initial value `TRUE` |
-| `CreatedAt` | DateTime | Yes | No |  |
-| `CreatedBy` | Email | Yes | No |  |
-| `UpdatedAt` | DateTime | Yes | No |  |
-| `UpdatedBy` | Email | Yes | No |  |
-
-## ApprovalDelegations
-
-Temporary delegation of an approval authority (D-09). Every delegated decision records both the acting user and the original responsible user.
-
-**Key:** `DelegationID` · **Scope:** global · **Sensitivity:** internal
-
-| Column | AppSheet type | Required | Editable | Expression / rule |
-|---|---|---|---|---|
-| `DelegationID` | Text | Yes | Yes | `UNIQUEID()` initial value; key; not editable |
-| `FromUserID` | Ref → Users | Yes | Yes |  |
-| `ToUserID` | Ref → Users | Yes | Yes |  |
-| `ApprovalStage` | Enum (EvidenceReview, TechnicalReview, FinanceReview, Release…) |  | Yes |  |
-| `Scope` | Enum (AllProjects, SpecificProjects, SpecificStage) | Yes | Yes |  |
-| `ProjectIDs` | Text |  | Yes |  |
-| `ValidFrom` | DateTime | Yes | Yes |  |
-| `ValidTo` | DateTime | Yes | Yes | Must be after ValidFrom. An open-ended delegation is not permitted. |
-| `Reason` | Text | Yes | Yes |  |
-| `AuthorisedByUserID` | Ref → Users | Yes | Yes |  |
-| `RevokedAt` | DateTime |  | Yes |  |
-| `RevokedByUserID` | Ref → Users |  | Yes |  |
-| `IsActive` | Yes/No | Yes | Yes | Initial value `TRUE` |
-| `CreatedAt` | DateTime | Yes | No |  |
-| `CreatedBy` | Email | Yes | No |  |
-| `UpdatedAt` | DateTime | Yes | No |  |
-| `UpdatedBy` | Email | Yes | No |  |
-
-## ResidencyAssignments
-
-Binds a residency requirement to a client, contract or project (D-12).
-
-**Key:** `ResidencyAssignmentID` · **Scope:** project · **Sensitivity:** internal
-
-| Column | AppSheet type | Required | Editable | Expression / rule |
-|---|---|---|---|---|
-| `ResidencyAssignmentID` | Text | Yes | Yes | `UNIQUEID()` initial value; key; not editable |
-| `ResidencyRequirementID` | Ref → ResidencyRequirements | Yes | Yes |  |
-| `AppliesToKind` | Text | Yes | Yes | Client\|Contract\|Project |
-| `ClientID` | Ref → Clients |  | Yes |  |
-| `ContractID` | Ref → Contracts |  | Yes |  |
-| `ProjectID` | Ref → Projects |  | Yes |  |
-| `EffectiveFrom` | Date | Yes | Yes |  |
-| `EffectiveTo` | Date |  | Yes |  |
-| `VerifiedFromContract` | Yes/No | Yes | Yes | Initial value `FALSE` |
-| `IsActive` | Yes/No | Yes | Yes | Initial value `TRUE` |
-| `CreatedAt` | DateTime | Yes | No |  |
-| `CreatedBy` | Email | Yes | No |  |
-| `UpdatedAt` | DateTime | Yes | No |  |
-| `UpdatedBy` | Email | Yes | No |  |
-
-## TemporaryAccessGrants
-
-Time-bound, explicitly authorised access. Covers auditor access and break-glass emergency access. Without an active grant, the roles that depend on one resolve to no access at all.
-
-**Key:** `GrantID` · **Scope:** global · **Sensitivity:** internal
-
-| Column | AppSheet type | Required | Editable | Expression / rule |
-|---|---|---|---|---|
-| `GrantID` | Text | Yes | Yes | `UNIQUEID()` initial value; key; not editable |
-| `GrantKind` | Text | Yes | Yes | Audit\|Emergency\|Support |
-| `UserID` | Ref → Users | Yes | Yes |  |
-| `RoleID` | Ref → Roles | Yes | Yes |  |
-| `Scope` | Text | Yes | Yes | AllProjects\|SpecificProjects\|TechnicalOnly |
-| `ProjectIDs` | Text |  | Yes |  |
-| `Reason` | LongText | Yes | Yes |  |
-| `RequestedByUserID` | Ref → Users | Yes | Yes |  |
-| `RequestedAt` | DateTime | Yes | No |  |
-| `AuthorisedByUserID` | Ref → Users | Yes | Yes |  |
-| `AuthorisedAt` | DateTime | Yes | No |  |
-| `ValidFrom` | DateTime | Yes | Yes |  |
-| `ValidTo` | DateTime | Yes | Yes | Mandatory, after ValidFrom, and within MaxDurationHours |
-| `MaxDurationHours` | Number | Yes | Yes | Initial value `24` |
-| `NotificationRecipients` | Text | Yes | Yes |  |
-| `NotificationSentAt` | DateTime |  | No | Required for GrantKind = Emergency before the grant becomes usable |
-| `AuditReference` | Text |  | No |  |
-| `UsageCount` | Number | Yes | No | Initial value `0` |
-| `RevokedAt` | DateTime |  | Yes |  |
-| `RevokedByUserID` | Ref → Users |  | Yes |  |
-| `ReviewedAt` | DateTime |  | Yes |  |
-| `ReviewedByUserID` | Ref → Users |  | Yes |  |
-| `IsActive` | Yes/No | Yes | Yes | Initial value `TRUE` |
-| `CreatedAt` | DateTime | Yes | No |  |
-| `CreatedBy` | Email | Yes | No |  |
-| `UpdatedAt` | DateTime | Yes | No |  |
-| `UpdatedBy` | Email | Yes | No |  |
-
-## SystemRecoveryPlan
-
-How administrative control is recovered when no administrator is available. The system must not become unrecoverable because one person is unreachable.
-
-**Key:** `PlanID` · **Scope:** global · **Sensitivity:** internal
-
-| Column | AppSheet type | Required | Editable | Expression / rule |
-|---|---|---|---|---|
-| `PlanID` | Text | Yes | Yes | `UNIQUEID()` initial value; key; not editable |
-| `PrimaryAdministratorUserID` | Ref → Users |  | Yes |  |
-| `BackupAdministratorUserID` | Ref → Users |  | Yes |  |
-| `RecoveryRouteDocumented` | Yes/No | Yes | Yes | Initial value `FALSE` |
-| `RecoveryRouteReference` | Text |  | Yes | Required when RecoveryRouteDocumented is TRUE |
-| `BreakGlassAccountConfigured` | Yes/No | Yes | Yes | Initial value `FALSE` |
-| `OwnerCanAuthoriseBreakGlass` | Yes/No | Yes | Yes | Initial value `TRUE` |
-| `LastTestedAt` | Date |  | Yes |  |
-| `TestedByUserID` | Ref → Users |  | Yes |  |
-| `TestResult` | Text |  | Yes | Passed\|Failed\|NotTested |
-| `GoLiveBlocker` | Yes/No | Yes | No | Initial value `TRUE` |
 | `IsActive` | Yes/No | Yes | Yes | Initial value `TRUE` |
 | `CreatedAt` | DateTime | Yes | No |  |
 | `CreatedBy` | Email | Yes | No |  |
@@ -743,25 +391,136 @@ Every approval decision, bound to the exact content approved (ADR-0006, D-09).
 | `UpdatedAt` | DateTime | Yes | No |  |
 | `UpdatedBy` | Email | Yes | No |  |
 
-## EntityVersions
+## DocumentJobs
 
-Immutable version history of hashable entities. Supports proving what a decision applied to.
+A request to produce a document from a frozen snapshot of approved records.
 
-**Key:** `VersionID` · **Scope:** project · **Sensitivity:** internal
+**Key:** `JobID` · **Scope:** project · **Sensitivity:** internal
 
 | Column | AppSheet type | Required | Editable | Expression / rule |
 |---|---|---|---|---|
-| `VersionID` | Text | Yes | Yes | `UNIQUEID()` initial value; key; not editable |
-| `EntityType` | Text | Yes | No |  |
-| `EntityID` | Text | Yes | No |  |
-| `ProjectID` | Ref → Projects |  | No |  |
-| `VersionNumber` | Number | Yes | No |  |
+| `JobID` | Text | Yes | Yes | `UNIQUEID()` initial value; key; not editable |
+| `ProjectID` | Ref → Projects | Yes | Yes |  |
+| `LegalEntityID` | Ref → LegalEntities | Yes | No |  |
+| `DocumentTypeCode` | Enum (DailyReport, WeeklyReport, MonthlyTechnicalReport, InspectionReport…) | Yes | Yes |  |
+| `LanguageCode` | Enum (en, ar) | Yes | Yes | Initial value `en` |
+| `PeriodStart` | Date | Yes | Yes |  |
+| `PeriodEnd` | Date | Yes | Yes | Must be >= PeriodStart |
+| `RequestedBy` | Ref → Users | Yes | No | Must hold MayRequestDocuments on ProjectID |
+| `RequestedAt` | DateTime | Yes | No |  |
+| `InputValidationStatus` | Text | Yes | No | NotRun\|Passed\|Failed |
+| `InputValidationFindings` | LongText |  | No |  |
+| `SnapshotManifest` | LongText |  | No |  |
+| `SnapshotFrozenAt` | DateTime |  | No |  |
+| `WorkflowStatus` | Enum (Requested, Validating, InputValidationFailed, SnapshotFrozen…) | Yes | No | Initial value `Requested` |
+| `AIModel` | Text |  | No |  |
+| `PromptVersion` | Text |  | No |  |
+| `ReservedNumberID` | Ref → NumberRegister |  | No |  |
+| `StartedAt` | DateTime |  | No |  |
+| `FinishedAt` | DateTime |  | No |  |
+| `ErrorClass` | Enum (Validation, Authentication, Authorization, RateLimit…) |  | No |  |
+| `ErrorMessage` | LongText |  | No |  |
+| `RetryCount` | Number | Yes | No | Initial value `0` |
+| `CorrelationID` | Text | Yes | No |  |
+| `CreatedAt` | DateTime | Yes | No |  |
+| `CreatedBy` | Email | Yes | No |  |
+| `UpdatedAt` | DateTime | Yes | No |  |
+| `UpdatedBy` | Email | Yes | No |  |
+
+## Documents
+
+A produced document revision. Approval binds to ContentHash (ADR-0006).
+
+**Key:** `DocumentID` · **Scope:** project · **Sensitivity:** confidential
+
+| Column | AppSheet type | Required | Editable | Expression / rule |
+|---|---|---|---|---|
+| `DocumentID` | Text | Yes | Yes | `UNIQUEID()` initial value; key; not editable |
+| `JobID` | Ref → DocumentJobs | Yes | No |  |
+| `ProjectID` | Ref → Projects | Yes | No |  |
+| `LegalEntityID` | Ref → LegalEntities | Yes | No |  |
+| `DocumentTypeCode` | Enum (DailyReport, WeeklyReport, MonthlyTechnicalReport, InspectionReport…) | Yes | No |  |
+| `TemplateID` | Ref → DocumentTemplates | Yes | No |  |
+| `LanguageCode` | Enum (en, ar) | Yes | No |  |
+| `DocumentNumber` | Text |  | No |  |
+| `VersionNumber` | Number | Yes | No | Initial value `1` |
+| `RevisionLabel` | Text |  | No |  |
+| `DraftFileKey` | Text |  | No |  |
+| `PDFFileKey` | Text |  | No |  |
 | `ContentHash` | Text | Yes | No |  |
-| `CanonicalFieldSetVersion` | Text | Yes | No |  |
-| `ChangedByUserID` | Ref → Users | Yes | No |  |
-| `ChangedAt` | DateTime | Yes | No |  |
-| `ChangeSummary` | Text |  | No |  |
-| `InvalidatedApprovalIDs` | Text |  | No |  |
+| `TechnicalApprovalStatus` | Text | Yes | No | Pending\|Approved\|Rejected\|Void |
+| `FinancialApprovalStatus` | Text | Yes | No | NotRequired\|Pending\|Approved\|Rejected\|Void |
+| `ReleaseStatus` | Enum (Draft, PendingTechnicalApproval, TechnicallyApproved, RevisionRequired…) | Yes | No | Initial value `Draft` |
+| `ReleasedAt` | DateTime |  | No |  |
+| `ReleasedBy` | Ref → Users |  | No |  |
+| `RecipientSnapshot` | LongText |  | No |  |
+| `SupersedesDocumentID` | Ref → Documents |  | No |  |
+| `ClassificationCode` | Enum (Public, Internal, ClientConfidential, Personal…) | Yes | No | Initial value `ClientConfidential` |
+| `CreatedAt` | DateTime | Yes | No |  |
+| `CreatedBy` | Email | Yes | No |  |
+| `UpdatedAt` | DateTime | Yes | No |  |
+| `UpdatedBy` | Email | Yes | No |  |
+
+## NumberRegister
+
+Every number ever reserved, issued or cancelled. A cancelled number is never reused (D-10).
+
+**Key:** `NumberID` · **Scope:** global · **Sensitivity:** internal
+
+| Column | AppSheet type | Required | Editable | Expression / rule |
+|---|---|---|---|---|
+| `NumberID` | Text | Yes | Yes | `UNIQUEID()` initial value; key; not editable |
+| `SeriesID` | Ref → NumberingSeries | Yes | No |  |
+| `SequenceValue` | Number | Yes | No |  |
+| `FormattedNumber` | Text | Yes | No |  |
+| `YearKey` | Text | Yes | No |  |
+| `ScopeKey` | Text | Yes | No |  |
+| `State` | Enum (Reserved, Issued, Cancelled) | Yes | No | Initial value `Reserved` |
+| `ReservedForJobID` | Ref → DocumentJobs |  | No |  |
+| `IssuedToDocumentID` | Ref → Documents |  | No |  |
+| `ReservedAt` | DateTime | Yes | No |  |
+| `IssuedAt` | DateTime |  | No |  |
+| `CancelledAt` | DateTime |  | No |  |
+| `CancellationReason` | Text |  | No | Required when State = Cancelled |
+| `MigratedFromManual` | Yes/No | Yes | No | Initial value `FALSE` |
+| `CreatedAt` | DateTime | Yes | No |  |
+| `CreatedBy` | Email | Yes | No |  |
+| `UpdatedAt` | DateTime | Yes | No |  |
+| `UpdatedBy` | Email | Yes | No |  |
+
+## LegalEntities
+
+Registered legal entities that issue documents. Multi-entity from the start (D-02).
+
+**Key:** `LegalEntityID` · **Scope:** global · **Sensitivity:** internal
+
+| Column | AppSheet type | Required | Editable | Expression / rule |
+|---|---|---|---|---|
+| `LegalEntityID` | Text | Yes | No | `UNIQUEID()` initial value; key; not editable |
+| `EntityCode` | Text | Yes | Yes | 2-6 uppercase letters/digits |
+| `LegalNameEN` | Text | Yes | Yes |  |
+| `LegalNameAR` | Text | Yes | Yes |  |
+| `TradeNameEN` | Text |  | Yes |  |
+| `TradeNameAR` | Text |  | Yes |  |
+| `CommercialRegistrationNumber` | Text | Yes | Yes |  |
+| `EstablishmentCardNumber` | Text |  | Yes |  |
+| `TaxRegistrationNumber` | Text |  | Yes | **[financial]** |
+| `TaxRegistrationStatus` | Text | Yes | Yes | Initial value `PENDING_ACCOUNTANT_CONFIRMATION` |
+| `RegisteredAddressEN` | LongText | Yes | Yes |  |
+| `RegisteredAddressAR` | LongText |  | Yes |  |
+| `Country` | Text | Yes | Yes |  |
+| `Currency` | Text | Yes | Yes | ISO 4217 |
+| `OfficialEmail` | Email | Yes | Yes |  |
+| `OfficialTelephone` | Phone | Yes | Yes |  |
+| `OfficialWhatsApp` | Phone |  | Yes |  |
+| `LogoFileKey` | Text |  | Yes |  |
+| `DocumentFooterEN` | LongText |  | Yes |  |
+| `DocumentFooterAR` | LongText |  | Yes |  |
+| `AuthorisedSignatories` | LongText |  | Yes |  |
+| `EffectiveFrom` | Date | Yes | Yes |  |
+| `EffectiveTo` | Date |  | Yes |  |
+| `Version` | Number | Yes | No | Initial value `1` |
+| `IsActive` | Yes/No | Yes | Yes | Initial value `TRUE` |
 | `CreatedAt` | DateTime | Yes | No |  |
 | `CreatedBy` | Email | Yes | No |  |
 | `UpdatedAt` | DateTime | Yes | No |  |
@@ -788,6 +547,33 @@ Append-only record of every state transition and every consequential action.
 | `CorrelationID` | Text |  | No |  |
 | `Result` | Text | Yes | No | Success\|Failure\|Denied |
 | `Reason` | Text |  | No |  |
+
+## IntegrationJobs
+
+One row per external call attempt, with idempotency and failure classification.
+
+**Key:** `IntegrationJobID` · **Scope:** global · **Sensitivity:** internal
+
+| Column | AppSheet type | Required | Editable | Expression / rule |
+|---|---|---|---|---|
+| `IntegrationJobID` | Text | Yes | Yes | `UNIQUEID()` initial value; key; not editable |
+| `SystemName` | Text | Yes | No |  |
+| `OperationName` | Text | Yes | No |  |
+| `IdempotencyKey` | Text | Yes | No |  |
+| `CorrelationID` | Text | Yes | No |  |
+| `EntityType` | Text | Yes | No |  |
+| `EntityID` | Text | Yes | No |  |
+| `ProjectID` | Ref → Projects |  | No |  |
+| `AttemptNumber` | Number | Yes | No | Initial value `1` |
+| `StartedAt` | DateTime | Yes | No |  |
+| `FinishedAt` | DateTime |  | No |  |
+| `Status` | Enum (Pending, InProgress, Succeeded, Failed…) | Yes | No | Initial value `Pending` |
+| `SanitizedRequestSummary` | Text |  | No |  |
+| `SanitizedResponseSummary` | Text |  | No |  |
+| `ErrorClass` | Enum (Validation, Authentication, Authorization, RateLimit…) |  | No |  |
+| `ErrorCode` | Text |  | No |  |
+| `RetryAfter` | DateTime |  | No |  |
+| `IsRetriable` | Yes/No | Yes | No | Initial value `FALSE` |
 
 ---
 

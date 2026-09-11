@@ -11,6 +11,10 @@ synchronisation or document rendering works in production.
 SUITE_KIND = {
     "Seed conformance": ("structural",
         "Validates the synthetic data against the canonical model. Says nothing about any platform."),
+    "Lean operational MVP": ("structural",
+        "Asserts that the 12-18 table build subset holds together, that no lean table requires a "
+        "deferred one, and that every deferred table keeps its schema. Says nothing about whether "
+        "the app built from it is fast enough - that is the Phase 2B field measurement."),
     "Configurability and unbounded width": ("structural",
         "Scans the model, schemas, security matrix and logic files for hard-coded identifiers, and "
         "exercises the rule engines with a fourth project added in memory."),

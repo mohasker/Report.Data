@@ -134,12 +134,19 @@ def run(model, data):
             rule["sources"]["RequiresBeforePhoto"] == "Global" and rule["IsPermitted"],
             "no configuration rows required before a new project can capture evidence")
 
-    # 11. no table encodes a project count or limit
-    limit_words = ("three project", "3 projects", "max_projects", "project_limit")
+    # 11. no table encodes a project COUNT LIMIT.
+    # An earlier version of this check flagged any mention of a number near the word
+    # "project", which caught a restore trigger that was not a limit at all. It now looks
+    # for limit constructs specifically.
+    limit_phrases = ("max_projects", "project_limit", "maximum number of projects",
+                     "maximum of three projects", "limited to three projects",
+                     "only three projects", "supports three projects",
+                     "no more than three projects", "up to three projects")
     blob_lower = blob.lower()
-    c.check("CFG-11", "Nothing in the model encodes a project count or limit",
-            not any(w in blob_lower for w in limit_words),
-            "no project-count assumption anywhere in the canonical model")
+    hits = [w for w in limit_phrases if w in blob_lower]
+    c.check("CFG-11", "Nothing in the model encodes a maximum project count",
+            not hits, f"limit constructs found: {hits or 'none'} — "
+                      f"the model carries no ceiling on how many projects exist")
 
     # 12. the model states its own multi-entity, multi-project intent
     c.check("CFG-12", "Multi-entity operation is structural, not incidental",

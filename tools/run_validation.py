@@ -23,11 +23,11 @@ from evidence_meta import SUITE_KIND, NOT_PROVEN, ACCEPTANCE_MAP    # noqa: E402
 import test_segregation, test_numbering, test_calculations          # noqa: E402
 import test_contenthash, test_transitions, test_bilingual           # noqa: E402
 import test_evidence_rules, test_configurability, test_governance   # noqa: E402
-import test_access_control                                          # noqa: E402
+import test_access_control, test_lean_mvp                           # noqa: E402
 
-SUITES = [test_configurability, test_segregation, test_access_control, test_evidence_rules,
-          test_transitions, test_contenthash, test_numbering, test_calculations,
-          test_bilingual, test_governance]
+SUITES = [test_lean_mvp, test_configurability, test_segregation, test_access_control,
+          test_evidence_rules, test_transitions, test_contenthash, test_numbering,
+          test_calculations, test_bilingual, test_governance]
 OUT = os.path.join(ROOT, "docs", "01-data-foundation", "17-validation-evidence.md")
 GENERATORS = ("build_model.py", "gen_schemas.py", "gen_data_dictionary.py",
               "gen_matrices.py", "gen_appsheet_workbook.py")

@@ -4,7 +4,7 @@
 ID, a revision, a date and an approval status. A document that has not been approved is marked as
 such and may not be treated as a decision.
 
-**Repository version:** 0.2.0 (Phase 1 submitted for review; Phase 2A planned) · **Date:** 2026-09-11
+**Repository version:** 0.3.0 (lean MVP scope, revised costs) · **Date:** 2026-09-11
 
 | Document ID | Document | Rev | Date | Status |
 |---|---|---|---|---|
@@ -21,10 +21,10 @@ such and may not be treated as a decision.
 | AH-SYS-P0-009 | `09-configuration-register.md` | 1 | 2026-09-11 | Live register |
 | AH-SYS-P0-010 | `10-owner-decisions.md` | 0 | 2026-09-11 | **Authoritative decision record** — governs the Phase 0 documents |
 | AH-SYS-GOV-001 | `STATUS-DEFINITIONS.md` | 1 | 2026-09-11 | **Approved** — the acceptance vocabulary |
-| AH-SYS-REV-001 | `OWNER-REVIEW-PACK.md` | 1 | 2026-09-11 | **Submitted for Owner Review** |
+| AH-SYS-REV-001 | `OWNER-REVIEW-PACK.md` | 2 | 2026-09-11 | **Submitted for Owner Review** |
 | AH-SYS-P1-019 | `19-user-and-device-profiles.md` | 1 | 2026-09-11 | Completed — awaiting real devices (EF-05) |
 | AH-SYS-P2A-000 | `02a-plan/00-PHASE-2A-PLAN.md` | 1 | 2026-09-11 | Completed · Submitted for Owner Review |
-| AH-SYS-P2A-001 | `02a-plan/01-appsheet-workbook.md` | 1 | 2026-09-11 | **Generated** from the model |
+| AH-SYS-P2A-001 | `02a-plan/01-appsheet-workbook.md` | 2 | 2026-09-11 | **Generated** from the model, lean 17-table set |
 | AH-SYS-P2A-002 | `02a-plan/02-security-filter-specification.md` | 1 | 2026-09-11 | **Generated** from the model |
 | AH-SYS-P2A-003 | `02a-plan/03-views-and-slices.md` | 1 | 2026-09-11 | Completed · Not built |
 | AH-SYS-P2A-004 | `02a-plan/04-actions-and-workflow.md` | 1 | 2026-09-11 | Completed · Not built |
@@ -32,8 +32,12 @@ such and may not be treated as a decision.
 | AH-SYS-P2A-006 | `02a-plan/06-drive-folder-provisioning.md` | 1 | 2026-09-11 | Completed · Nothing provisioned |
 | AH-SYS-P2A-007 | `02a-plan/07-make-scenario-specifications.md` | 1 | 2026-09-11 | Completed · Blueprints disabled |
 | AH-SYS-P2A-008 | `02a-plan/08-deployment-and-rollback.md` | 1 | 2026-09-11 | Completed |
-| AH-SYS-P2A-009 | `02a-plan/09-cost-and-licensing-matrix.md` | 1 | 2026-09-11 | Completed · **Costs unverified** |
+| AH-SYS-P2A-009 | `02a-plan/09-cost-and-licensing-matrix.md` | 2 | 2026-09-11 | Completed · Five categories · **USD 0 incremental expected** |
 | AH-SYS-P2A-010 | `02a-plan/10-synthetic-data-loading.md` | 1 | 2026-09-11 | Completed |
+| AH-SYS-P2A-011 | `02a-plan/11-lean-mvp-scope.md` | 1 | 2026-09-11 | Completed · Submitted for Owner Review |
+| AH-SYS-P2A-012 | `02a-plan/12-appsheet-entitlement-checklist.md` | 1 | 2026-09-11 | Completed · **Awaiting the owner's console check** |
+| AH-SYS-P2A-013 | `02a-plan/13-field-workflow-and-taps.md` | 1 | 2026-09-11 | Completed · **Target not yet measured** |
+| AH-SYS-P2A-014 | `02a-plan/14-storage-and-image-volume.md` | 1 | 2026-09-11 | Completed · Planning arithmetic, not measurement |
 | AH-SYS-P1-000 | `01-data-foundation/00-PHASE-1-SUMMARY.md` | 1 | 2026-09-11 | Awaiting owner review |
 | AH-SYS-P1-001 | `01-data-dictionary.md` | 1 | 2026-09-11 | **Generated** from `model/model.json` |
 | AH-SYS-P1-002 | `02-key-id-and-hash-strategy.md` | 1 | 2026-09-11 | Awaiting owner review — closes C-06 |
