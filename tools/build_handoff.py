@@ -137,7 +137,7 @@ def main():
         "working_tree_status": tree_state,
         "validation": {
             "command": "python3 tools/run_validation.py",
-            "validation_run_commit": "20af0a20c9770d9e782219b5a4186c3f4914800f",
+            "validation_run_commit": "4b19fc19fb926a0bf8a426e88150751b904426d9",
             "validation_run_note": "The evidence document records the commit its run was executed "
                                    "against, so a run that follows a commit always modifies that "
                                    "one file. The run recorded in the evidence document was "
