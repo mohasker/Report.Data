@@ -8,33 +8,16 @@
 
 | | |
 |---|---|
-| **Commit tested** | `4fadd46f11de4554258b5392efcd72e00e289690` |
-| **Commit subject** | Regenerate validation evidence against the clean tree |
+| **Commit tested** | `e706ee5d55e894344a56b277de56bea969a63c9c` |
+| **Commit subject** | Release 1 at twelve tables, image derivative classes, operations budget |
 | **Command executed** | `python3 tools/run_validation.py` |
-| **Executed at** | 2026-09-11 10:32:36 UTC |
+| **Executed at** | 2026-09-11 10:33:48 UTC |
 | **Python** | 3.11.15 (CPython, GCC 13.3.0) |
 | **Operating system** | Linux 6.18.44-fc-v32 (x86_64) |
 | **Environment** | Ephemeral Linux container. This run made no network call, used no credential and contacted no external service |
 | **Third-party dependencies** | **None.** Python standard library only |
 | **Model version** | 1.0.0 |
-| **Working tree before the run** | MODIFIED — see below |
-
-```
-M docs/01-data-foundation/17-validation-evidence.md
- M docs/02a-plan/14-storage-and-image-volume.md
- M docs/02a-plan/15-make-inspection-record.md
- M model/model.json
- M tools/build_model.py
- M tools/run_validation.py
- M tools/test_lean_mvp.py
-?? docs/02a-plan/21-release-1-twelve-tables.md
-?? docs/02a-plan/22-image-derivative-architecture.md
-?? docs/02a-plan/23-operations-budget.md
-?? tools/gen_release1_scope.py
-```
-
-> The run was executed against a working tree containing uncommitted changes. The commit recorded above is the parent commit, not the exact state tested. Re-run after committing to obtain a clean reproduction record.
-
+| **Working tree before the run** | clean |
 
 ### Byte-identical regeneration
 
@@ -449,7 +432,7 @@ The operating rules the owner approved, expressed as assertions so that weakenin
 ## 6. Reproducing this run
 
 ```
-git checkout 4fadd46f11de4554258b5392efcd72e00e289690
+git checkout e706ee5d55e894344a56b277de56bea969a63c9c
 python3 tools/run_validation.py
 ```
 
