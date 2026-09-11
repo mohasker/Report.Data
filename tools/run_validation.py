@@ -143,8 +143,8 @@ def main():
       f"{sys.version.split('[')[-1].rstrip(']')}) |\n")
     w(f"| **Operating system** | {platform.system()} {platform.release()} "
       f"({platform.machine()}) |\n")
-    w(f"| **Environment** | Ephemeral Linux container, no network access used, no credential "
-      f"present, no external service contacted |\n")
+    w(f"| **Environment** | Ephemeral Linux container. This run made no network call, used no "
+      f"credential and contacted no external service |\n")
     w(f"| **Third-party dependencies** | **None.** Python standard library only |\n")
     w(f"| **Model version** | {model['model_version']} |\n")
     w(f"| **Working tree before the run** | "
@@ -155,10 +155,12 @@ def main():
           "commit recorded above is the parent commit, not the exact state tested. Re-run after "
           "committing to obtain a clean reproduction record.\n\n")
     w("\n### Byte-identical regeneration\n\n")
+    n_schemas = sum(1 for k in before if k.startswith("schemas/tables/"))
     w(f"Every generated artifact was hashed (SHA-256) before regeneration, regenerated from "
       f"`model/model.json`, and hashed again. **{len(before)} artifacts** were compared: "
-      f"the canonical model, the data dictionary, the transition matrix, the security matrix and "
-      f"all {len(before) - 4} table schemas.\n\n")
+      f"{len(before) - n_schemas} generated documents (the canonical model, the data dictionary, "
+      f"the transition matrix, the security matrix, the AppSheet workbook and the security-filter "
+      f"specification) and all {n_schemas} table schemas.\n\n")
     if identical:
         w("**Result: all artifacts came back byte-identical.** Regeneration is deterministic, so "
           "the committed artifacts are exactly what the model produces.\n\n")

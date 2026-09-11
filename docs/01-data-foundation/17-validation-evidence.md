@@ -8,59 +8,20 @@
 
 | | |
 |---|---|
-| **Commit tested** | `bf43388b5a9333ccb3cf6c8de90f85519006ef45` |
-| **Commit subject** | Phase 1: specifications, AI contracts, configuration reference and evidence |
+| **Commit tested** | `412a2697dc1436ecc806dd57042af6e94b1bef93` |
+| **Commit subject** | Owner review pack, role separation, expanded evidence, Phase 2A plan |
 | **Command executed** | `python3 tools/run_validation.py` |
-| **Executed at** | 2026-09-11 07:52:19 UTC |
+| **Executed at** | 2026-09-11 07:53:41 UTC |
 | **Python** | 3.11.15 (CPython, GCC 13.3.0) |
 | **Operating system** | Linux 6.18.44-fc-v24 (x86_64) |
-| **Environment** | Ephemeral Linux container, no network access used, no credential present, no external service contacted |
+| **Environment** | Ephemeral Linux container. This run made no network call, used no credential and contacted no external service |
 | **Third-party dependencies** | **None.** Python standard library only |
 | **Model version** | 1.0.0 |
 | **Working tree before the run** | MODIFIED — see below |
 
 ```
-M docs/01-data-foundation/00-PHASE-1-SUMMARY.md
- M docs/01-data-foundation/01-data-dictionary.md
- M docs/01-data-foundation/02-key-id-and-hash-strategy.md
- M docs/01-data-foundation/03-status-transition-matrix.md
- M docs/01-data-foundation/04-security-model.md
- M docs/01-data-foundation/05-evidence-rules.md
- M docs/01-data-foundation/06-naming-and-numbering.md
- M docs/01-data-foundation/07-migration-and-versioning.md
- M docs/01-data-foundation/08-legal-entity-and-bilingual-model.md
- M docs/01-data-foundation/09-data-classification-and-residency.md
- M docs/01-data-foundation/10-approval-and-delegation-model.md
- M docs/01-data-foundation/11-deterministic-calculation-spec.md
- M docs/01-data-foundation/12-appsheet-feature-to-plan-matrix.md
- M docs/01-data-foundation/13-quickbooks-mapping-and-inspection.md
- M docs/01-data-foundation/14-orchestration-contract-and-runbook.md
- M docs/01-data-foundation/15-claude-prompt-and-schema-spec.md
- M docs/01-data-foundation/16-external-facts-register.md
- M docs/01-data-foundation/17-validation-evidence.md
- M model/model.json
- M schemas/tables/AuditLog.schema.json
- M schemas/tables/InvoiceRequests.schema.json
- M seed/roles.csv
- M seed/synthetic_projects/users.csv
- M tools/build_model.py
- M tools/gen_matrices.py
+M docs/01-data-foundation/17-validation-evidence.md
  M tools/run_validation.py
- M tools/security.py
- M tools/seedmap.py
- M tools/test_governance.py
- M tools/test_transitions.py
-?? docs/01-data-foundation/19-user-and-device-profiles.md
-?? docs/02a-plan/
-?? docs/OWNER-REVIEW-PACK.md
-?? docs/STATUS-DEFINITIONS.md
-?? schemas/tables/SystemRecoveryPlan.schema.json
-?? schemas/tables/TemporaryAccessGrants.schema.json
-?? seed/synthetic_projects/system_recovery_plan.csv
-?? seed/synthetic_projects/temporary_access_grants.csv
-?? tools/evidence_meta.py
-?? tools/gen_appsheet_workbook.py
-?? tools/test_access_control.py
 ```
 
 > The run was executed against a working tree containing uncommitted changes. The commit recorded above is the parent commit, not the exact state tested. Re-run after committing to obtain a clean reproduction record.
@@ -68,7 +29,7 @@ M docs/01-data-foundation/00-PHASE-1-SUMMARY.md
 
 ### Byte-identical regeneration
 
-Every generated artifact was hashed (SHA-256) before regeneration, regenerated from `model/model.json`, and hashed again. **52 artifacts** were compared: the canonical model, the data dictionary, the transition matrix, the security matrix and all 48 table schemas.
+Every generated artifact was hashed (SHA-256) before regeneration, regenerated from `model/model.json`, and hashed again. **52 artifacts** were compared: 6 generated documents (the canonical model, the data dictionary, the transition matrix, the security matrix, the AppSheet workbook and the security-filter specification) and all 46 table schemas.
 
 **Result: all artifacts came back byte-identical.** Regeneration is deterministic, so the committed artifacts are exactly what the model produces.
 
@@ -444,7 +405,7 @@ The operating rules the owner approved, expressed as assertions so that weakenin
 ## 6. Reproducing this run
 
 ```
-git checkout bf43388b5a9333ccb3cf6c8de90f85519006ef45
+git checkout 412a2697dc1436ecc806dd57042af6e94b1bef93
 python3 tools/run_validation.py
 ```
 
