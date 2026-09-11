@@ -133,6 +133,12 @@ def main():
         "working_tree_status": tree_state,
         "validation": {
             "command": "python3 tools/run_validation.py",
+            "validation_run_commit": "dc8764f7ade1911275235591f70a63b41c7c0151",
+            "validation_run_note": "The evidence document records the commit its run was executed "
+                                   "against, so a run that follows a commit always modifies that "
+                                   "one file. The recorded run is dc8764f, clean tree. The package "
+                                   "commit adds only the regenerated evidence document on top of "
+                                   "it; no model, generator, check or specification differs.",
             "requires": "Python 3.11+, standard library only. No network, no credential, "
                         "no external service, no installation step.",
             "expected_result": "219/219 checks passed across 13 suites; "
@@ -214,6 +220,7 @@ def write_markdown_manifest(m):
     w(f"| Branch | `{m['branch']}` |")
     w(f"| **Package commit** | `{m['package_commit']}` |")
     w(f"| Working tree at build | **{m['working_tree_status']}** |")
+    w(f"| Validation run against | `{m['validation']['validation_run_commit']}` |")
     w(f"| Files included | **{m['included_file_count']}** |")
     w(f"| Read first | **`{m['read_first']}`** |")
     w("")
@@ -224,6 +231,8 @@ def write_markdown_manifest(m):
     w(f"**Requires:** {m['validation']['requires']}")
     w("")
     w(f"**Expected result:** {m['validation']['expected_result']}")
+    w("")
+    w(f"> {m['validation']['validation_run_note']}")
     w("")
     w("## Secret scan")
     w("")
