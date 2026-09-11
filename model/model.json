@@ -310,6 +310,152 @@
         }
       ]
     },
+    "CaptureMode": {
+      "description": "How a submission reaches the main-contractor group (D-16).",
+      "values": [
+        {
+          "code": "QuickShare",
+          "label_en": "Quick share",
+          "label_ar": "مشاركة فورية",
+          "description": "Capture, store, then open the native share sheet immediately. AI analysis runs afterwards and prepares the internal report metadata."
+        },
+        {
+          "code": "AIReviewedShare",
+          "label_en": "AI reviewed share",
+          "label_ar": "مشاركة بعد المراجعة",
+          "description": "Capture, AI proposal, supervisor confirmation, then the native share sheet."
+        }
+      ]
+    },
+    "ShareStatus": {
+      "description": "Outcome of the native share action. Never set by AI (D-16).",
+      "values": [
+        {
+          "code": "NotShared",
+          "label_en": "Not shared",
+          "label_ar": "لم تتم المشاركة",
+          "description": "Default."
+        },
+        {
+          "code": "ShareInitiated",
+          "label_en": "Share initiated",
+          "label_ar": "بدأت المشاركة",
+          "description": "The share sheet was opened. The system cannot observe what happened inside it."
+        },
+        {
+          "code": "ShareConfirmed",
+          "label_en": "Share confirmed",
+          "label_ar": "تم تأكيد المشاركة",
+          "description": "The supervisor confirmed the share completed. A human claim, not a platform receipt."
+        },
+        {
+          "code": "ShareCancelled",
+          "label_en": "Share cancelled",
+          "label_ar": "أُلغيت المشاركة",
+          "description": "Recoverable; the evidence is retained."
+        },
+        {
+          "code": "ShareFailed",
+          "label_en": "Share failed",
+          "label_ar": "فشلت المشاركة",
+          "description": "Recoverable. Re-sharing must never require re-selecting the images (CAP-01)."
+        }
+      ]
+    },
+    "AIProposalDisposition": {
+      "description": "What the supervisor did with the AI proposal (D-17).",
+      "values": [
+        {
+          "code": "NotOffered",
+          "label_en": "Not offered",
+          "label_ar": "لم تُعرض",
+          "description": "Quick Share, or analysis not yet complete."
+        },
+        {
+          "code": "Accepted",
+          "label_en": "Accepted",
+          "label_ar": "مقبول",
+          "description": "Confirmed unchanged. Still a human decision."
+        },
+        {
+          "code": "Corrected",
+          "label_en": "Corrected",
+          "label_ar": "مُصحح",
+          "description": "The supervisor changed one or more proposed values."
+        },
+        {
+          "code": "Rejected",
+          "label_en": "Rejected",
+          "label_ar": "مرفوض",
+          "description": "The proposal was discarded entirely."
+        }
+      ]
+    },
+    "SiteNoteCategory": {
+      "description": "Why an optional site note was written (D-18). Facts a photograph cannot establish.",
+      "values": [
+        {
+          "code": "ClientInstruction",
+          "label_en": "Client instruction",
+          "label_ar": "تعليمات العميل",
+          "description": ""
+        },
+        {
+          "code": "AccessRestriction",
+          "label_en": "Access restriction",
+          "label_ar": "قيود الدخول",
+          "description": ""
+        },
+        {
+          "code": "PermitIssue",
+          "label_en": "Permit issue",
+          "label_ar": "مشكلة تصريح",
+          "description": ""
+        },
+        {
+          "code": "HiddenDefect",
+          "label_en": "Hidden or underground defect",
+          "label_ar": "عيب مخفي أو تحت الأرض",
+          "description": ""
+        },
+        {
+          "code": "MeasuredQuantity",
+          "label_en": "Measured quantity",
+          "label_ar": "كمية مقاسة",
+          "description": "Typed by a person. Never proposed by image analysis."
+        },
+        {
+          "code": "MaterialQuantityOrBatch",
+          "label_en": "Material quantity or batch",
+          "label_ar": "كمية أو دفعة المواد",
+          "description": ""
+        },
+        {
+          "code": "EquipmentFailure",
+          "label_en": "Equipment failure",
+          "label_ar": "عطل معدات",
+          "description": ""
+        },
+        {
+          "code": "NonCompletionReason",
+          "label_en": "Reason for non-completion",
+          "label_ar": "سبب عدم الإنجاز",
+          "description": ""
+        },
+        {
+          "code": "SafetyRestriction",
+          "label_en": "Safety restriction",
+          "label_ar": "قيد يتعلق بالسلامة",
+          "description": ""
+        },
+        {
+          "code": "PostponedByOtherParty",
+          "label_en": "Work postponed by another party",
+          "label_ar": "تأجيل من طرف آخر",
+          "description": ""
+        }
+      ]
+    },
     "ReviewerDecision": {
       "description": "Per-photograph reviewer decision. Only a human sets this (D-06).",
       "values": [
@@ -4103,7 +4249,10 @@
           "required": false,
           "src": "user",
           "hash": true,
-          "ar": "OverallDescriptionAR"
+          "ar": "OverallDescriptionAR",
+          "optional_by_design": true,
+          "validation": "Optional for a normal photographic submission (D-18)",
+          "note": "NOT mandatory. A normal submission is established by photographs. A written description is required only in the declared exceptional workflows."
         },
         {
           "name": "OverallDescriptionAR",
@@ -4112,7 +4261,74 @@
           "src": "user",
           "hash": true,
           "lang": "ar",
+          "optional_by_design": true,
+          "validation": "Optional for a normal photographic submission (D-18)",
           "note": "A supervisor may write in either language; both are carried to the report (D-11)."
+        },
+        {
+          "name": "AdditionalSiteNote",
+          "type": "longtext",
+          "required": false,
+          "src": "user",
+          "hash": true,
+          "optional_by_design": true,
+          "validation": "Optional. Mandatory only in the exceptional workflows listed in capture_once.optional_note.mandatory_exceptions",
+          "note": "For facts a photograph cannot establish (D-18). Speech-to-text is a future input method for this field, not a new field."
+        },
+        {
+          "name": "SiteNoteCategory",
+          "type": "enum",
+          "required": false,
+          "enum": "SiteNoteCategory",
+          "src": "user",
+          "hash": true,
+          "note": "Classifies the optional note so it can be routed and reported. Never inferred by AI."
+        },
+        {
+          "name": "CaptureMode",
+          "type": "enum",
+          "required": true,
+          "default": "AIReviewedShare",
+          "enum": "CaptureMode",
+          "src": "user",
+          "note": "Quick Share or AI Reviewed Share (D-16). Both capture the images exactly once."
+        },
+        {
+          "name": "ShareStatus",
+          "type": "enum",
+          "required": true,
+          "default": "NotShared",
+          "enum": "ShareStatus",
+          "src": "user",
+          "note": "Recorded from the supervisor's confirmation. The app cannot observe delivery inside the messaging application."
+        },
+        {
+          "name": "SharedAt",
+          "type": "datetime",
+          "required": false,
+          "src": "system"
+        },
+        {
+          "name": "SharedByUserID",
+          "type": "ref",
+          "required": false,
+          "ref": "Users.UserID",
+          "src": "system"
+        },
+        {
+          "name": "ShareTargetLabel",
+          "type": "text",
+          "required": false,
+          "src": "config",
+          "note": "A label for the destination group, held as project configuration. NEVER a telephone number, group invitation link or messaging identifier (D-19)."
+        },
+        {
+          "name": "ShareAttemptCount",
+          "type": "int",
+          "required": true,
+          "default": "0",
+          "src": "system",
+          "note": "Incremented on every share attempt. A retry re-uses the stored evidence and must never ask the supervisor to select the images again (CAP-01)."
         },
         {
           "name": "SafetyObservation",
@@ -4594,6 +4810,20 @@
           "scale": 7
         },
         {
+          "name": "CaptureBatchID",
+          "type": "text",
+          "required": false,
+          "src": "system",
+          "note": "Groups the photographs captured in one action, so the share and the report both re-use the same stored set. The mechanism behind capture once, use twice (CAP-01)."
+        },
+        {
+          "name": "CaptureSequence",
+          "type": "int",
+          "required": false,
+          "src": "system",
+          "note": "Order within the capture batch. Share order and report order derive from this; the supervisor never re-orders by re-selecting files."
+        },
+        {
           "name": "IsDuplicateSuspected",
           "type": "bool",
           "required": true,
@@ -4621,7 +4851,90 @@
           "type": "json",
           "required": false,
           "src": "ai",
+          "advisory": true,
           "note": "ADVISORY ONLY. Schema-validated output, displayed as an AI observation, visually distinct from the caption and the reviewer decision (D-06)."
+        },
+        {
+          "name": "AIProposedEvidenceStage",
+          "type": "enum",
+          "required": false,
+          "enum": "EvidenceStage",
+          "src": "ai",
+          "advisory": true,
+          "note": "A PROPOSAL. Never written to EvidenceStage. The supervisor confirms or corrects it (D-17)."
+        },
+        {
+          "name": "AIProposedActivityText",
+          "type": "text",
+          "required": false,
+          "src": "ai",
+          "advisory": true,
+          "note": "Free text describing the visible activity. Deliberately NOT a reference to ActivityTypes: a contractual activity is a trusted structured field and may not originate from an image (D-20)."
+        },
+        {
+          "name": "AIProposedCaptionEN",
+          "type": "text",
+          "required": false,
+          "src": "ai",
+          "advisory": true,
+          "ar": "AIProposedCaptionAR",
+          "note": "Proposed professional caption. Copied into CaptionEN only by a human action."
+        },
+        {
+          "name": "AIProposedCaptionAR",
+          "type": "text",
+          "required": false,
+          "src": "ai",
+          "advisory": true,
+          "lang": "ar"
+        },
+        {
+          "name": "AIVisibleCondition",
+          "type": "text",
+          "required": false,
+          "src": "ai",
+          "advisory": true,
+          "note": "Visible condition only. Never a cause, never a compliance judgement (D-20)."
+        },
+        {
+          "name": "AIPossibleSnag",
+          "type": "bool",
+          "required": false,
+          "src": "ai",
+          "advisory": true,
+          "note": "Raises a question for the supervisor. Creates no Snag record by itself."
+        },
+        {
+          "name": "AIImageQualityWarning",
+          "type": "text",
+          "required": false,
+          "src": "ai",
+          "advisory": true,
+          "note": "Blur, exposure, obstruction, framing. Advisory; never blocks a submission."
+        },
+        {
+          "name": "AIUncertaintyNote",
+          "type": "text",
+          "required": false,
+          "src": "ai",
+          "advisory": true,
+          "note": "What the model could not determine. Required by the analysis schema so that uncertainty is stated rather than hidden."
+        },
+        {
+          "name": "AIProposalDisposition",
+          "type": "enum",
+          "required": true,
+          "default": "NotOffered",
+          "enum": "AIProposalDisposition",
+          "src": "user",
+          "note": "What the supervisor did with the proposal. Set only by a human (D-17)."
+        },
+        {
+          "name": "AIAnalysedAt",
+          "type": "datetime",
+          "required": false,
+          "src": "system",
+          "note": "In Quick Share this is later than SharedAt, by design."
         },
         {
           "name": "AIConfidence",
@@ -12242,6 +12555,263 @@
       "InvoiceLines": 6,
       "ResidencyRequirements": 3,
       "ResidencyAssignments": 3
+    }
+  },
+  "capture_once": {
+    "principle": "Capture once, use twice. The supervisor captures or selects the photographs exactly once. The same stored files serve the contractor group share and every internal report.",
+    "acceptance": {
+      "id": "CAP-01",
+      "statement": "The workflow fails acceptance if the supervisor must select or upload the images a second time.",
+      "applies_to": [
+        "first share",
+        "retry after a failed or cancelled share",
+        "AI analysis",
+        "reviewer correction",
+        "every report that re-uses the evidence"
+      ],
+      "on_failure": "Do not implement a duplicate-upload workaround. Produce the capture-platform decision comparison instead."
+    },
+    "workflow": [
+      {
+        "step": 1,
+        "actor": "supervisor",
+        "action": "Opens the field application."
+      },
+      {
+        "step": 2,
+        "actor": "system",
+        "action": "The assigned project is prefilled where a single active assignment exists.",
+        "source": "ProjectAssignments — trusted system data, never the photograph."
+      },
+      {
+        "step": 3,
+        "actor": "supervisor",
+        "action": "Selects or confirms the location.",
+        "source": "Locations — trusted structured reference, never inferred from the photograph."
+      },
+      {
+        "step": 4,
+        "actor": "supervisor",
+        "action": "Captures or selects the photographs ONCE.",
+        "source": "Device camera or gallery. This is the only file selection in the workflow."
+      },
+      {
+        "step": 5,
+        "actor": "system",
+        "action": "The photographs are stored in the controlled system, unchanged, and grouped under one CaptureBatchID."
+      },
+      {
+        "step": 6,
+        "actor": "ai",
+        "action": "Analyses the photographs and PROPOSES the advisory fields below.",
+        "binding": "advisory"
+      },
+      {
+        "step": 7,
+        "actor": "supervisor",
+        "action": "Confirms or corrects the proposal with minimum interaction.",
+        "binding": "authoritative"
+      },
+      {
+        "step": 8,
+        "actor": "supervisor",
+        "action": "Shares the same image files and a formatted summary to the existing main-contractor group through ONE native share action.",
+        "constraint": "Native share sheet only. No public link, no re-selection, no web automation."
+      },
+      {
+        "step": 9,
+        "actor": "system",
+        "action": "The same stored evidence is re-used in daily, weekly, monthly, corrective-action, inspection and completion reports."
+      }
+    ],
+    "modes": {
+      "QuickShare": {
+        "sequence": [
+          "capture",
+          "store",
+          "native share"
+        ],
+        "ai": "asynchronous, after the share; prepares internal report metadata",
+        "use_when": "The contractor group must receive the site evidence immediately.",
+        "capture_count": 1
+      },
+      "AIReviewedShare": {
+        "sequence": [
+          "capture",
+          "store",
+          "AI proposal",
+          "supervisor confirmation",
+          "native share"
+        ],
+        "ai": "synchronous, before the share",
+        "use_when": "A reviewed professional caption is wanted before group submission.",
+        "capture_count": 1
+      }
+    },
+    "optional_note": {
+      "description_mandatory_for_normal_submission": false,
+      "statement": "A written description of completed work must not be mandatory for a normal photographic submission.",
+      "fields": [
+        "SiteVisits.OverallDescriptionEN",
+        "SiteVisits.OverallDescriptionAR",
+        "SiteVisits.AdditionalSiteNote",
+        "VisitActivities.DescriptionEN",
+        "VisitActivities.DescriptionAR",
+        "Photos.CaptionEN",
+        "Photos.CaptionAR"
+      ],
+      "future_input_methods": [
+        "voice note",
+        "speech to text"
+      ],
+      "categories": [
+        "ClientInstruction",
+        "AccessRestriction",
+        "PermitIssue",
+        "HiddenDefect",
+        "MeasuredQuantity",
+        "MaterialQuantityOrBatch",
+        "EquipmentFailure",
+        "NonCompletionReason",
+        "SafetyRestriction",
+        "PostponedByOtherParty"
+      ],
+      "mandatory_exceptions": [
+        "A record returned for correction — RejectionReason stays mandatory.",
+        "A visit reporting non-completion — the reason cannot be photographed.",
+        "A caption on an Observation, Snag, Material or Safety photograph — the stage itself asserts a fact the image alone does not name.",
+        "A measured quantity claimed without a photographed measurement."
+      ]
+    },
+    "ai_proposes": [
+      {
+        "item": "visible activity",
+        "column": "Photos.AIProposedActivityText"
+      },
+      {
+        "item": "evidence stage",
+        "column": "Photos.AIProposedEvidenceStage",
+        "vocabulary": [
+          "Before",
+          "During",
+          "After",
+          "Observation",
+          "Snag",
+          "Material",
+          "Equipment",
+          "Safety",
+          "Other"
+        ]
+      },
+      {
+        "item": "professional caption",
+        "column": "Photos.AIProposedCaptionEN"
+      },
+      {
+        "item": "visible condition",
+        "column": "Photos.AIVisibleCondition"
+      },
+      {
+        "item": "possible snag",
+        "column": "Photos.AIPossibleSnag"
+      },
+      {
+        "item": "image quality warning",
+        "column": "Photos.AIImageQualityWarning"
+      },
+      {
+        "item": "uncertainty",
+        "column": "Photos.AIUncertaintyNote"
+      },
+      {
+        "item": "confidence",
+        "column": "Photos.AIConfidence"
+      }
+    ],
+    "ai_must_not_infer": [
+      "measured quantity",
+      "hidden defect or its cause",
+      "exact material brand",
+      "compliance with contract or specification",
+      "exact completion percentage",
+      "exact project or location from the photograph alone",
+      "responsibility or negligence",
+      "date, unless supplied as trusted metadata",
+      "that Al-Haram executed the visible work merely because it appears in the photograph"
+    ],
+    "trusted_context_fields": [
+      "SiteVisits.ProjectID",
+      "SiteVisits.LocationID",
+      "SiteVisits.VisitDate",
+      "SiteVisits.SupervisorUserID",
+      "SiteVisits.WorkOrderID",
+      "VisitActivities.ActivityTypeID",
+      "Photos.LocationID"
+    ],
+    "forbidden_ai_written_columns": [
+      "SiteVisits.ProjectID",
+      "SiteVisits.LocationID",
+      "SiteVisits.VisitDate",
+      "SiteVisits.SupervisorUserID",
+      "SiteVisits.WorkflowStatus",
+      "VisitActivities.ActivityTypeID",
+      "VisitActivities.Quantity",
+      "VisitActivities.PercentComplete",
+      "VisitActivities.UnitID",
+      "Photos.EvidenceStage",
+      "Photos.CaptionEN",
+      "Photos.CaptionAR",
+      "Photos.ReviewerDecision",
+      "Photos.ApprovedForReport",
+      "Snags.Severity",
+      "Approvals.Decision"
+    ],
+    "sharing": {
+      "method": "native operating-system share sheet",
+      "payload": "the stored image files themselves, plus a formatted text summary",
+      "public_link_required": false,
+      "public_link_permitted": false,
+      "forbidden_methods": [
+        "WhatsApp Web automation",
+        "group scraping",
+        "any unofficial messaging automation",
+        "a publicly accessible Drive link",
+        "any flow that asks the supervisor to select the files again"
+      ],
+      "recorded_as": [
+        "SiteVisits.ShareStatus",
+        "SiteVisits.SharedAt",
+        "SiteVisits.ShareAttemptCount"
+      ],
+      "honest_limit": "The application can record that the share sheet was opened and that the supervisor said it completed. It cannot observe delivery inside the messaging application, and no document may claim otherwise."
+    },
+    "platform_gate": {
+      "id": "CAP-GATE",
+      "question": "Can AppSheet reliably share multiple actual image files and formatted text through the native share sheet to an existing WhatsApp or WhatsApp Business group, on iOS and Android?",
+      "status": "UNVERIFIED — requires real-device testing in Phase 2A",
+      "test_matrix": [
+        "one photograph",
+        "six photographs",
+        "portrait and landscape images",
+        "image order",
+        "formatted summary",
+        "standard WhatsApp",
+        "WhatsApp Business",
+        "normal connection",
+        "weak connection",
+        "offline capture followed by synchronisation",
+        "images attached or only links",
+        "whether the user must select the images again",
+        "whether a public Drive link is created",
+        "whether temporary files remain on the device",
+        "failed or cancelled share recovery"
+      ],
+      "fallback_options": [
+        "AppSheet with a proven native-share method",
+        "A lightweight custom PWA or mobile field application using supported native file sharing",
+        "Any other official, policy-compliant approach"
+      ],
+      "invariant": "The data model, Drive security, Make orchestration, Claude controls, approval rules and audit requirements must remain re-usable if the capture interface changes."
     }
   }
 }

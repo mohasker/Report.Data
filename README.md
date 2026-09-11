@@ -11,8 +11,9 @@ Implementation repository for the system specified in [`MASTER_SPEC.md`](MASTER_
 
 | | |
 |---|---|
-| **Phase 0 — Discovery** | **Approved 2026-09-11** subject to owner decisions D-01 … D-15 ([decision record](docs/00-discovery/10-owner-decisions.md)). |
-| **Phase 1 — Data foundation** | **Completed · Validated Locally · Submitted for Owner Review.** 172 of 172 checks executed and passing. Start with the [Owner Review Pack](docs/OWNER-REVIEW-PACK.md). |
+| **Phase 0 — Discovery** | **Approved 2026-09-11** subject to owner decisions D-01 … D-15, extended the same day by the operational correction D-16 … D-21 ([decision record](docs/00-discovery/10-owner-decisions.md)). |
+| **Operating principle** | **Capture once, use twice.** The supervisor captures the photographs exactly once; the same stored files serve the contractor-group share and every report ([workflow](docs/02a-plan/24-capture-once-workflow.md)). |
+| **Phase 1 — Data foundation** | **Completed · Validated Locally · Submitted for Owner Review.** 219 of 219 checks executed and passing. Start with the [Owner Review Pack](docs/OWNER-REVIEW-PACK.md). |
 | **Phase 2A — Plan and synthetic prototype design** | **Completed · Submitted for Owner Review.** Connects nothing and costs nothing. Builds a **lean 17-table MVP** from the 46-table reference architecture. See [`docs/02a-plan/`](docs/02a-plan/00-PHASE-2A-PLAN.md). |
 | **Phase 2B — first external connection** | **Not authorised.** Requires the owner's written approval, a 15-minute Admin Console entitlement check, and EF-01/EF-06. **No purchase is proposed.** |
 | **First verified external fact** | The Make account was inspected read-only on 2026-09-11: Free plan, 1,000 operations/month, **2 active scenarios against a design needing 5**, all required integrations present ([record](docs/02a-plan/15-make-inspection-record.md)). |
@@ -33,7 +34,9 @@ Implementation repository for the system specified in [`MASTER_SPEC.md`](MASTER_
 |---|---|
 | **The owner, deciding whether to approve Phase 1** | **[`docs/OWNER-REVIEW-PACK.md`](docs/OWNER-REVIEW-PACK.md)** — the whole design in about 35 minutes, with a recommendation. |
 | **The owner, reviewing Phase 1** | [`docs/01-data-foundation/00-PHASE-1-SUMMARY.md`](docs/01-data-foundation/00-PHASE-1-SUMMARY.md), then [`17-validation-evidence.md`](docs/01-data-foundation/17-validation-evidence.md) for what was actually executed. |
-| **Looking for the decisions already taken** | [`docs/00-discovery/10-owner-decisions.md`](docs/00-discovery/10-owner-decisions.md) — D-01 … D-15. |
+| **Looking for the decisions already taken** | [`docs/00-discovery/10-owner-decisions.md`](docs/00-discovery/10-owner-decisions.md) — D-01 … D-21. |
+| **Taking this project over in a new account** | **[`START-HERE-NEW-CLAUDE.md`](START-HERE-NEW-CLAUDE.md)** — self-contained, assumes no access to any prior conversation. |
+| **Looking for the current authoritative requirements** | **[`MASTER-SPEC-CONSOLIDATED.md`](MASTER-SPEC-CONSOLIDATED.md)** — supersedes `MASTER_SPEC.md`, which is retained as the received baseline. |
 | **Looking for what is still unknown** | [`docs/01-data-foundation/16-external-facts-register.md`](docs/01-data-foundation/16-external-facts-register.md) — every external fact awaiting confirmation, by the phase it blocks. |
 | **Reviewing the original discovery** | [`docs/00-discovery/00-DISCOVERY-SUMMARY.md`](docs/00-discovery/00-DISCOVERY-SUMMARY.md) — the eight required discovery outputs. |
 | **Deciding scope and budget** | [`01-mvp-boundary.md`](docs/00-discovery/01-mvp-boundary.md) — what is in, what is deferred, and why. |
@@ -112,7 +115,7 @@ Standard-library Python 3 only — no installation, no dependency, no network:
 python3 tools/run_validation.py
 ```
 
-It regenerates every artifact from `model/model.json`, runs all 172 checks, and rewrites
+It regenerates every artifact from `model/model.json`, runs all 219 checks, and rewrites
 `docs/01-data-foundation/17-validation-evidence.md` with the commit tested, the environment, the
 full output, every individual check, the acceptance-criteria mapping, whether regeneration came back
 byte-identical, and an explicit statement of what the checks are **not** evidence of.

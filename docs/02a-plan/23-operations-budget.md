@@ -1,8 +1,10 @@
 # Make Operations Budget — Designing to 60–70% of the Verified Limit
 
-**Document ID:** AH-SYS-P2A-023 · **Revision:** 1 · **Date:** 2026-09-11
+**Document ID:** AH-SYS-P2A-023 · **Revision:** 2 · **Date:** 2026-09-11
 **Status:** Completed · Submitted for Owner Review · **Nothing built, nothing activated**
 **Verified limit:** 1,000 operations per month, 2 active scenarios, no overage
+**Revision 2** prices the AI proposal step that the capture-once correction introduces (D-16, D-17),
+and reports the result plainly: **it does not fit in the Free plan through Make.** §6b.
 
 ---
 
@@ -103,6 +105,49 @@ Then the Free plan is insufficient, and the requirement is specific:
 scenarios.** The price is unverified — make.com is unreachable from this environment, and the owner
 can read it on their own billing page. **No purchase is proposed.**
 
+## 6b. The capture-once correction does not fit through Make on the Free plan
+
+This is the finding the owner needs, and it is not a comfortable one.
+
+**AI Reviewed Share requires an analysis before the supervisor confirms.** Batching by capture batch
+is the cheapest honest shape — one Claude call per visit rather than one per photograph — but the
+photographs still have to be fetched and encoded individually, and in Make a module inside an
+iterator consumes one operation **per bundle**.
+
+| Module | Runs per visit | Operations |
+|---|---|---|
+| Webhook / trigger on capture batch complete | 1 | 1 |
+| Read the batch's photograph rows | 1 | 1 |
+| Iterator over 6 photographs — fetch derivative | 6 | 6 |
+| Iterator over 6 photographs — encode for the request | 6 | 6 |
+| Aggregate into one request | 1 | 1 |
+| Call Claude once for the batch | 1 | 1 |
+| Parse and validate the response against the schema | 1 | 1 |
+| Iterator over 6 results — write the advisory columns | 6 | 6 |
+| Write the integration log row | 1 | 1 |
+| **Per visit** | | **24** |
+| **60 visits per month** | | **1,440** |
+
+**1,440 operations for analysis alone**, on top of the 703 already budgeted — **2,143 against a
+1,000 limit, and a third active scenario against a ceiling of two.** Neither fits.
+
+### The four honest responses
+
+| Option | Effect | Cost | Verdict |
+|---|---|---|---|
+| **A. Release 1 ships Quick Share only; AI analysis is deferred** | Capture once, store, native share. The internal record is complete; the *proposal* is not offered | **None.** 703 operations, 2 scenarios, unchanged | **Recommended for release 1.** It delivers the whole of CAP-01 — the second selection disappears — and defers only the convenience layer on top of it |
+| **B. AppSheet calls the Claude API directly, without Make** | The proposal returns to the supervisor without any orchestration operation | Make operations: **0**. Requires AppSheet API/webhook capability, which is question 4 of the Admin Console check | **The right answer if the entitlement allows it.** It is also architecturally better: the supervisor is waiting, and a round trip through an orchestrator is latency nobody needs |
+| **C. A Workspace-side component (Apps Script) performs the analysis** | Same as B, without depending on AppSheet's automation entitlement | Make operations: **0**. One more component to operate and monitor | The fallback if B is unavailable. It is the same component Option B of the derivative architecture already anticipates at scale |
+| **D. Pay for a Make plan** | The design runs as written | **≥ 3,000 operations/month and ≥ 3 active scenarios**, price unverified | Available, not recommended yet: paying to route bytes through an orchestrator that neither stores nor decides anything is the weakest of the four |
+
+**Recommendation: A for release 1, and test B during Phase 2A**, because question 4 of the Admin
+Console checklist already asks whether AppSheet has API access and webhook automation. If it does,
+the AI proposal costs zero Make operations and the capture-once workflow arrives complete. If it
+does not, C is the fallback and D is a decision the owner takes with a real price in front of them.
+
+**What does not change under any of the four:** the supervisor captures once. CAP-01 is satisfied by
+Option A alone; B and C add the proposal, not the guarantee.
+
 ## 7. What is measured in Phase 3, before anything is trusted
 
 | Measurement | Why |
@@ -112,6 +157,8 @@ can read it on their own billing page. **No purchase is proposed.**
 | Operations consumed in week 1 against the projection | Whether the whole model holds |
 | Proportion of runs that retry | The 10% allowance |
 | Proportion of visits returned for correction | The 15% allowance |
+| Operations consumed by one batch analysis, if it ever runs through Make | The 24-per-visit estimate in §6b |
+| Latency of the batch analysis, measured from the supervisor's point of view | AI Reviewed Share is only usable if the wait is short |
 
 Make's own execution history retains 7 days, so **our `IntegrationJobs` table is the authoritative
 record** — which is why it is one of the twelve tables in release 1 and not something that could be

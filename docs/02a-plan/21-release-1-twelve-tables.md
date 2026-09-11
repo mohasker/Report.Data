@@ -1,6 +1,6 @@
 # Release 1 — Twelve Tables, and What Reaches a Field User
 
-**Document ID:** AH-SYS-P2A-021 · **Revision:** 1 · **Status:** generated — do not hand-edit
+**Document ID:** AH-SYS-P2A-021 · **Revision:** 2 · **Status:** generated — do not hand-edit
 **Generated:** 2026-09-11 from `model/model.json` by `tools/gen_release1_scope.py`
 
 > **Storage field counts come from the canonical model.** Exposure counts come from the
@@ -18,14 +18,14 @@ document, numbering or legal-entity table.
 | 3 | `ProjectAssignments` | 14 | 4 | 10 |
 | 4 | `Locations` | 16 | 4 | 12 |
 | 5 | `ActivityTypes` | 18 | 4 | 14 |
-| 6 | `SiteVisits` | 29 | 13 | 16 |
+| 6 | `SiteVisits` | 37 | 16 | 21 |
 | 7 | `VisitActivities` | 19 | 10 | 9 |
-| 8 | `Photos` | 44 | 33 | 11 |
+| 8 | `Photos` | 56 | 44 | 12 |
 | 9 | `Snags` | 24 | 11 | 13 |
 | 10 | `Approvals` | 23 | 19 | 4 |
 | 11 | `AuditLog` | 13 | 12 | 1 |
 | 12 | `IntegrationJobs` | 18 | 17 | 1 |
-| | **Total** | **262** | **137** | **125** |
+| | **Total** | **282** | **151** | **131** |
 
 ## 2. Consolidations, and what each costs
 
@@ -43,16 +43,17 @@ report generation is switched on.
 
 | Measure | Fields | What it means |
 |---|---|---|
-| **Total in the release-1 storage model** | **262** | Every column across twelve tables, including audit columns |
-| Of which **generated, never typed** | **137** | System, integration or AI sourced. A person never sees a keyboard for these |
-| **Synchronised to a field device** | **208** | Only from the nine tables a supervisor's phone holds at all |
+| **Total in the release-1 storage model** | **282** | Every column across twelve tables, including audit columns |
+| Of which **generated, never typed** | **151** | System, integration or AI sourced. A person never sees a keyboard for these |
+| **Synchronised to a field device** | **228** | Only from the nine tables a supervisor's phone holds at all |
 | **Administrative only** | **54** | Approvals, audit log and integration log. **Absent from the field data set entirely** |
-| **On the normal field form** | **13** | What a supervisor actually fills in |
-| **Visible to a reviewer** | **28** | The supervisor's fields plus the review controls |
+| **On the normal field form** | **17** | What a supervisor can touch, most of it optional |
+| **Mandatory to submit a normal photographic visit** | **5** | Project, location, date, capture mode, evidence stage. **No written description among them (D-18)** |
+| **Visible to a reviewer** | **32** | The supervisor's fields plus the review controls |
 
 **An honest caveat on the sync number.** A row synchronises whole: if a table is in a
-user's data set, all its columns travel, which is why 208 is larger than the
-13 on the form. Views and slices control what is *shown*, not what is
+user's data set, all its columns travel, which is why 228 is larger than the
+17 on the form. Views and slices control what is *shown*, not what is
 *delivered*. The two levers that genuinely reduce the sync payload are keeping a table out
 of the field role's data set altogether — which is what puts Approvals, the audit log and
 the integration log at zero — and keeping row counts down through security filters. The
@@ -60,19 +61,33 @@ form size and the sync size are different problems with different fixes.
 
 ### The normal field form, in full
 
-| Screen | Fields the supervisor touches |
+Bold is mandatory. Everything else is pre-filled, conditional, optional, or a one-tap
+confirmation of an AI proposal.
+
+| Screen | Fields the supervisor can touch |
 |---|---|
-| SiteVisits | `ProjectID`, `LocationID`, `VisitDate`, `OverallDescriptionEN`, `OverallDescriptionAR`, `SafetyObservation` |
+| SiteVisits | **`ProjectID`**, **`LocationID`**, **`VisitDate`**, **`CaptureMode`**, `AdditionalSiteNote`, `SiteNoteCategory`, `SafetyObservation`, `OverallDescriptionEN`, `OverallDescriptionAR` |
 | VisitActivities | `ActivityTypeID`, `DescriptionEN`, `Quantity`, `PercentComplete` |
-| Photos | `EvidenceStage`, `CaptionEN`, `CaptionAR` |
+| Photos | **`EvidenceStage`**, `CaptionEN`, `CaptionAR`, `AIProposalDisposition` |
 
-**13 fields across three screens**, and several of those are pre-filled or
-conditional: the project defaults, the date defaults, the Arabic description is an
-alternative to the English one rather than an addition, the quantity appears only when the
-activity rule requires it, and percent complete is optional.
+**17 fields across three screens, of which 5 are mandatory.** The
+project defaults from the supervisor's assignment, the date defaults from the device, the
+Arabic description is an alternative to the English one rather than an addition, the
+quantity appears only when the activity rule requires it, percent complete is optional, and
+**the work description is optional in every normal case (D-18)** — the photographs are the
+submission.
 
-So of **262** fields in storage, a supervisor meets **13** — about
-**5%** — and types fewer than that on a normal visit.
+So of **282** fields in storage, a supervisor meets **17** — about
+**6%** — and must supply only **5**
+(**2%**) on a normal visit.
+
+### Capture once, use twice
+
+The photographs are captured or selected **exactly once** (CAP-01). The same stored files
+are handed to the main-contractor group through the native share sheet and re-used by every
+later report. `Photos.CaptureBatchID` and `Photos.CaptureSequence` are the mechanism; a
+failed or cancelled share is retried from stored evidence and never asks the supervisor to
+select the images again. See [`24-capture-once-workflow.md`](24-capture-once-workflow.md).
 
 ### Why the storage model is larger than the form
 
@@ -87,20 +102,20 @@ So of **262** fields in storage, a supervisor meets **13** — about
 
 ## 4. Per-table exposure
 
-| Table | Fields | Syncs to device | Field form | Reviewer view | Admin only |
-|---|---|---|---|---|---|
-| `Users` | 15 | Yes | — | — | No |
-| `Projects` | 29 | Yes | — | — | No |
-| `ProjectAssignments` | 14 | Yes | — | — | No |
-| `Locations` | 16 | Yes | — | — | No |
-| `ActivityTypes` | 18 | Yes | — | — | No |
-| `SiteVisits` | 29 | Yes | 6 | 7 | No |
-| `VisitActivities` | 19 | Yes | 4 | 6 | No |
-| `Photos` | 44 | Yes | 3 | 9 | No |
-| `Snags` | 24 | Yes | — | 6 | No |
-| `Approvals` | 23 | No | — | — | **Yes** |
-| `AuditLog` | 13 | No | — | — | **Yes** |
-| `IntegrationJobs` | 18 | No | — | — | **Yes** |
+| Table | Fields | Syncs to device | Field form | Of which mandatory | Reviewer view | Admin only |
+|---|---|---|---|---|---|---|
+| `Users` | 15 | Yes | — | — | — | No |
+| `Projects` | 29 | Yes | — | — | — | No |
+| `ProjectAssignments` | 14 | Yes | — | — | — | No |
+| `Locations` | 16 | Yes | — | — | — | No |
+| `ActivityTypes` | 18 | Yes | — | — | — | No |
+| `SiteVisits` | 37 | Yes | 9 | 4 | 10 | No |
+| `VisitActivities` | 19 | Yes | 4 | — | 6 | No |
+| `Photos` | 56 | Yes | 4 | 1 | 10 | No |
+| `Snags` | 24 | Yes | — | — | 6 | No |
+| `Approvals` | 23 | No | — | — | — | **Yes** |
+| `AuditLog` | 13 | No | — | — | — | **Yes** |
+| `IntegrationJobs` | 18 | No | — | — | — | **Yes** |
 
 ## 5. What release 1 deliberately cannot do
 

@@ -72,6 +72,14 @@ was assumed.
 | **EF-22** | Authorised recipients per client for released documents | Owner | `IsAuthorizedRecipient` exists and is set only in synthetic data |
 | **EF-23** | Written authorisation to enable production accounting posting | Owner | `QBO_POSTING_ENABLED` defaults to FALSE (ADR-0008) |
 
+### Capture once, use twice *(added with D-16 to D-21, 2026-09-11)*
+
+| ID | Fact still needed | From | What is in place meanwhile |
+|---|---|---|---|
+| **EF-24** | **`CAP-GATE`: whether the capture platform can share several stored image files and formatted text through the native share sheet to an existing WhatsApp or WhatsApp Business group, on iOS and Android, without a second image selection.** Fifteen conditions, both platforms, both modes | **A real device test — nobody can supply this as an answer** | The whole workflow is specified and the backend is deliberately independent of the capture interface. **This is the highest-impact unverified fact in the project** (R-33) |
+| **EF-25** | Whether AppSheet's entitlement includes **API access or webhook automation**, which decides whether the AI proposal can run at zero orchestration cost | Owner, from the Admin Console check (step 4) | Release 1 ships without the proposal if it cannot; the capture-once guarantee holds either way (`23-operations-budget.md` §6b) |
+| **EF-26** | The **label** of the existing main-contractor group for each project — a name for the destination, never a telephone number or invitation link | Owner | `ShareTargetLabel` exists as project configuration and is unset |
+
 ---
 
 ## Summary
@@ -86,9 +94,15 @@ was assumed.
 | Production upload for a project | 1 | Per project, not system-wide |
 | Phase 6 | 3 | EF-17 blocks issue of any invoice |
 | Phase 7 | 4 | |
+| **Phase 2A capture-platform decision** | **3** | EF-24 is a device test, not an answer anyone can give; EF-25 comes from the Admin Console check; EF-26 is one label per project |
 
-**23 outstanding external facts. None blocks Phase 1, and none has been guessed at.**
+**26 outstanding external facts. None blocks Phase 1, and none has been guessed at.**
 
 Two changed status on 2026-09-11: **EF-03** now has a complete requirements matrix and a failed
 verification attempt recorded honestly, and **EF-05** now has nine representative profiles standing
 in for real people until the owner supplies them.
+
+**EF-24 is different in kind from every other entry here.** The rest are facts somebody knows and
+has not yet told me. EF-24 is a fact **nobody knows** — it is not written down in any documentation,
+and the only way to obtain it is to run the test on two real phones. It blocks the capture-platform
+decision, and nothing else in Phase 2A waits on it.

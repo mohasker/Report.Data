@@ -121,3 +121,23 @@ Lean MVP (17)
 
 Each step is additive. No step requires re-modelling what came before, which is the whole reason
 the 46-table model was designed before the 17-table build.
+
+---
+
+## 7. What the capture-once correction changed in this scope *(D-16 to D-21, 2026-09-11)*
+
+**It added no table.** Release 1 is still twelve tables and the lean MVP is still seventeen. The
+correction is carried entirely in columns on tables that already existed:
+
+| Table | Added | Why it is a column and not a table |
+|---|---|---|
+| `SiteVisits` | `CaptureMode`, `ShareStatus`, `SharedAt`, `SharedByUserID`, `ShareTargetLabel`, `ShareAttemptCount`, `AdditionalSiteNote`, `SiteNoteCategory` | A share is an attribute of a visit, not an entity with its own life. Zero, or one that may be retried |
+| `Photos` | `CaptureBatchID`, `CaptureSequence`, and the advisory proposal columns | A capture batch has no attributes of its own beyond its identifier and its order |
+
+**What it removed:** the assumption that a supervisor types a description. See
+[`24-capture-once-workflow.md`](24-capture-once-workflow.md) for the workflow and
+[`21-release-1-twelve-tables.md`](21-release-1-twelve-tables.md) §3 for the field counts, which are
+generated and therefore current.
+
+**What it did not change:** the twelve-table boundary, the four consolidations, what release 1
+deliberately cannot do, and the growth path. A deferred table is still additive when it arrives.

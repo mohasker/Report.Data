@@ -1,6 +1,6 @@
 # AppSheet Entitlement Check — Click by Click
 
-**Document ID:** AH-SYS-P2A-016 · **Revision:** 2 · **Date:** 2026-09-11
+**Document ID:** AH-SYS-P2A-016 · **Revision:** 3 · **Date:** 2026-09-11
 **For:** the owner · **Time needed:** about 15 minutes · **Cost:** nothing
 **Purpose:** find out what the existing Workspace subscription already includes, so nothing is
 bought unnecessarily
@@ -128,6 +128,7 @@ Checked on                : __________
 | Webhooks missing | Build anyway. Make checks for new submissions on a schedule instead. Free, with up to 15 minutes' delay |
 | API missing | Build anyway. Make writes to the spreadsheet directly. Free, slightly weaker validation |
 | AppSheet does not appear at all | I bring you a specific, costed option — I do not assume one |
+| Everything present, but the **native share test fails on a real device** | Not an Admin Console answer, and not fixable by a licence. The capture-platform comparison runs instead ([`19-real-device-test-protocol.md`](19-real-device-test-protocol.md) §4b) |
 
 **No purchase is proposed under any of these outcomes without a written justification from me and
 your written approval.**

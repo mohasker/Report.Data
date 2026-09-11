@@ -140,6 +140,47 @@ enum("EvidenceStage", "What a photograph is evidence of (spec 5.10).", [
     ("Other", "Other", "أخرى", ""),
 ])
 
+enum("CaptureMode", "How a submission reaches the main-contractor group (D-16).", [
+    ("QuickShare", "Quick share", "مشاركة فورية",
+     "Capture, store, then open the native share sheet immediately. AI analysis runs "
+     "afterwards and prepares the internal report metadata."),
+    ("AIReviewedShare", "AI reviewed share", "مشاركة بعد المراجعة",
+     "Capture, AI proposal, supervisor confirmation, then the native share sheet."),
+])
+
+enum("ShareStatus", "Outcome of the native share action. Never set by AI (D-16).", [
+    ("NotShared", "Not shared", "لم تتم المشاركة", "Default."),
+    ("ShareInitiated", "Share initiated", "بدأت المشاركة",
+     "The share sheet was opened. The system cannot observe what happened inside it."),
+    ("ShareConfirmed", "Share confirmed", "تم تأكيد المشاركة",
+     "The supervisor confirmed the share completed. A human claim, not a platform receipt."),
+    ("ShareCancelled", "Share cancelled", "أُلغيت المشاركة", "Recoverable; the evidence is retained."),
+    ("ShareFailed", "Share failed", "فشلت المشاركة",
+     "Recoverable. Re-sharing must never require re-selecting the images (CAP-01)."),
+])
+
+enum("AIProposalDisposition", "What the supervisor did with the AI proposal (D-17).", [
+    ("NotOffered", "Not offered", "لم تُعرض", "Quick Share, or analysis not yet complete."),
+    ("Accepted", "Accepted", "مقبول", "Confirmed unchanged. Still a human decision."),
+    ("Corrected", "Corrected", "مُصحح", "The supervisor changed one or more proposed values."),
+    ("Rejected", "Rejected", "مرفوض", "The proposal was discarded entirely."),
+])
+
+enum("SiteNoteCategory", "Why an optional site note was written (D-18). Facts a photograph "
+     "cannot establish.", [
+    ("ClientInstruction", "Client instruction", "تعليمات العميل", ""),
+    ("AccessRestriction", "Access restriction", "قيود الدخول", ""),
+    ("PermitIssue", "Permit issue", "مشكلة تصريح", ""),
+    ("HiddenDefect", "Hidden or underground defect", "عيب مخفي أو تحت الأرض", ""),
+    ("MeasuredQuantity", "Measured quantity", "كمية مقاسة",
+     "Typed by a person. Never proposed by image analysis."),
+    ("MaterialQuantityOrBatch", "Material quantity or batch", "كمية أو دفعة المواد", ""),
+    ("EquipmentFailure", "Equipment failure", "عطل معدات", ""),
+    ("NonCompletionReason", "Reason for non-completion", "سبب عدم الإنجاز", ""),
+    ("SafetyRestriction", "Safety restriction", "قيد يتعلق بالسلامة", ""),
+    ("PostponedByOtherParty", "Work postponed by another party", "تأجيل من طرف آخر", ""),
+])
+
 enum("ReviewerDecision", "Per-photograph reviewer decision. Only a human sets this (D-06).", [
     ("Pending", "Pending", "قيد الانتظار", "Default. Never set by AI."),
     ("Approved", "Approved", "معتمد", "May appear in an official report."),
@@ -796,9 +837,36 @@ table("SiteVisits", "operational", "project", "confidential", 1,
         note="Defaults from USEREMAIL(); must hold an active assignment to ProjectID."),
     col("GPSLatitude", "decimal", False, src="device", scale=7),
     col("GPSLongitude", "decimal", False, src="device", scale=7),
-    col("OverallDescriptionEN", "longtext", False, src="user", hash=True, ar="OverallDescriptionAR"),
+    col("OverallDescriptionEN", "longtext", False, src="user", hash=True, ar="OverallDescriptionAR",
+        optional_by_design=True,
+        validation="Optional for a normal photographic submission (D-18)",
+        note="NOT mandatory. A normal submission is established by photographs. A written "
+             "description is required only in the declared exceptional workflows."),
     col("OverallDescriptionAR", "longtext", False, src="user", hash=True, lang="ar",
+        optional_by_design=True,
+        validation="Optional for a normal photographic submission (D-18)",
         note="A supervisor may write in either language; both are carried to the report (D-11)."),
+    col("AdditionalSiteNote", "longtext", False, src="user", hash=True,
+        optional_by_design=True,
+        validation="Optional. Mandatory only in the exceptional workflows listed in "
+                   "capture_once.optional_note.mandatory_exceptions",
+        note="For facts a photograph cannot establish (D-18). Speech-to-text is a future input "
+             "method for this field, not a new field."),
+    col("SiteNoteCategory", "enum", False, enum="SiteNoteCategory", src="user", hash=True,
+        note="Classifies the optional note so it can be routed and reported. Never inferred by AI."),
+    col("CaptureMode", "enum", True, default="AIReviewedShare", enum="CaptureMode", src="user",
+        note="Quick Share or AI Reviewed Share (D-16). Both capture the images exactly once."),
+    col("ShareStatus", "enum", True, default="NotShared", enum="ShareStatus", src="user",
+        note="Recorded from the supervisor's confirmation. The app cannot observe delivery inside "
+             "the messaging application."),
+    col("SharedAt", "datetime", False, src="system"),
+    col("SharedByUserID", "ref", False, ref="Users.UserID", src="system"),
+    col("ShareTargetLabel", "text", False, src="config",
+        note="A label for the destination group, held as project configuration. NEVER a telephone "
+             "number, group invitation link or messaging identifier (D-19)."),
+    col("ShareAttemptCount", "int", True, default="0", src="system",
+        note="Incremented on every share attempt. A retry re-uses the stored evidence and must "
+             "never ask the supervisor to select the images again (CAP-01)."),
     col("SafetyObservation", "longtext", False, src="user", hash=True),
     col("ClientRepresentative", "text", False, src="user", hash=True, sens="personal"),
     col("ClientAcknowledgementStatus", "text", False, src="user", hash=True,
@@ -885,13 +953,44 @@ table("Photos", "operational", "project", "confidential", 1,
     col("CaptionAR", "text", False, src="user", hash=True, lang="ar"),
     col("GPSLatitude", "decimal", False, src="device", scale=7),
     col("GPSLongitude", "decimal", False, src="device", scale=7),
+    col("CaptureBatchID", "text", False, src="system",
+        note="Groups the photographs captured in one action, so the share and the report both "
+             "re-use the same stored set. The mechanism behind capture once, use twice (CAP-01)."),
+    col("CaptureSequence", "int", False, src="system",
+        note="Order within the capture batch. Share order and report order derive from this; the "
+             "supervisor never re-orders by re-selecting files."),
     col("IsDuplicateSuspected", "bool", True, default="FALSE", src="system",
         note="Flag only. A suspected duplicate is never deleted or merged (S-09)."),
     col("DuplicateOfPhotoID", "ref", False, ref="Photos.PhotoID", src="system"),
     col("AIAnalysisStatus", "enum", True, default="NotRequested", enum="AIAnalysisStatus", src="system"),
     col("AIObservation", "json", False, src="ai",
+        advisory=True,
         note="ADVISORY ONLY. Schema-validated output, displayed as an AI observation, visually "
              "distinct from the caption and the reviewer decision (D-06)."),
+    col("AIProposedEvidenceStage", "enum", False, enum="EvidenceStage", src="ai", advisory=True,
+        note="A PROPOSAL. Never written to EvidenceStage. The supervisor confirms or corrects it "
+             "(D-17)."),
+    col("AIProposedActivityText", "text", False, src="ai", advisory=True,
+        note="Free text describing the visible activity. Deliberately NOT a reference to "
+             "ActivityTypes: a contractual activity is a trusted structured field and may not "
+             "originate from an image (D-20)."),
+    col("AIProposedCaptionEN", "text", False, src="ai", advisory=True, ar="AIProposedCaptionAR",
+        note="Proposed professional caption. Copied into CaptionEN only by a human action."),
+    col("AIProposedCaptionAR", "text", False, src="ai", advisory=True, lang="ar"),
+    col("AIVisibleCondition", "text", False, src="ai", advisory=True,
+        note="Visible condition only. Never a cause, never a compliance judgement (D-20)."),
+    col("AIPossibleSnag", "bool", False, src="ai", advisory=True,
+        note="Raises a question for the supervisor. Creates no Snag record by itself."),
+    col("AIImageQualityWarning", "text", False, src="ai", advisory=True,
+        note="Blur, exposure, obstruction, framing. Advisory; never blocks a submission."),
+    col("AIUncertaintyNote", "text", False, src="ai", advisory=True,
+        note="What the model could not determine. Required by the analysis schema so that "
+             "uncertainty is stated rather than hidden."),
+    col("AIProposalDisposition", "enum", True, default="NotOffered",
+        enum="AIProposalDisposition", src="user",
+        note="What the supervisor did with the proposal. Set only by a human (D-17)."),
+    col("AIAnalysedAt", "datetime", False, src="system",
+        note="In Quick Share this is later than SharedAt, by design."),
     col("AIConfidence", "decimal", False, src="ai", scale=2, validation="0.00-1.00",
         note="Advisory. Never a threshold for automatic approval."),
     col("AIModel", "text", False, src="ai", note="Recorded for reproducibility."),
@@ -2105,6 +2204,169 @@ LEAN_MVP = {
 }
 
 # --------------------------------------------------------------------------
+# 9b. Capture once, use twice  (owner operational correction, 2026-09-11)
+# --------------------------------------------------------------------------
+# The supervisor must never upload, select or describe the same evidence twice.
+# Everything below is canonical: the workflow document, the AppSheet action
+# specification, the device test protocol and the automated checks are all
+# generated from or tested against this block.
+
+CAPTURE_ONCE = {
+    "principle": "Capture once, use twice. The supervisor captures or selects the photographs "
+                 "exactly once. The same stored files serve the contractor group share and every "
+                 "internal report.",
+    "acceptance": {
+        "id": "CAP-01",
+        "statement": "The workflow fails acceptance if the supervisor must select or upload the "
+                     "images a second time.",
+        "applies_to": ["first share", "retry after a failed or cancelled share",
+                       "AI analysis", "reviewer correction", "every report that re-uses the "
+                       "evidence"],
+        "on_failure": "Do not implement a duplicate-upload workaround. Produce the capture-platform "
+                      "decision comparison instead.",
+    },
+    "workflow": [
+        {"step": 1, "actor": "supervisor", "action": "Opens the field application."},
+        {"step": 2, "actor": "system",
+         "action": "The assigned project is prefilled where a single active assignment exists.",
+         "source": "ProjectAssignments — trusted system data, never the photograph."},
+        {"step": 3, "actor": "supervisor", "action": "Selects or confirms the location.",
+         "source": "Locations — trusted structured reference, never inferred from the photograph."},
+        {"step": 4, "actor": "supervisor",
+         "action": "Captures or selects the photographs ONCE.",
+         "source": "Device camera or gallery. This is the only file selection in the workflow."},
+        {"step": 5, "actor": "system",
+         "action": "The photographs are stored in the controlled system, unchanged, and grouped "
+                   "under one CaptureBatchID."},
+        {"step": 6, "actor": "ai",
+         "action": "Analyses the photographs and PROPOSES the advisory fields below.",
+         "binding": "advisory"},
+        {"step": 7, "actor": "supervisor",
+         "action": "Confirms or corrects the proposal with minimum interaction.",
+         "binding": "authoritative"},
+        {"step": 8, "actor": "supervisor",
+         "action": "Shares the same image files and a formatted summary to the existing "
+                   "main-contractor group through ONE native share action.",
+         "constraint": "Native share sheet only. No public link, no re-selection, no web automation."},
+        {"step": 9, "actor": "system",
+         "action": "The same stored evidence is re-used in daily, weekly, monthly, "
+                   "corrective-action, inspection and completion reports."},
+    ],
+    "modes": {
+        "QuickShare": {
+            "sequence": ["capture", "store", "native share"],
+            "ai": "asynchronous, after the share; prepares internal report metadata",
+            "use_when": "The contractor group must receive the site evidence immediately.",
+            "capture_count": 1,
+        },
+        "AIReviewedShare": {
+            "sequence": ["capture", "store", "AI proposal", "supervisor confirmation",
+                         "native share"],
+            "ai": "synchronous, before the share",
+            "use_when": "A reviewed professional caption is wanted before group submission.",
+            "capture_count": 1,
+        },
+    },
+    "optional_note": {
+        "description_mandatory_for_normal_submission": False,
+        "statement": "A written description of completed work must not be mandatory for a normal "
+                     "photographic submission.",
+        "fields": ["SiteVisits.OverallDescriptionEN", "SiteVisits.OverallDescriptionAR",
+                   "SiteVisits.AdditionalSiteNote", "VisitActivities.DescriptionEN",
+                   "VisitActivities.DescriptionAR", "Photos.CaptionEN", "Photos.CaptionAR"],
+        "future_input_methods": ["voice note", "speech to text"],
+        "categories": [v["code"] for v in ENUMS["SiteNoteCategory"]["values"]],
+        "mandatory_exceptions": [
+            "A record returned for correction — RejectionReason stays mandatory.",
+            "A visit reporting non-completion — the reason cannot be photographed.",
+            "A caption on an Observation, Snag, Material or Safety photograph — the stage itself "
+            "asserts a fact the image alone does not name.",
+            "A measured quantity claimed without a photographed measurement.",
+        ],
+    },
+    "ai_proposes": [
+        {"item": "visible activity", "column": "Photos.AIProposedActivityText"},
+        {"item": "evidence stage", "column": "Photos.AIProposedEvidenceStage",
+         "vocabulary": [v["code"] for v in ENUMS["EvidenceStage"]["values"]]},
+        {"item": "professional caption", "column": "Photos.AIProposedCaptionEN"},
+        {"item": "visible condition", "column": "Photos.AIVisibleCondition"},
+        {"item": "possible snag", "column": "Photos.AIPossibleSnag"},
+        {"item": "image quality warning", "column": "Photos.AIImageQualityWarning"},
+        {"item": "uncertainty", "column": "Photos.AIUncertaintyNote"},
+        {"item": "confidence", "column": "Photos.AIConfidence"},
+    ],
+    "ai_must_not_infer": [
+        "measured quantity",
+        "hidden defect or its cause",
+        "exact material brand",
+        "compliance with contract or specification",
+        "exact completion percentage",
+        "exact project or location from the photograph alone",
+        "responsibility or negligence",
+        "date, unless supplied as trusted metadata",
+        "that Al-Haram executed the visible work merely because it appears in the photograph",
+    ],
+    "trusted_context_fields": [
+        "SiteVisits.ProjectID", "SiteVisits.LocationID", "SiteVisits.VisitDate",
+        "SiteVisits.SupervisorUserID", "SiteVisits.WorkOrderID",
+        "VisitActivities.ActivityTypeID", "Photos.LocationID",
+    ],
+    "forbidden_ai_written_columns": [
+        "SiteVisits.ProjectID", "SiteVisits.LocationID", "SiteVisits.VisitDate",
+        "SiteVisits.SupervisorUserID", "SiteVisits.WorkflowStatus",
+        "VisitActivities.ActivityTypeID", "VisitActivities.Quantity",
+        "VisitActivities.PercentComplete", "VisitActivities.UnitID",
+        "Photos.EvidenceStage", "Photos.CaptionEN", "Photos.CaptionAR",
+        "Photos.ReviewerDecision", "Photos.ApprovedForReport",
+        "Snags.Severity", "Approvals.Decision",
+    ],
+    "sharing": {
+        "method": "native operating-system share sheet",
+        "payload": "the stored image files themselves, plus a formatted text summary",
+        "public_link_required": False,
+        "public_link_permitted": False,
+        "forbidden_methods": [
+            "WhatsApp Web automation",
+            "group scraping",
+            "any unofficial messaging automation",
+            "a publicly accessible Drive link",
+            "any flow that asks the supervisor to select the files again",
+        ],
+        "recorded_as": ["SiteVisits.ShareStatus", "SiteVisits.SharedAt",
+                        "SiteVisits.ShareAttemptCount"],
+        "honest_limit": "The application can record that the share sheet was opened and that the "
+                        "supervisor said it completed. It cannot observe delivery inside the "
+                        "messaging application, and no document may claim otherwise.",
+    },
+    "platform_gate": {
+        "id": "CAP-GATE",
+        "question": "Can AppSheet reliably share multiple actual image files and formatted text "
+                    "through the native share sheet to an existing WhatsApp or WhatsApp Business "
+                    "group, on iOS and Android?",
+        "status": "UNVERIFIED — requires real-device testing in Phase 2A",
+        "test_matrix": [
+            "one photograph", "six photographs", "portrait and landscape images", "image order",
+            "formatted summary", "standard WhatsApp", "WhatsApp Business", "normal connection",
+            "weak connection", "offline capture followed by synchronisation",
+            "images attached or only links", "whether the user must select the images again",
+            "whether a public Drive link is created",
+            "whether temporary files remain on the device",
+            "failed or cancelled share recovery",
+        ],
+        "fallback_options": [
+            "AppSheet with a proven native-share method",
+            "A lightweight custom PWA or mobile field application using supported native file "
+            "sharing",
+            "Any other official, policy-compliant approach",
+        ],
+        "invariant": "The data model, Drive security, Make orchestration, Claude controls, "
+                     "approval rules and audit requirements must remain re-usable if the capture "
+                     "interface changes.",
+    },
+}
+
+
+# --------------------------------------------------------------------------
 # 10. Assemble and write
 # --------------------------------------------------------------------------
 def main():
@@ -2172,6 +2434,34 @@ def main():
             if name in TABLES and name in LEAN_MVP["tables"]:
                 problems.append(f"{name} is both lean and deferred")
 
+    # capture once: the block must agree with the tables it describes
+    for ref in (CAPTURE_ONCE["trusted_context_fields"]
+                + CAPTURE_ONCE["forbidden_ai_written_columns"]
+                + CAPTURE_ONCE["optional_note"]["fields"]
+                + [p["column"] for p in CAPTURE_ONCE["ai_proposes"]]):
+        tn, cn = ref.split(".")
+        if tn not in TABLES:
+            problems.append(f"capture_once names unknown table {tn}")
+        elif cn not in [c["name"] for c in TABLES[tn]["columns"]]:
+            problems.append(f"capture_once names unknown column {ref}")
+    for ref in CAPTURE_ONCE["forbidden_ai_written_columns"]:
+        tn, cn = ref.split(".")
+        if tn in TABLES:
+            for c in TABLES[tn]["columns"]:
+                if c["name"] == cn and c.get("src") == "ai":
+                    problems.append(f"{ref} is forbidden to AI but declared src=ai")
+    for ref in CAPTURE_ONCE["optional_note"]["fields"]:
+        tn, cn = ref.split(".")
+        if tn in TABLES:
+            for c in TABLES[tn]["columns"]:
+                if c["name"] == cn and c["required"]:
+                    problems.append(f"{ref} must be optional for a photographic submission")
+    for m, spec in CAPTURE_ONCE["modes"].items():
+        if spec["capture_count"] != 1:
+            problems.append(f"capture mode {m} captures more than once")
+        if "native share" not in spec["sequence"]:
+            problems.append(f"capture mode {m} does not end at a native share")
+
     if problems:
         print("MODEL PROBLEMS:", file=sys.stderr)
         for p in problems:
@@ -2192,6 +2482,7 @@ def main():
         "security": SECURITY,
         "canonical_hash": CANONICAL,
         "lean_mvp": LEAN_MVP,
+        "capture_once": CAPTURE_ONCE,
     }
     out = os.path.join(ROOT, "model", "model.json")
     os.makedirs(os.path.dirname(out), exist_ok=True)
@@ -2208,6 +2499,9 @@ def main():
           f"{len(SECURITY['roles']) * len(TABLES)} grants, {len(SECURITY['exceptions'])} exceptions")
     print(f"  lean MVP    : {len(LEAN_MVP['tables'])} tables, "
           f"{len(TABLES) - len(LEAN_MVP['tables'])} deferred but designed")
+    print(f"  capture once: {len(CAPTURE_ONCE['workflow'])} workflow steps, "
+          f"{len(CAPTURE_ONCE['modes'])} modes, "
+          f"{len(CAPTURE_ONCE['forbidden_ai_written_columns'])} columns closed to AI")
     print(f"  release 1   : {len(LEAN_MVP['release_1']['tables'])} tables "
           f"(capture and review; no document generation)")
 

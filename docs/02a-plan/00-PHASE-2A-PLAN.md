@@ -21,6 +21,7 @@
 | Design Drive folder provisioning | Connect QuickBooks |
 | Write Make scenario specifications as **disabled blueprints** | Send external email |
 | Write deployment and rollback checklists | Publish the application to production users |
+| **Test the native share on a real device with synthetic photographs** (`CAP-GATE`) | **Share real client evidence to any real group** |
 | Build the cost and licensing matrix | |
 
 Every artifact in this folder is a specification. **Nothing in it has been executed on any
@@ -53,11 +54,13 @@ platform**, and the platform's capabilities themselves remain unverified (see
 | 20 | **Administrator role placeholders and separation of duties** | [`20-administrator-role-placeholders.md`](20-administrator-role-placeholders.md) | Hand-written |
 | 21 | **Release 1: twelve tables, and what reaches a field user** | [`21-release-1-twelve-tables.md`](21-release-1-twelve-tables.md) | **Yes — generated** |
 | 22 | **Image derivative architecture: three classes, and how AI analysis gets its copy** | [`22-image-derivative-architecture.md`](22-image-derivative-architecture.md) | Hand-written, with verified vision facts |
-| 23 | **Make operations budget: designing to 60–70% of the verified limit** | [`23-operations-budget.md`](23-operations-budget.md) | Hand-written |
+| 23 | **Make operations budget: designing to 60–70% of the verified limit** | [`23-operations-budget.md`](23-operations-budget.md) rev 2 | Hand-written |
+| 24 | **Capture once, use twice: field workflow specification** | [`24-capture-once-workflow.md`](24-capture-once-workflow.md) | **Yes — generated** |
 
-Items 1, 2 and 11 regenerate from `model/model.json`, so the application specification, the security
-filters and the scope decision can never disagree with each other or with the data foundation. Run
-`python3 tools/gen_appsheet_workbook.py` after any model change.
+Items 1, 2, 17, 21 and 24 regenerate from `model/model.json`, so the application specification, the
+security filters, the scope decision and the capture-once workflow can never disagree with each
+other or with the data foundation. Run `python3 tools/run_validation.py` after any model change — it
+regenerates every derived artifact and then checks the result.
 
 ## 2b. What the owner asked for before requesting a production connection
 
@@ -76,6 +79,9 @@ filters and the scope decision can never disagree with each other or with the da
 | Threshold-based migration strategy | [`18-migration-threshold-strategy.md`](18-migration-threshold-strategy.md) |
 | Real-device test protocol | [`19-real-device-test-protocol.md`](19-real-device-test-protocol.md) |
 | Administrator role placeholders | [`20-administrator-role-placeholders.md`](20-administrator-role-placeholders.md) |
+| **Capture once, use twice** | [`24-capture-once-workflow.md`](24-capture-once-workflow.md) — workflow, both modes, AI boundary, sharing rules, and the `CAP-GATE` test matrix |
+| **The AppSheet native-share pass/fail test** | [`19-real-device-test-protocol.md`](19-real-device-test-protocol.md) §4b — **fifteen conditions, both platforms, both modes** |
+| **A decision comparison if AppSheet cannot do it** | [`19-real-device-test-protocol.md`](19-real-device-test-protocol.md) §4b and [ADR-0009](../00-discovery/adr/ADR-0009-capture-once-native-share.md) |
 
 ## 3. Sequence, and what gates each step
 
@@ -128,6 +134,7 @@ passed against synthetic accounts.
 
 | Order | Gate evidence |
 |---|---|
+| 0 | **`CAP-GATE` — the native share, on synthetic photographs.** Fifteen conditions, both platforms, both modes. It comes before everything because a failure changes the capture platform, and every gate below is then re-run on a different tool. Cheap to run, decisive either way |
 | 1 | **Segregation on the real platform.** An unassigned account attempts a view, a search, a deep link and an API call against another project. Result recorded either way |
 | 2 | **Evidence rules block incomplete submissions**, one negative test per rule |
 | 3 | **Configurability.** A further project added as data only, plus a second legal entity |
@@ -136,8 +143,13 @@ passed against synthetic accounts.
 | 6 | **Time to complete a visit**, measured with a real supervisor. If it is slower than the habit it replaces, the form is simplified before the phase closes (R-06) |
 | 7 | **Recovery**: administrative control restored using the documented route, with the primary administrator deliberately unavailable |
 
-Gate 1 comes first because a leak found after real data is loaded is an incident; found before, it
-is a bug.
+Gate 0 comes first because it is the only gate whose failure invalidates the others: if the capture
+platform changes, segregation, offline behaviour and image fidelity are all re-tested on the new one.
+It is also the cheapest to run — two phones, six synthetic photographs, one group the company
+controls.
+
+Gate 1 comes first among the rest because a leak found after real data is loaded is an incident;
+found before, it is a bug.
 
 ## 5. Risks this plan carries into Phase 2
 

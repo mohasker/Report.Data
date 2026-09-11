@@ -1,7 +1,10 @@
 # Field Workflow, Tap Count and Multi-Photograph Capture
 
-**Document ID:** AH-SYS-P2A-013 · **Revision:** 1 · **Date:** 2026-09-11
-**Revision 2** · **Status:** Completed · Submitted for Owner Review · **Target not yet measured**
+**Document ID:** AH-SYS-P2A-013 · **Revision:** 3 · **Date:** 2026-09-11
+**Status:** Completed · Submitted for Owner Review · **Target not yet measured**
+**Revision 3** applies the capture-once correction (D-16 to D-21). The workflow specification is
+[`24-capture-once-workflow.md`](24-capture-once-workflow.md); this document is the tap arithmetic
+that follows from it.
 **Measurement protocol:** [`19-real-device-test-protocol.md`](19-real-device-test-protocol.md)
 
 > **Target: normal visit submission in no more than 75 seconds, excluding the physical time required
@@ -26,7 +29,8 @@ The commonest case, from the synthetic fixtures and the company's own reporting 
 | One location | Block A of a project the supervisor is already assigned to |
 | One or two activities | e.g. mowing, plus weeding |
 | Four to six photographs | Before, during, after, plus one observation |
-| A short description | One line, often in Arabic |
+| **No typed description** | Optional in every normal case (D-18). The photographs are the submission |
+| One share to the contractor group | The same files, through the native share sheet |
 | No snag | Snags are the exception, not the rule |
 
 A visit with a snag, three activities and twenty photographs is a different job and will take longer.
@@ -46,17 +50,32 @@ week.
 | 7 | **Camera** | **1** | One tap opens the camera and keeps it open |
 | 8 | Capture 6 photographs | **6** | One shutter tap each. The camera does not close between shots — see §3 |
 | 9 | Done with photographs | **1** | Returns to the visit |
-| 10 | Stage tagging | **0–2** | Pre-tagged from the activity's default stages (Before / During / After in order). A tap only to correct one |
-| 11 | Description | **0–1** | Optional for most activities; one line if typed |
+| 10 | Stage tagging | **0–2** | **AI Reviewed Share:** the proposed stage and caption are already in place; a tap only to correct one. **Quick Share:** pre-tagged from the activity's default stages (Before / During / After in order) |
+| 11 | Description | **0** | **Optional (D-18).** A normal photographic submission needs none. `0–1` only if the supervisor chooses to add a site note |
 | 12 | **Submit** | **1** | |
 | 13 | Confirm | **1** | A deliberate second tap, because submission locks the record |
-| | **Total** | **15–19 taps**, of which **6 are shutter presses** | |
+| 14 | **Share to the contractor group** | **1–2** | One action opens the native share sheet with **the same stored files already attached**. The supervisor picks the group. **No re-selection of images (CAP-01)** |
+| | **Total** | **16–21 taps**, of which **6 are shutter presses** | |
 
-**Nine to thirteen interface taps plus six shutter presses.** At roughly three seconds per interface
-tap, the interface portion is **30–40 seconds**. Adding the shutter presses themselves — but *not*
+**Ten to fifteen interface taps plus six shutter presses.** At roughly three seconds per interface
+tap, the interface portion is **30–45 seconds**. Adding the shutter presses themselves — but *not*
 the physical time to walk to the subject, position the phone and wait for focus — gives the **75-second
-target**. Positioning time varies with the site, not the software, which is why it sits outside the
-measured figure.
+target**, and the target now includes the group share, which today is a separate act of re-selecting
+and re-sending the same photographs in a messaging application. Positioning time varies with the
+site, not the software, which is why it sits outside the measured figure.
+
+### Quick Share and AI Reviewed Share
+
+| | Quick Share | AI Reviewed Share |
+|---|---|---|
+| Sequence | capture → store → native share | capture → store → AI proposal → confirm → native share |
+| Steps 10 and 11 | after the share, asynchronously | before the share |
+| Extra wait for the supervisor | **none** | the analysis round trip |
+| Taps | **12–15** | **16–21** |
+| Use when | the group must receive the evidence immediately | a reviewed professional caption is wanted first |
+
+**Both capture the photographs exactly once.** The difference is only whether the AI proposal is
+waited for. Neither re-opens the camera and neither re-selects a file.
 
 ### What makes it short
 
@@ -68,9 +87,10 @@ measured figure.
 | Activity list pre-filtered to the project's permitted set | 2–4 |
 | Quantity field hidden unless the rule requires it | 2 |
 | Unit derived from the rule, never chosen | 2 |
-| Evidence stage pre-tagged in capture order | 4–6 |
+| Evidence stage pre-tagged in capture order, or proposed by analysis | 4–6 |
 | Camera stays open between shots | 5 per visit at six photographs |
-| Description optional | 1 |
+| **Description never required (D-18)** | 1–3 |
+| **The share re-uses the stored files (CAP-01)** | **6–8** — the whole of today's second selection |
 
 Without these the same visit is roughly **35 taps** and two to three minutes — which is slower than
 sending photographs to a messaging group, and that is how a field system dies (R-06).
@@ -78,7 +98,19 @@ sending photographs to a messaging group, and that is how a field system dies (R
 ### What the supervisor never does
 
 Type a date · type their own name · choose a unit · type a project or location name · tap through a
-menu tree · wait for a round trip between photographs · fill a field the rule does not require.
+menu tree · wait for a round trip between photographs · fill a field the rule does not require ·
+**write a description of work the photographs already show** · **select, attach or upload the same
+photographs a second time to send them to the contractor group (CAP-01)**.
+
+### The second capture that this correction removes
+
+Today a supervisor photographs the work, then opens a messaging application and selects the same
+photographs again to send them to the main-contractor group. That second selection is six to eight
+taps, a scroll through a gallery, and a real risk of sending the wrong image or missing one. It is
+also where the company's evidence currently ends up: in a chat thread rather than in a controlled
+store. **Capture once, use twice removes that second selection entirely** — which is the single
+largest usability gain in the design, and the reason the share belongs inside the application rather
+than beside it.
 
 ## 3. Multi-photograph capture — three methods, one recommendation
 
@@ -122,6 +154,27 @@ misses the target, measure Method B on the same matrix and compare on M-1, M-3 a
 deciding** — Method B trades a faster capture loop for a more complex failure mode, and that trade
 is decided by numbers, not by impression.
 
+## 3b. The share itself — one action, no second selection
+
+| Rule | |
+|---|---|
+| What is shared | The stored image files themselves, plus a formatted text summary |
+| How | **One native operating-system share action.** The supervisor chooses the existing group in the share sheet |
+| A public Drive link | **Never created and never required** |
+| Re-selecting the images | **Never.** A retry re-uses the stored evidence (`ShareAttemptCount`) |
+| What is recorded | `ShareStatus`, `SharedAt`, `ShareAttemptCount` |
+| The destination | A **label** in project configuration — never a telephone number or invitation link |
+| Forbidden | WhatsApp Web automation, group scraping, any unofficial messaging automation |
+
+**An honest limit.** The application can record that the share sheet was opened and that the
+supervisor said it completed. It cannot observe delivery inside the messaging application, and no
+document in this repository claims otherwise.
+
+**This is unverified on every platform.** Whether AppSheet can hand several actual image files and
+formatted text to the share sheet is `CAP-GATE`, tested in
+[`19-real-device-test-protocol.md`](19-real-device-test-protocol.md). If it cannot, no
+duplicate-upload workaround is built — the capture-platform comparison runs instead.
+
 ## 4. What happens when the supervisor is offline
 
 Identical. Every step above is local: the project list, locations and activity rules are already on
@@ -131,6 +184,11 @@ webhook fires later, when the device syncs.
 This is why the completeness rules run **on the device** rather than only on the server (C-07): a
 supervisor who submits offline and fails validation an hour later has usually left the site, and the
 evidence gap becomes a second visit.
+
+**The share is the exception.** A native share to a messaging group needs connectivity. Offline, the
+visit is captured and queued; the share is offered again when the device reconnects, **from the
+stored files**, without re-capture. Whether the platform can hold and re-offer that share is one of
+the fifteen `CAP-GATE` conditions.
 
 ## 5. Review is fast too, or reviewing does not happen
 
@@ -157,6 +215,9 @@ without a reason is just an obstacle to the supervisor.
 | Synchronisation time | Phase 2B | Recorded |
 | First use without training | Phase 2B | Completes unaided; every hesitation noted |
 | Reviewer time for a clean visit | Phase 2B | ≤ 30 seconds |
+| **Times the supervisor selects the images** | **Phase 2A device test** | **Exactly 1 (CAP-01). More than one fails acceptance** |
+| Native share of 6 files with a formatted summary | Phase 2A device test | Attached as files, in order, both platforms |
+| AI proposal accepted without correction | Phase 2B | Recorded; a low rate means the prompt is wrong, not the supervisor |
 
 **If the measurement misses, the form is simplified before the phase closes.** The target is an
 acceptance criterion, not an aspiration — because a field app that is slower than the habit it

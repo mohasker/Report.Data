@@ -1,8 +1,11 @@
 # Cost and Licensing Statement
 
-**Document ID:** AH-SYS-P2A-009 · **Revision:** 4 · **Date:** 2026-09-11
+**Document ID:** AH-SYS-P2A-009 · **Revision:** 5 · **Date:** 2026-09-11
 **Status:** Completed · Submitted for Owner Review
 **Supersedes:** revision 1 (USD 2,600–5,000 annual — withdrawn) and revision 2 ("expected pilot cost is USD 0" — withdrawn as an overstatement)
+**Revision 5** re-costs AI analysis for the capture-once workflow (D-16, D-17): analysis now runs on
+every captured photograph rather than on the ~60% later approved, which raises the pilot figure from
+~$4.50 to **~$7.56 a month**.
 
 ---
 
@@ -59,11 +62,12 @@ established the following **from the live account**:
 
 | | |
 |---|---|
-| **For the field-capture MVP** | **Optional.** Capture, review, snags and the audit trail work with no AI at all |
+| **For the field-capture MVP** | **Optional, with one nuance.** Capture, review, snags, the audit trail and **Quick Share** all work with no AI at all. **AI Reviewed Share does not exist without it** — that mode is the AI |
 | **When automated AI analysis and report drafting are enabled** | **Mandatory incremental usage cost.** There is no free path to automated analysis |
 | Cost shape | Usage-based, per image analysed and per report drafted, **bounded by a hard monthly cap the owner sets** (EF-04) |
-| **Costed** | ~**$0.021 per analysed photograph** on the default model at a 1024 px derivative — about **$4.50/month** at pilot volume (216 analysed images), ~$30/month at 20 projects. Arithmetic and the cheaper-model option: [`22-image-derivative-architecture.md`](22-image-derivative-architecture.md) §5 |
-| Cost controls in the design | Analyse only approved evidence, on downscaled derivatives; one analysis per photograph; output token caps; per-project on/off switch; per-project usage recorded |
+| **Costed** | ~**$0.021 per analysed photograph** on the default model at a 1024 px derivative — about **$7.56/month** at pilot volume (**360 analysed images**, every captured photograph), ~$50/month at 20 projects. On Haiku 4.5 instead: ~$1.50 and ~$10. Arithmetic and the cheaper-model option: [`22-image-derivative-architecture.md`](22-image-derivative-architecture.md) §5 |
+| **What changed, and why** | D-17 analyses **every captured photograph**, not only the ~60% a reviewer later approves: the proposal is what the supervisor confirms, so an analysis arriving after the review decision proposes nothing to anybody. The pilot figure rises from ~$4.50 to ~$7.56. A real cost of the correction, stated rather than absorbed |
+| Cost controls in the design | Downscaled derivatives, never originals; **one request per capture batch, not per photograph**; output token caps; per-project on/off switch; Quick Share as the zero-AI mode; per-project usage recorded; a hard monthly cap the owner sets |
 | Still to measure | Real cost per 100 photographs, at the Phase 4 gate |
 
 ## 5. Additional Drive storage — future conditional

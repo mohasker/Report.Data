@@ -164,5 +164,5 @@ sanitised error summary · recommended operator action.
 - **No custom application server.** Every additional runtime is something the company must keep alive; the platform layers already provide execution, and the company has one technical decision-maker (R-07).
 - **No AI in the approval path.** AI proposes; a named human disposes. This is what makes the audit trail defensible to a government client or an ISO auditor.
 - **No public links to evidence.** Ever.
-- **No WhatsApp automation.** Operating rules 12–13.
+- **No WhatsApp automation.** Operating rules 12–13. The native share added by D-16 is not automation: the operating system's share sheet is opened, a human picks the destination, and nothing is read back. No WhatsApp Web driving, no group scraping, no unofficial API, no public link.
 - **No shared user accounts.** They destroy attribution, and attribution is the point of the audit trail.

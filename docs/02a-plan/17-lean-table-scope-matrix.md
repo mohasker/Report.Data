@@ -15,9 +15,9 @@
 | 4 | `Locations` | Hierarchical, project-scoped locations | Business admin | 16 | 1 | Yes | Yes | No | Projects, Locations (self) |
 | 5 | `ActivityTypes` | Catalogue of 34 activities and default evidence rules | Business admin | 18 | 0.2 | Yes | Yes (small) | No | - |
 | 6 | `ProjectActivityRules` | Per-project overrides of those rules | Business admin | 16 | 1 | Yes | Yes (small) | Yes, at the cost of every project behaving identically | Projects, ActivityTypes |
-| 7 | `SiteVisits` | One reporting event; the unit of submission and review | Supervisor | 29 | 20 | Yes | Yes | No | Projects, Locations, Users |
+| 7 | `SiteVisits` | One reporting event; the unit of submission and review | Supervisor | 37 | 20 | Yes | Yes | No | Projects, Locations, Users |
 | 8 | `VisitActivities` | What was done, quantity, supervisor confirmation | Supervisor | 19 | 40 | Yes | Yes | No | SiteVisits, ActivityTypes |
-| 9 | `Photos` | Write-once evidence, reviewer decision, advisory AI fields | Supervisor, reviewer | 44 | 120 | Yes | Yes — **the volume driver** | No | SiteVisits, VisitActivities |
+| 9 | `Photos` | Write-once evidence, reviewer decision, advisory AI fields | Supervisor, reviewer | 56 | 120 | Yes | Yes — **the volume driver** | No | SiteVisits, VisitActivities |
 | 10 | `Snags` | Defects tracked to closure with evidence | Supervisor, reviewer | 24 | 3 | Yes | Yes | Yes — a snag can be a photograph with a caption at first | Photos, Locations |
 | 11 | `Approvals` | Every decision, bound to a content hash | Reviewer, GM | 23 | 25 | Yes | Reviewers only | No — removing it removes the audit defence | Users |
 | 12 | `DocumentJobs` | A report request with a frozen input snapshot | GM, project manager | 27 | 1 | Yes | No | Yes, if reports stay manual at first | Projects |
@@ -26,11 +26,11 @@
 | 15 | `LegalEntities` | Company identity printed on every issued document | GM | 29 | ~0 | Admin view only | No | Only if no document is issued | - |
 | 16 | `AuditLog` | Append-only record of every state transition | System; auditor reads | 13 | 150 | Admin view only | No | No | - |
 | 17 | `IntegrationJobs` | One row per external call, with failure class | Administrator | 18 | 260 | Admin view only | No | Only while nothing is automated | - |
-| | **17 tables** | | | **377** | **~624** | | | | |
+| | **17 tables** | | | **397** | **~624** | | | | |
 
 ## What the numbers say
 
-- **377 fields across 17 tables.** The reference architecture holds 829 fields across 46 tables; the rest is designed and deferred.
+- **397 fields across 17 tables.** The reference architecture holds 849 fields across 46 tables; the rest is designed and deferred.
 - **~624 rows per project per month**, of which **120 are photographs** — roughly 19% of all rows. Every capacity question is really a question about photographs.
 - **Only six tables sync to a field device**: Users, Projects, ProjectAssignments, Locations, ActivityTypes, ProjectActivityRules — plus the supervisor's own visits, activities and photographs. The five largest tables by growth never reach a phone in full.
 - **Four tables are admin-only views**: NumberRegister, LegalEntities, AuditLog, IntegrationJobs. A field user's data set does not contain them.

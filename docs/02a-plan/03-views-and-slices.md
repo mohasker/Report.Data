@@ -21,6 +21,12 @@ to a messaging group (R-06). Every decision below follows from that:
   financial figure, or another project.
 - **Defaults that are usually right.** Today's date, the signed-in user, the last project used.
 - **The form says what is missing**, in the language the user chose, before they leave site.
+- **Capture once, use twice (D-16).** The habit is not competed with, it is absorbed: the same
+  capture that feeds the internal record feeds the contractor-group share, so the second selection
+  the supervisor performs today disappears. **The form must never ask for the same photographs
+  twice (CAP-01).**
+- **Never ask for a description of what the photograph already shows (D-18).** A written work
+  description is optional in every normal case.
 
 ## 2. Slices
 
@@ -38,6 +44,8 @@ to a messaging group (R-06). Every decision below follows from that:
 | `ProjectLocations` | Locations | `AND(IN([ProjectID], MY_PROJECTS()), [IsActive] = TRUE)` | Location picker source |
 | `MonthlyCompleteness` | SiteVisits | `AND(IN([ProjectID], MY_PROJECTS()), MONTH([VisitDate]) = MONTH(TODAY()))` | Dashboard source |
 | `AdminErrors` | IntegrationJobs | `IN([Status], LIST("Failed","DeadLettered"))` | Administrator error queue |
+| `PendingShare` | SiteVisits | `AND([SupervisorUserID] = ME(), COUNT(Photos of this visit) > 0, IN([ShareStatus], LIST("NotShared","ShareCancelled","ShareFailed")))` | **Captured but not yet shared to the contractor group.** Also the retry queue: a failed or cancelled share is re-offered here **from the stored files** (CAP-01) |
+| `AwaitingProposal` | Photos | `AND([CaptureBatchID] = [_THISROW].[CaptureBatchID], [AIAnalysisStatus] = "Completed", [AIProposalDisposition] = "NotOffered")` | The confirm-or-correct queue for one capture batch. AI Reviewed Share waits on it; Quick Share does not |
 
 **Column-level rule.** Field-role slices omit financial and personal columns entirely rather than
 hiding them. The strongest form of the control is that the data is not in the slice at all.
@@ -48,9 +56,11 @@ hiding them. The strongest form of the control is that the data is not in the sl
 | View | Type | Source | Notes |
 |---|---|---|---|
 | Home | Dashboard | — | Four tiles: **New Visit**, My Drafts, Needs Correction, Open Snags |
-| New Visit | Form | SiteVisits | Project → Location → date → description. Project defaults to the last used |
+| New Visit | Form | SiteVisits | Project → Location → capture mode. Project defaults to the last used. **No description field on the first screen** — the note is optional and lives behind a single "Add a site note" control (D-18) |
 | Add Activities | Form (inline) | VisitActivities | Activity filtered by project rules; quantity shown only when the effective rule requires it |
-| Add Photos | Form (inline) | Photos | Camera-first. Evidence stage pre-filled from the activity's default stages |
+| Add Photos | Form (inline) | Photos | Camera-first, **and the only file selection in the application (CAP-01)** |
+| Confirm Proposals | Deck | `AwaitingProposal` | **AI Reviewed Share only.** Proposed stage and caption shown beside the confirmed value, with one tap to accept and an edit to correct. `AIProposalDisposition` records which |
+| Share to Group | Detail action | `PendingShare` | **One action** opens the native share sheet with the stored files already attached. No re-selection, no public link. Unverified: `CAP-GATE` |
 | Photo Gallery | Gallery | Photos | Their own project's evidence, to avoid duplicate captures |
 | My Drafts | Deck | `MyDrafts` | Continue or submit |
 | Needs Correction | Deck | `NeedsCorrection` | **Shows the reviewer's reason at the top**, not buried in a detail view |
@@ -105,3 +115,13 @@ carried, and the narrative prompt receives both.
 Nothing in this document has been built. The Phase 2B gate must record: the review queue genuinely
 excludes the reviewer's own submissions; a field role's slice genuinely lacks financial columns
 rather than hiding them; and the home screen reaches a photograph in two taps on a real device.
+
+**And the one that decides the platform (`CAP-GATE`, Phase 2A):** whether the Share action can hand
+several stored image files and a formatted summary to the native share sheet without asking the
+supervisor to select the images again. Fifteen conditions, both platforms, both modes —
+[`19-real-device-test-protocol.md`](19-real-device-test-protocol.md) §4b. A second selection is not
+a usability finding; it fails acceptance.
+
+**A proposal view is not enforcement.** `AwaitingProposal` and `Confirm Proposals` present advice.
+Nothing in them writes a confirmed field: the copy from proposal to confirmed value happens only
+through an explicit human action, which is what `CAP-11` and `CAP-12` test.

@@ -7,7 +7,19 @@
 **Target tools:** AppSheet, Google Sheets, Google Drive, Make.com, Claude API, QuickBooks Online, Gmail/Outlook, and optional OwlAgent
 **Document purpose:** This is the authoritative product specification. The implementing agent must build the system in controlled, testable phases.
 
-**Status of this file:** authoritative requirements baseline, version 1.0, received 2026-09-10.
+**Status of this file:** the requirements baseline **as originally received**, version 1.0,
+2026-09-10, plus the owner's operational correction of 2026-09-11 recorded in §3a below.
+
+> ## This file is no longer the single place to read the requirements
+>
+> **`MASTER-SPEC-CONSOLIDATED.md` in the repository root is the current authoritative
+> specification.** It incorporates every accepted owner correction (D-01 to D-21) and carries an
+> explicit register of what has been superseded or withdrawn. This file is retained as the received
+> baseline so that the difference between what was asked for and what was agreed remains auditable.
+>
+> Where this file and the consolidated specification disagree, **the consolidated specification
+> governs.**
+
 Changes to this document must be made by adding a dated revision entry to `CHANGELOG.md`
 and raising the version number below. Do not edit requirements silently.
 
@@ -81,9 +93,11 @@ may have different reviewers and finance approvers.
 Create an integrated system in which an authorized field user can:
 
 1. Open an AppSheet mobile application.
-2. Select a project, location, work order, visit date, activity, and evidence stage.
-3. Enter an accurate field description and quantities where applicable.
-4. Capture or select multiple photographs.
+2. Select or confirm a project, location, work order, visit date, activity, and evidence stage.
+3. Enter quantities where applicable, and a site note **only where a photograph cannot establish the
+   fact** — see §3a. A written work description is **not** required for a normal photographic
+   submission.
+4. Capture or select multiple photographs **exactly once** — see §3a.
 5. Submit the record even when connectivity is temporarily poor, subject to supported AppSheet offline behavior.
 6. Synchronize records and original photos to Google Sheets and Google Drive.
 7. Allow the General Manager or reviewer to approve, reject, annotate, or exclude each submission and photograph.
@@ -95,6 +109,63 @@ Create an integrated system in which an authorized field user can:
 13. Deliver approved documents through email only after final release approval.
 14. Provide dashboards for missing evidence, pending approvals, monthly completeness, document status, invoices, and integration failures.
 15. Preserve a complete audit trail.
+
+### 3a. Capture once, use twice — operational correction, 2026-09-11
+
+**This correction governs over any statement elsewhere in this file.** Its canonical form is
+`model/model.json` → `capture_once`, rendered to
+`docs/02a-plan/24-capture-once-workflow.md` and tested by `tools/test_capture_once.py`
+(`CAP-01` to `CAP-26`). Owner decisions D-16 to D-21.
+
+**The supervisor must never upload, select, or describe the same evidence twice.**
+
+1. The supervisor opens the field application.
+2. The assigned project is prefilled where possible.
+3. The supervisor selects or confirms the location.
+4. The supervisor captures or selects the photographs **once**.
+5. The photographs are stored in the controlled system.
+6. AI analyses the photographs and proposes: visible activity; evidence stage (Before, During,
+   After, Observation, Snag, Material, Equipment, Safety, Other); a professional caption; visible
+   condition; a possible snag; an image-quality warning; uncertainty and confidence.
+7. The supervisor confirms or corrects the proposal with minimum interaction.
+8. The same image files and formatted summary are shared to the existing main-contractor WhatsApp
+   group using **one native Share to WhatsApp action**.
+9. The same stored evidence is re-used in daily, weekly, monthly, corrective-action, inspection and
+   completion reports.
+
+**CAP-01, acceptance:** *the workflow fails acceptance if the supervisor must select or upload the
+images a second time.*
+
+**Two operating modes.** *Quick Share* — capture, store, native share immediately; AI analysis runs
+asynchronously afterwards and prepares the internal report metadata. *AI Reviewed Share* — capture,
+AI proposal, supervisor confirmation, native share. Both capture exactly once.
+
+**Field description.** A written description of completed work **must not be mandatory** for a normal
+photographic submission. An *Additional Site Note* is optional; voice note and speech-to-text are
+future input methods for that same field. A mandatory reason survives only in exceptional workflows
+where photographs cannot establish the required fact. The optional note exists for: client
+instruction; access restriction; permit issue; hidden or underground defect; measured quantity;
+material quantity or batch; equipment failure; reason for non-completion; safety restriction; work
+postponed by another party.
+
+**AI limitations.** AI may describe only visually supportable conditions and activities. It must not
+infer or confirm: measured quantity; hidden defect or cause; exact material brand; compliance with
+contract or specification; exact completion percentage; exact project or location from the
+photograph alone; responsibility or negligence; date unless supplied as trusted metadata; or that
+Al-Haram executed the visible work merely because it appears in the photograph. Project, location,
+date, assigned user, contract and work-order context come from **trusted system data**.
+
+**AppSheet pass/fail requirement (`CAP-GATE`, unverified).** Phase 2A must verify whether AppSheet
+can reliably share multiple actual image files and formatted text through the native share sheet to
+an existing WhatsApp or WhatsApp Business group on iOS and Android. Fifteen conditions are listed in
+`docs/02a-plan/19-real-device-test-protocol.md` §4b. **If AppSheet cannot meet this requirement, do
+not implement a duplicate-upload workaround.** Prepare a decision comparison between AppSheet with a
+proven native-share method, a lightweight custom PWA or mobile field application using supported
+native file sharing, and any other official, policy-compliant approach. The same backend data model,
+Drive security, Make orchestration, Claude controls, approval rules and audit requirements must
+remain re-usable if the capture interface changes.
+
+**No unofficial WhatsApp Web automation, no group scraping, and no publicly accessible Drive link.**
 
 ### 4. Architecture
 

@@ -1,7 +1,8 @@
 # Owner Decision Record — Phase 0 Approval
 
-**Document ID:** AH-SYS-P0-010 · **Revision:** 0 · **Date:** 2026-09-11
+**Document ID:** AH-SYS-P0-010 · **Revision:** 1 · **Date:** 2026-09-11
 **Decision by:** General Manager (system owner) · **Effect:** Phase 0 approved; Phase 1 authorised
+**Revision 1** adds D-16 to D-21, the operational correction of 2026-09-11.
 
 This record is the authority for the revision 1 changes made to the Phase 0 documents. Where a
 decision below conflicts with an earlier revision of any Phase 0 document, **this record governs**.
@@ -208,3 +209,108 @@ accounting transactions; publishing or sharing external documents.
 
 No blocking question now prevents Phase 1. Every unresolved external fact is carried in
 `docs/01-data-foundation/16-external-facts-register.md`, categorised by the phase it blocks.
+
+---
+
+# Operational correction, 2026-09-11 — capture once, use twice
+
+Decisions D-16 to D-21 were issued after the release-1 scope was agreed. They change the field
+workflow, not the data architecture. Where they conflict with any earlier statement in any
+document, **they govern**, and the earlier statement is superseded rather than reinterpreted.
+
+The canonical form of all six lives in `model/model.json` under `capture_once`, is rendered to
+[`../02a-plan/24-capture-once-workflow.md`](../02a-plan/24-capture-once-workflow.md), and is tested
+by `tools/test_capture_once.py` (checks `CAP-01` to `CAP-26`).
+
+## D-16 — Capture once, use twice
+
+The supervisor must never upload, select or describe the same evidence twice. The photographs are
+captured or selected **exactly once**. The same stored files are shared to the existing
+main-contractor group through **one native share action** and re-used by every daily, weekly,
+monthly, corrective-action, inspection and completion report.
+
+**CAP-01, the acceptance requirement:** *the workflow fails acceptance if the supervisor must select
+or upload the images a second time.* This applies to the first share, to a retry after a failed or
+cancelled share, to AI analysis, to reviewer correction, and to every report that re-uses the
+evidence.
+
+Two operating modes, both capturing exactly once:
+
+| Mode | Sequence | Use when |
+|---|---|---|
+| **Quick Share** | capture → store → native share; AI runs afterwards | The contractor group must receive the site evidence immediately |
+| **AI Reviewed Share** | capture → store → AI proposal → supervisor confirmation → native share | A reviewed professional caption is wanted before group submission |
+
+**Applied to:** `SiteVisits.CaptureMode`, `SiteVisits.ShareStatus`, `SiteVisits.ShareAttemptCount`,
+`Photos.CaptureBatchID`, `Photos.CaptureSequence`.
+
+## D-17 — AI proposes; the supervisor decides, with minimum interaction
+
+Image analysis proposes visible activity, evidence stage, a professional caption, visible condition,
+a possible snag, an image-quality warning, uncertainty and confidence. Each proposal is written to
+its **own advisory column**, never to the confirmed field. The supervisor confirms or corrects it,
+and what they did is recorded in `Photos.AIProposalDisposition`.
+
+No AI column enters a content hash, so an analysis arriving later can never void a human approval.
+This extends D-06 rather than replacing it.
+
+## D-18 — A written description is not mandatory for a normal submission
+
+**A written description of completed work must not be mandatory for a normal photographic
+submission.** The photographs are the submission.
+
+- `SiteVisits.AdditionalSiteNote` — optional, with `SiteNoteCategory` naming why it was written.
+- Voice note and speech-to-text are future **input methods for that same field**, not new fields.
+- A mandatory reason survives only in the exceptional workflows where a photograph cannot establish
+  the fact: a record returned for correction, a visit reporting non-completion, a caption on an
+  Observation, Snag, Material or Safety photograph, and a measured quantity claimed without a
+  photographed measurement.
+
+The optional note exists for facts an image cannot carry: client instruction, access restriction,
+permit issue, hidden or underground defect, measured quantity, material quantity or batch,
+equipment failure, reason for non-completion, safety restriction, and work postponed by another
+party.
+
+**Supersedes** any earlier statement, in any document, that treats the work description as a
+required field.
+
+## D-19 — What AI may not infer, and where trusted context comes from
+
+AI may describe only **visually supportable** conditions and activities. It must not infer or
+confirm: measured quantity; hidden defect or its cause; exact material brand; compliance with
+contract or specification; exact completion percentage; exact project or location from the
+photograph alone; responsibility or negligence; date, unless supplied as trusted metadata; or that
+Al-Haram executed the visible work merely because it appears in the photograph.
+
+Project, location, date, assigned user, contract and work-order context come from **trusted system
+data**. Sixteen columns are closed to AI by declaration and by automated check (`CAP-14`).
+
+The share destination is held as a **label** in project configuration — never a telephone number,
+group invitation link or messaging identifier.
+
+## D-20 — No quantitative or contractual field may originate from an image
+
+`Quantity`, `PercentComplete`, `UnitID`, `ActivityTypeID`, contract quantities, unit rates, contract
+values and tax rates may never be AI-sourced. The AI's view of the visible activity is carried as
+free text in `Photos.AIProposedActivityText`, deliberately **not** as a reference to
+`ActivityTypes`, so a contractual activity can never be created by an image.
+
+## D-21 — The capture platform is an interface decision, and it is gated
+
+**CAP-GATE, unverified:** can AppSheet reliably share multiple actual image files and formatted text
+through the native share sheet to an existing WhatsApp or WhatsApp Business group, on iOS and
+Android? Fifteen conditions must be tested on real devices, including six photographs, portrait and
+landscape, image order, weak connection, offline capture then synchronisation, whether images are
+attached or only links, whether the user must select the images again, whether a public Drive link
+is created, whether temporary files remain on the device, and recovery from a failed or cancelled
+share.
+
+If AppSheet cannot meet it, **no duplicate-upload workaround will be implemented.** The decision
+comparison is between AppSheet with a proven native-share method, a lightweight custom PWA or mobile
+field application using supported native file sharing, and any other official, policy-compliant
+approach.
+
+**Unofficial WhatsApp Web automation and group scraping remain forbidden, and a publicly accessible
+Drive link is forbidden.** The data model, Drive security, Make orchestration, Claude controls,
+approval rules and audit requirements must remain re-usable if the capture interface changes — which
+is why this is an interface decision and not an architecture decision.

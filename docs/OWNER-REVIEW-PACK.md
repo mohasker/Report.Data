@@ -1,6 +1,6 @@
 # Phase 1 — Owner Review Pack
 
-**Document ID:** AH-SYS-REV-001 · **Revision:** 2 · **Date:** 2026-09-11
+**Document ID:** AH-SYS-REV-001 · **Revision:** 3 · **Date:** 2026-09-11
 **Status:** Completed · Validated Locally · **Submitted for Owner Review**
 **Purpose:** everything needed to approve, conditionally approve, or send back the Phase 1 design — without reading the repository.
 
@@ -9,11 +9,13 @@ not need to open unless something here provokes a question.
 
 | | |
 |---|---|
-| **What was built** | A complete data foundation: 46 tables, 829 columns, 11 status lifecycles, 10 roles, 460 access grants |
-| **What gets built first** | A **lean 17-table MVP**; the other 29 tables stay as the reference architecture and are added additively ([`02a-plan/11-lean-mvp-scope.md`](02a-plan/11-lean-mvp-scope.md)) |
-| **Expected incremental cost** | **USD 0** for the pilot. Workspace is already paid and AppSheet is assumed included, pending a 15-minute Admin Console check |
-| **What was executed** | 172 automated checks, all passing, against synthetic data on a local machine |
-| **What was connected** | **Nothing.** No Google account, no AppSheet app, no Make scenario, no Claude API call, no QuickBooks connection, no real data, no email |
+| **What was built** | A complete data foundation: 46 tables, 849 columns, 11 status lifecycles, 10 roles, 460 access grants |
+| **What gets built first** | **Release 1: twelve tables**, capture and review only, inside a lean 17-table MVP; the other 29 tables stay as the reference architecture and are added additively ([`02a-plan/21-release-1-twelve-tables.md`](02a-plan/21-release-1-twelve-tables.md)) |
+| **The operating principle** | **Capture once, use twice.** One capture serves the contractor-group share and every report. The supervisor never selects the same photographs twice, and never types a description of what the photographs already show ([`02a-plan/24-capture-once-workflow.md`](02a-plan/24-capture-once-workflow.md)) |
+| **Cost position** | **No new mandatory subscription identified before entitlement verification.** Workspace and QuickBooks are already paid; AppSheet is assumed included pending a 15-minute Admin Console check; AI analysis is a variable cost of roughly **$7.56 a month** at pilot volume |
+| **What was executed** | **219 automated checks, all passing**, against synthetic data on a local machine |
+| **What was connected** | **Nothing.** No Google account, no AppSheet app, no Make scenario, no Claude API call, no QuickBooks connection, no real data, no email. One **read-only** Make inspection was performed with written authorisation |
+| **The one thing nobody knows yet** | Whether the capture platform can share several stored image files to an existing WhatsApp group without a second selection (`CAP-GATE`). It is a device test, not a question anyone can answer from documentation |
 | **Recommendation** | **Conditional approval** — see §14 |
 
 ---
@@ -234,13 +236,13 @@ document type is configuration rather than development.*
 `Materials`, `MaterialUsage`, `Equipment`, `VisitEquipment`, `Employees`, `VisitManpower`,
 `DocumentTypes`, `DataClassifications`, `ResidencyRequirements`, `ResidencyAssignments`.
 
-**Detail:** [`01-data-dictionary.md`](01-data-foundation/01-data-dictionary.md) — all 829 columns.
+**Detail:** [`01-data-dictionary.md`](01-data-foundation/01-data-dictionary.md) — all 849 columns.
 
 ---
 
 ## 4. The fields and relationships that actually matter
 
-Not all 829. These are the ones a decision depends on.
+Not all 849. These are the ones a decision depends on.
 
 | Where | Field | Why it matters |
 |---|---|---|
@@ -599,6 +601,93 @@ production, not to the system.
 
 ---
 
+## 11b. Capture once, use twice — the operational correction of 2026-09-11
+
+This is the change that matters most to the people who will use the system, so it is stated here in
+full rather than left to a specification.
+
+### What the supervisor does today
+
+Photographs the work. Opens a messaging application. **Selects the same photographs again.** Sends
+them to the main-contractor group. The company's evidence ends up in a chat thread; the technical
+record, if one is written at all, is reconstructed later from memory.
+
+### What the system does instead
+
+| Step | Who | What |
+|---|---|---|
+| 1–3 | Supervisor | Opens the app. The project is already filled in. Confirms the location |
+| 4 | Supervisor | **Captures the photographs once.** This is the only file selection in the whole workflow |
+| 5 | System | Stores them, unchanged, grouped under one capture batch |
+| 6 | AI | **Proposes** visible activity, evidence stage, a professional caption, visible condition, a possible snag, an image-quality warning, and what it could not determine |
+| 7 | Supervisor | Confirms with one tap, or corrects |
+| 8 | Supervisor | **One share action** hands the same stored files and a formatted summary to the existing contractor group |
+| 9 | System | The same evidence is re-used in every daily, weekly, monthly, corrective-action, inspection and completion report |
+
+**The acceptance requirement, in your words:** *the workflow fails acceptance if the supervisor must
+select or upload the images a second time.*
+
+### Two modes, because urgency and polish are different needs
+
+| | **Quick Share** | **AI Reviewed Share** |
+|---|---|---|
+| Sequence | capture → store → **share immediately** | capture → AI proposal → confirm → share |
+| The AI | runs afterwards, nobody waits | runs first, the supervisor waits |
+| Use it when | the contractor must see the site now | a reviewed caption is worth the wait |
+
+Both capture once.
+
+### The written description is no longer required
+
+A description of completed work is **optional** for a normal photographic submission. An optional
+site note carries what a photograph cannot: a client instruction, an access restriction, a permit
+issue, a hidden defect, a measured quantity, a material batch, an equipment failure, a reason for
+non-completion, a safety restriction, work postponed by another party. Voice input is a future way
+of filling that same field.
+
+**Of 282 fields in the release-1 storage model, a supervisor must supply 5** — project, location,
+date, capture mode, evidence stage. None of them is a description.
+
+### What the AI may never do
+
+It describes only what is visually supportable. It may not infer or confirm a measured quantity, a
+hidden defect or its cause, a material brand, compliance with a contract or specification, a
+completion percentage, the project or location from the photograph alone, responsibility or
+negligence, a date unless it comes from trusted metadata, or that Al-Haram did the work merely
+because the work appears in the photograph.
+
+**Sixteen columns are closed to AI by declaration and by automated test.** Project, location, date,
+assigned user, activity, quantity, unit, evidence stage, both captions, the reviewer's decision and
+the approval all come from trusted system data or a named person. The AI's view of the activity is
+free text, deliberately **not** a link to the activity catalogue, so no contractual activity can be
+created by an image.
+
+### What it costs, honestly
+
+| | |
+|---|---|
+| AI analysis | Rises from ~$4.50 to **~$7.56 a month** at pilot volume, because every captured photograph is now analysed rather than only the 60% later approved. The proposal has to exist *before* the review, or it proposes nothing to anybody |
+| Make operations | **The proposal does not fit in the free orchestration tier** — roughly 1,440 operations a month against a 1,000 limit. Release 1 therefore ships Quick Share, and the proposal arrives when AppSheet can call the API directly (question 4 of the Admin Console check) or through a small Workspace-side component. **The capture-once guarantee holds regardless** |
+| Storage | +19 MB per project per month of derivatives, deleted after seven days |
+| Transfer | If derivatives route through the orchestrator, the ceiling moves from twenty projects down to about ten |
+
+### The risk I want you to see clearly
+
+**Quick Share sends evidence to the contractor before anyone reviews it**, and a message cannot be
+recalled from a group. That risk exists today, unchanged — the supervisor is the same human gate they
+already are. The system does not make it worse, and AI Reviewed Share is the default. But it does not
+make it better either, and I would rather say so than let the word "controlled" imply otherwise.
+
+### What is not known
+
+Whether AppSheet can do the share at all. Fifteen conditions, two phones, both messaging apps, online
+and offline. **If it cannot, no duplicate-upload workaround will be built** — the capture platform is
+compared against a lightweight custom application instead, and the data model, Drive security,
+orchestration, AI controls, approval rules and audit trail are all re-used unchanged, because none of
+them depends on the capture interface.
+
+---
+
 ## 12. The five highest residual risks
 
 | # | Risk | Why it is top-five | What reduces it | What you would see first |
@@ -643,7 +732,11 @@ all — only by watching real supervisors use it.
 client templates · **EF-18/19** contract and BOQ data · **EF-20/21** accounting inspection and
 mappings · **EF-22** authorised recipients · **EF-23** written authorisation for production posting.
 
-**Detail:** [`16-external-facts-register.md`](01-data-foundation/16-external-facts-register.md) — 23 facts, each with its blocking phase.
+**EF-24** whether the native share works at all (`CAP-GATE` — a device test) · **EF-25** whether
+AppSheet has API access, which decides whether the AI proposal costs anything to run · **EF-26** the
+label of each project's existing contractor group.
+
+**Detail:** [`16-external-facts-register.md`](01-data-foundation/16-external-facts-register.md) — 26 facts, each with its blocking phase.
 
 ---
 
@@ -657,8 +750,9 @@ internally consistent, executable, and tested to the limit of what can be tested
 Redesign is not warranted, and delaying approval does not make any of them more certain: the
 remaining uncertainty is in the platforms, not the design.
 
-**Conditional on four things**, in this order:
+**Conditional on five things**, in this order:
 
+0. **The `CAP-GATE` native-share test, on two real phones with synthetic photographs, before any build commitment.** It is cheap, it takes an afternoon, and it is the only test whose failure changes the tool rather than the design. Everything else in Phase 2A proceeds while it is arranged.
 1. **The Admin Console entitlement check before Phase 2B begins (D-B).** Fifteen minutes. Security filters and offline image capture have no workaround; webhooks and the API both have Make fallbacks that cost nothing. **No purchase is proposed under any outcome** — a missing convenience is a workaround, not a licence.
 2. **A recovery route before any go-live (D-D).** Either a second administrator or a documented, tested route. In the lean build this is two administrator accounts in the Workspace plus a written runbook, since the recovery table itself is deferred.
 3. **Your review of three artifacts** — the data dictionary, the transition matrix and the security matrix. §6 above is the summary; the detail is where an error would hide. The exception most likely to provoke disagreement is that neither administrator can read evidence or documents at all.
@@ -668,7 +762,7 @@ remaining uncertainty is in the platforms, not the design.
 point 3, and because the platform verification in point 1 could still change a structural decision.
 Conditional approval lets Phase 2A proceed at no risk while both are resolved.
 
-**Why not redesign:** nothing found in 172 checks suggests a structural fault. The three defects the
+**Why not redesign:** nothing found in 219 checks suggests a structural fault. The three defects the
 checks caught — two unreachable statuses, a project manager who could write the audit log, six
 vocabularies without change attribution — were fixed as they were found, and a fourth correction
 came from a fixture that refused to accept an Arabic-only client name.
@@ -709,3 +803,10 @@ nothing.
 | **Field workflow and tap count** | [`02a-plan/13-field-workflow-and-taps.md`](02a-plan/13-field-workflow-and-taps.md) |
 | **Storage and image volume** | [`02a-plan/14-storage-and-image-volume.md`](02a-plan/14-storage-and-image-volume.md) |
 | **Revised cost matrix** | [`02a-plan/09-cost-and-licensing-matrix.md`](02a-plan/09-cost-and-licensing-matrix.md) |
+| **Capture once, use twice — the workflow** | [`02a-plan/24-capture-once-workflow.md`](02a-plan/24-capture-once-workflow.md) |
+| **Release 1: twelve tables and field exposure** | [`02a-plan/21-release-1-twelve-tables.md`](02a-plan/21-release-1-twelve-tables.md) |
+| **The `CAP-GATE` device test** | [`02a-plan/19-real-device-test-protocol.md`](02a-plan/19-real-device-test-protocol.md) §4b |
+| **Make account inspection (verified)** | [`02a-plan/15-make-inspection-record.md`](02a-plan/15-make-inspection-record.md) |
+| **Operations budget** | [`02a-plan/23-operations-budget.md`](02a-plan/23-operations-budget.md) |
+| **Image derivative architecture** | [`02a-plan/22-image-derivative-architecture.md`](02a-plan/22-image-derivative-architecture.md) |
+| **Owner decisions D-01 to D-21** | [`00-discovery/10-owner-decisions.md`](00-discovery/10-owner-decisions.md) |

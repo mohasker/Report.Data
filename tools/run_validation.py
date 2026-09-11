@@ -24,14 +24,15 @@ import test_segregation, test_numbering, test_calculations          # noqa: E402
 import test_contenthash, test_transitions, test_bilingual           # noqa: E402
 import test_evidence_rules, test_configurability, test_governance   # noqa: E402
 import test_access_control, test_lean_mvp                           # noqa: E402
+import test_capture_once                                            # noqa: E402
 
-SUITES = [test_lean_mvp, test_configurability, test_segregation, test_access_control,
+SUITES = [test_capture_once, test_lean_mvp, test_configurability, test_segregation, test_access_control,
           test_evidence_rules, test_transitions, test_contenthash, test_numbering,
           test_calculations, test_bilingual, test_governance]
 OUT = os.path.join(ROOT, "docs", "01-data-foundation", "17-validation-evidence.md")
 GENERATORS = ("build_model.py", "gen_schemas.py", "gen_data_dictionary.py",
               "gen_matrices.py", "gen_appsheet_workbook.py", "gen_scope_matrix.py",
-              "gen_release1_scope.py")
+              "gen_release1_scope.py", "gen_capture_once.py")
 GENERATED = [
     "model/model.json",
     "docs/01-data-foundation/01-data-dictionary.md",
@@ -41,6 +42,7 @@ GENERATED = [
     "docs/02a-plan/02-security-filter-specification.md",
     "docs/02a-plan/17-lean-table-scope-matrix.md",
     "docs/02a-plan/21-release-1-twelve-tables.md",
+    "docs/02a-plan/24-capture-once-workflow.md",
 ]
 
 

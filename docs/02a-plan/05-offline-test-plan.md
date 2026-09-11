@@ -83,6 +83,25 @@ filtered at all (P-04).
 photographs to a messaging group, the form is simplified before the phase closes. Adoption is the
 largest single risk to the whole system (R-06).
 
+## 5b. Offline and the contractor-group share
+
+A native share to a messaging group **needs connectivity**. Offline, the capture, the storage and the
+queued submission all work exactly as they do online; the share does not, and pretending otherwise
+would be the kind of claim this repository exists to avoid.
+
+| Condition | Expected | Blocking if it fails |
+|---|---|---|
+| Visit captured offline; photographs stored | Works, identical to online | **Yes** |
+| Share attempted offline | Refused clearly, with a reason the supervisor can read | Yes |
+| Share re-offered on reconnect, **from the stored files** | Offered in `PendingShare`, no re-capture, no re-selection | **Yes — this is CAP-01 under the hardest condition** |
+| Photographs still intact after the reconnect | Byte-identical to what was stored | **Yes. Any evidence loss stops everything** |
+| Share attempted on a weak connection | Completes, or fails recoverably. Never silently partial | Yes |
+
+This is condition 10 of the fifteen in
+[`19-real-device-test-protocol.md`](19-real-device-test-protocol.md) §4b, and it is the one most
+likely to be missed by a test performed at a desk. **It must be executed on a site with genuinely
+poor signal, not with aeroplane mode toggled in an office.**
+
 ## 6. Recording
 
 For every test: date, device model and OS version, supervisor profile, network conditions, result,

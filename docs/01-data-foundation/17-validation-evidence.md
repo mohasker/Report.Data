@@ -8,20 +8,64 @@
 
 | | |
 |---|---|
-| **Commit tested** | `3ab49573ae58f9918b48f891b1cf57e4d89fa1ce` |
-| **Commit subject** | Regenerate validation evidence against the clean tree |
+| **Commit tested** | `854c06272dd9a62a67b3e4fd6695b4a1c8995e25` |
+| **Commit subject** | Add screenshot, blocking and fallback columns to the Admin Console checklist |
 | **Command executed** | `python3 tools/run_validation.py` |
-| **Executed at** | 2026-09-11 10:36:53 UTC |
+| **Executed at** | 2026-09-11 13:10:15 UTC |
 | **Python** | 3.11.15 (CPython, GCC 13.3.0) |
-| **Operating system** | Linux 6.18.44-fc-v32 (x86_64) |
+| **Operating system** | Linux 6.18.44-fc-v24 (x86_64) |
 | **Environment** | Ephemeral Linux container. This run made no network call, used no credential and contacted no external service |
 | **Third-party dependencies** | **None.** Python standard library only |
 | **Model version** | 1.0.0 |
 | **Working tree before the run** | MODIFIED — see below |
 
 ```
-M docs/01-data-foundation/17-validation-evidence.md
+M CHANGELOG.md
+ M MASTER_SPEC.md
+ M README.md
+ M docs/00-discovery/00-DISCOVERY-SUMMARY.md
+ M docs/00-discovery/01-mvp-boundary.md
+ M docs/00-discovery/02-architecture.md
+ M docs/00-discovery/04-open-questions.md
+ M docs/00-discovery/05-risk-and-controls-register.md
+ M docs/00-discovery/10-owner-decisions.md
+ M docs/00-discovery/adr/README.md
+ M docs/01-data-foundation/00-PHASE-1-SUMMARY.md
+ M docs/01-data-foundation/01-data-dictionary.md
+ M docs/01-data-foundation/15-claude-prompt-and-schema-spec.md
+ M docs/01-data-foundation/16-external-facts-register.md
+ M docs/01-data-foundation/17-validation-evidence.md
+ M docs/02a-plan/00-PHASE-2A-PLAN.md
+ M docs/02a-plan/01-appsheet-workbook.md
+ M docs/02a-plan/03-views-and-slices.md
+ M docs/02a-plan/04-actions-and-workflow.md
+ M docs/02a-plan/05-offline-test-plan.md
+ M docs/02a-plan/09-cost-and-licensing-matrix.md
+ M docs/02a-plan/11-lean-mvp-scope.md
+ M docs/02a-plan/13-field-workflow-and-taps.md
+ M docs/02a-plan/14-storage-and-image-volume.md
  M docs/02a-plan/16-admin-console-checklist-owner.md
+ M docs/02a-plan/17-lean-table-scope-matrix.md
+ M docs/02a-plan/19-real-device-test-protocol.md
+ M docs/02a-plan/21-release-1-twelve-tables.md
+ M docs/02a-plan/22-image-derivative-architecture.md
+ M docs/02a-plan/23-operations-budget.md
+ M docs/OWNER-REVIEW-PACK.md
+ M docs/STATUS-DEFINITIONS.md
+ M docs/VERSION-MANIFEST.md
+ M model/model.json
+ M schemas/README.md
+ M schemas/tables/Photos.schema.json
+ M schemas/tables/SiteVisits.schema.json
+ M tools/build_model.py
+ M tools/evidence_meta.py
+ M tools/gen_release1_scope.py
+ M tools/run_validation.py
+?? docs/00-discovery/adr/ADR-0009-capture-once-native-share.md
+?? docs/02a-plan/24-capture-once-workflow.md
+?? schemas/ai/evidence-analysis-batch.v1.json
+?? tools/gen_capture_once.py
+?? tools/test_capture_once.py
 ```
 
 > The run was executed against a working tree containing uncommitted changes. The commit recorded above is the parent commit, not the exact state tested. Re-run after committing to obtain a clean reproduction record.
@@ -29,35 +73,37 @@ M docs/01-data-foundation/17-validation-evidence.md
 
 ### Byte-identical regeneration
 
-Every generated artifact was hashed (SHA-256) before regeneration, regenerated from `model/model.json`, and hashed again. **54 artifacts** were compared: 8 generated documents (the canonical model, the data dictionary, the transition matrix, the security matrix, the AppSheet workbook and the security-filter specification) and all 46 table schemas.
+Every generated artifact was hashed (SHA-256) before regeneration, regenerated from `model/model.json`, and hashed again. **55 artifacts** were compared: 9 generated documents (the canonical model, the data dictionary, the transition matrix, the security matrix, the AppSheet workbook and the security-filter specification) and all 46 table schemas.
 
 **Result: all artifacts came back byte-identical.** Regeneration is deterministic, so the committed artifacts are exactly what the model produces.
 
 ## 2. Summary
 
-**191 of 191 checks passed.**
+**219 of 219 checks passed.**
 
 | # | Suite | Kind | Checks | Passed | Failed |
 |---|---|---|---|---|---|
 | 1 | Seed conformance | structural | 3 | 3 | 0 |
-| 2 | Lean operational MVP | structural | 19 | 19 | 0 |
-| 3 | Configurability and unbounded width | structural | 12 | 12 | 0 |
-| 4 | Project segregation | logic | 12 | 12 | 0 |
-| 5 | Role separation, time-bound access and recoverability | logic | 31 | 31 | 0 |
-| 6 | Evidence rules | logic | 14 | 14 | 0 |
-| 7 | Status transitions, approvals and delegation | structural | 20 | 20 | 0 |
-| 8 | Content hashing and approval binding | logic | 14 | 14 | 0 |
-| 9 | Document numbering | simulation | 13 | 13 | 0 |
-| 10 | Deterministic calculation | logic | 22 | 22 | 0 |
-| 11 | Bilingual and right-to-left readiness | structural | 13 | 13 | 0 |
-| 12 | Governance and safety rules | structural | 18 | 18 | 0 |
-| | **Total** | | **191** | **191** | **0** |
+| 2 | Capture once, use twice | structural | 28 | 28 | 0 |
+| 3 | Lean operational MVP | structural | 19 | 19 | 0 |
+| 4 | Configurability and unbounded width | structural | 12 | 12 | 0 |
+| 5 | Project segregation | logic | 12 | 12 | 0 |
+| 6 | Role separation, time-bound access and recoverability | logic | 31 | 31 | 0 |
+| 7 | Evidence rules | logic | 14 | 14 | 0 |
+| 8 | Status transitions, approvals and delegation | structural | 20 | 20 | 0 |
+| 9 | Content hashing and approval binding | logic | 14 | 14 | 0 |
+| 10 | Document numbering | simulation | 13 | 13 | 0 |
+| 11 | Deterministic calculation | logic | 22 | 22 | 0 |
+| 12 | Bilingual and right-to-left readiness | structural | 13 | 13 | 0 |
+| 13 | Governance and safety rules | structural | 18 | 18 | 0 |
+| | **Total** | | **219** | **219** | **0** |
 
 ### Console output
 
 ```
 ========================================================================
   Seed conformance                                       3 passed   0 failed
+  Capture once, use twice                               28 passed   0 failed
   Lean operational MVP                                  19 passed   0 failed
   Configurability and unbounded width                   12 passed   0 failed
   Project segregation                                   12 passed   0 failed
@@ -70,7 +116,7 @@ Every generated artifact was hashed (SHA-256) before regeneration, regenerated f
   Bilingual and right-to-left readiness                 13 passed   0 failed
   Governance and safety rules                           18 passed   0 failed
 ========================================================================
-  TOTAL 191/191 checks passed
+  TOTAL 219/219 checks passed
 ```
 
 ### Artifact regeneration output
@@ -79,16 +125,17 @@ Every generated artifact was hashed (SHA-256) before regeneration, regenerated f
 $ python3 tools/build_model.py
 wrote /home/user/Report.Data/model/model.json
   tables      : 46
-  columns     : 829
-  enums       : 26
+  columns     : 849
+  enums       : 30
   transitions : 82 allowed, 36 explicitly forbidden
   security    : 10 roles x 46 tables = 460 grants, 20 exceptions
   lean MVP    : 17 tables, 29 deferred but designed
+  capture once: 9 workflow steps, 2 modes, 16 columns closed to AI
   release 1   : 12 tables (capture and review; no document generation)
 $ python3 tools/gen_schemas.py
 wrote 46 table schemas to schemas/tables/
 $ python3 tools/gen_data_dictionary.py
-wrote /home/user/Report.Data/docs/01-data-foundation/01-data-dictionary.md (1808 lines)
+wrote /home/user/Report.Data/docs/01-data-foundation/01-data-dictionary.md (1877 lines)
 $ python3 tools/gen_matrices.py
 wrote docs/01-data-foundation/03-status-transition-matrix.md
 wrote docs/01-data-foundation/04-security-model.md
@@ -98,7 +145,9 @@ wrote docs/02a-plan/02-security-filter-specification.md
 $ python3 tools/gen_scope_matrix.py
 wrote docs/02a-plan/17-lean-table-scope-matrix.md
 $ python3 tools/gen_release1_scope.py
-wrote docs/02a-plan/21-release-1-twelve-tables.md: 262 fields, 13 on the field form
+wrote docs/02a-plan/21-release-1-twelve-tables.md: 282 fields, 17 on the field form, 5 mandatory
+$ python3 tools/gen_capture_once.py
+wrote docs/02a-plan/24-capture-once-workflow.md: 9 steps, 15 device test conditions
 ```
 
 ## 3. What these checks are NOT evidence of
@@ -115,12 +164,14 @@ Recorded at the owner's instruction. **Local model validation must never be repr
 | **QuickBooks Online** | That the company file supports the required tax codes, classes, currencies or API operations, or that totals reconcile. | Phase 7 |
 | **Mobile offline sync** | That a visit captured offline on a real phone syncs completely, in order, with its photographs. | Phase 2 field test |
 | **Field usability** | That a supervisor can complete a visit faster than the habit it replaces — the single largest risk to the whole system (R-06). | Phase 2 field test |
+| **Native multi-file share (CAP-GATE)** | That any capture platform can hand several actual image files and a formatted summary to an existing WhatsApp or WhatsApp Business group through the operating system share sheet, on iOS and Android, without the supervisor selecting the images a second time. Nothing in this repository can establish this; only a real device can. | Phase 2A device test |
 
 ### How to read each suite
 
 | Suite | Kind | What it does and does not establish |
 |---|---|---|
 | Seed conformance | `structural` | Validates the synthetic data against the canonical model. Says nothing about any platform. |
+| Capture once, use twice | `structural` | Asserts the structural guarantees behind the owner's capture-once correction: the normal description is optional, project and location stay trusted structured fields, AI output is advisory and excluded from every content hash, no quantitative or contractual field is AI-sourced, no public image link is required, and CAP-01 is present in the model and the documentation. It says NOTHING about whether any capture platform can perform a native multi-file share to a messaging group - that is CAP-GATE, a real-device test. |
 | Lean operational MVP | `structural` | Asserts that the 12-18 table build subset holds together, that no lean table requires a deferred one, and that every deferred table keeps its schema. Says nothing about whether the app built from it is fast enough - that is the Phase 2B field measurement. |
 | Configurability and unbounded width | `structural` | Scans the model, schemas, security matrix and logic files for hard-coded identifiers, and exercises the rule engines with a fourth project added in memory. |
 | Project segregation | `logic` | Runs the reference access rules against synthetic rows. It proves the RULE is correct. It does NOT prove that AppSheet security filters implement it — that is a Phase 2 integration test on the real platform. |
@@ -155,6 +206,9 @@ The fourteen acceptance criteria in `MASTER_SPEC.md` §14, mapped to the checks 
 | 12 | No external email or accounting posting without the correct approval | **Not tested in Phase 1** | `TRN-06`, `GOV-05`, `CALC-01` | Neither capability exists. Phase 7. |
 | 13 | Tested failures produce actionable logs and recover without data loss | **Not tested in Phase 1** | `NUM-07`, `NUM-08` | The failure taxonomy and error queue are specified; nothing has failed for real. Phase 3. |
 | 14 | Operator and administrator guides exist | Rule defined and tested | — | The operator runbook outline exists; it is completed in Phase 3 when the scenarios do. |
+| 15 | Capture once, use twice: the supervisor never selects or uploads the same evidence twice | **Not tested in Phase 1** | `CAP-01`, `CAP-18`, `CAP-19/QuickShare`, `CAP-19/AIReviewedShare`, `CAP-20`, `CAP-21` | The model forbids re-selection, groups evidence under one capture batch and makes a retry re-use stored files. Whether the platform honours it is CAP-GATE, a real-device test. |
+| 16 | A written description is never mandatory for a normal photographic submission | Rule proven in logic | `CAP-02`, `CAP-03`, `CAP-04`, `CAP-05`, `CAP-26` | Every description field is optional in the canonical model, the optional-note vocabulary exists, the exceptional workflows that do require a reason are named, and a regression guard fails if any document reintroduces the requirement. |
+| 17 | AI proposes; a human decides; trusted context never comes from a photograph | Rule proven in logic | `CAP-06`, `CAP-07/ProjectID`, `CAP-07/LocationID`, `CAP-08`, `CAP-09`, `CAP-10`, `CAP-11`, `CAP-12`, `CAP-13`, `CAP-14`, `CAP-15` | Proposal columns are separate from confirmed columns, no AI column enters a content hash, and sixteen columns are closed to AI by declaration and by test. Whether a real model obeys its prompt is Phase 4. |
 
 ## 5. Every check executed
 
@@ -169,6 +223,41 @@ Every seed file conforms to the canonical model: columns, types, formats, vocabu
 | `SEED-01` | PASS | Every seed file validates against the model with no error | 31 files, 206 rows, 0 errors |
 | `SEED-02` | PASS | Every foreign key resolves within the seeded data | 0 unresolvable-by-design references (tables not built until a later phase) |
 | `SEED-03` | PASS | At least three materially different projects are present | 3 projects with 3 clients, 3 reporting frequencies, 3 billing methods, 2 document languages |
+
+### Capture once, use twice  ·  `structural`  ·  28/28 passed
+
+The evidence is captured exactly once; the description is optional; AI proposes and a human decides; trusted context never comes from a photograph; no public link is required.
+
+| Check | Result | Description | Evidence produced |
+|---|---|---|---|
+| `CAP-01` | PASS | The capture-once acceptance requirement is present in the canonical model | The workflow fails acceptance if the supervisor must select or upload the images a second time. |
+| `CAP-02` | PASS | A written description is not mandatory for a normal submission | A written description of completed work must not be mandatory for a normal photographic submission. |
+| `CAP-03` | PASS | Every declared description field is optional in the model | all optional |
+| `CAP-04` | PASS | An optional site note exists, with a category vocabulary for facts a photograph cannot establish | 10 categories |
+| `CAP-05` | PASS | The exceptional workflows that DO require a written reason are named | 4 exceptions declared |
+| `CAP-06` | PASS | Project, location, date, assignee and activity are trusted system fields, never AI-sourced | all trusted |
+| `CAP-07/ProjectID` | PASS | SiteVisits.ProjectID is a structured reference, not free text | type=ref |
+| `CAP-07/LocationID` | PASS | SiteVisits.LocationID is a structured reference, not free text | type=ref |
+| `CAP-08` | PASS | No AI-sourced column binds an approval: none appears in a content hash | none |
+| `CAP-09` | PASS | Every field the AI proposes exists as its own advisory column | 8 proposal columns |
+| `CAP-10` | PASS | Every proposal column is marked advisory or AI-sourced | all advisory |
+| `CAP-11` | PASS | The proposal is separate from the confirmed value: proposed stage and confirmed stage are different columns | AIProposedEvidenceStage proposes; EvidenceStage is set by the supervisor |
+| `CAP-12` | PASS | A human disposition is recorded for every proposal | Photos.AIProposalDisposition is user-sourced |
+| `CAP-13` | PASS | No quantitative or contractual field is sourced from image analysis | 10 fields checked |
+| `CAP-14` | PASS | Every column declared closed to AI is genuinely not AI-sourced | 16 columns closed |
+| `CAP-15` | PASS | All nine forbidden inferences are declared in the model | 9 declared |
+| `CAP-16` | PASS | No public image link is required, and none is permitted | native share sheet carries the files themselves |
+| `CAP-17` | PASS | Unofficial messaging automation and group scraping are forbidden by the model, not only by prose | WhatsApp Web automation |
+| `CAP-18` | PASS | Re-selecting the files is itself a declared forbidden method | a retry re-uses stored evidence |
+| `CAP-19/QuickShare` | PASS | QuickShare captures the evidence exactly once and ends at a native share | capture -> store -> native share |
+| `CAP-19/AIReviewedShare` | PASS | AIReviewedShare captures the evidence exactly once and ends at a native share | capture -> store -> AI proposal -> supervisor confirmation -> native share |
+| `CAP-20` | PASS | Photographs carry a capture batch and a sequence, so the share and the report re-use one stored set | CaptureBatchID + CaptureSequence |
+| `CAP-21` | PASS | A share attempt is counted and recoverable without re-capture | ShareStatus records cancelled and failed as recoverable states |
+| `CAP-22` | PASS | The share destination is a label, never a telephone number or invitation link | ShareTargetLabel is project configuration |
+| `CAP-23` | PASS | The AppSheet native-share requirement is recorded as UNVERIFIED, with a test matrix | 15 test conditions |
+| `CAP-24` | PASS | A capture-platform fallback exists, and the backend is declared re-usable if the interface changes | A lightweight custom PWA or mobile field application using supported native file sharing |
+| `CAP-25` | PASS | The CAP-01 acceptance requirement appears in the documentation the owner reads, not only in the model | 13 documents cite CAP-01 |
+| `CAP-26` | PASS | No surviving document still makes the work description mandatory | 69 documents scanned |
 
 ### Lean operational MVP  ·  `structural`  ·  19/19 passed
 
@@ -396,7 +485,7 @@ English and Arabic are supported from Phase 1, with no redesign required to add 
 
 | Check | Result | Description | Evidence produced |
 |---|---|---|---|
-| `LNG-01` | PASS | Every English text column has an Arabic counterpart | 35 bilingual pairs, none unpaired |
+| `LNG-01` | PASS | Every English text column has an Arabic counterpart | 36 bilingual pairs, none unpaired |
 | `LNG-02` | PASS | Both languages are configured with an explicit text direction | en=LTR, ar=RTL |
 | `LNG-03` | PASS | Users carry an individual language preference, and both are in use | preferences present in the fixture: ['ar', 'en'] |
 | `LNG-04` | PASS | Templates are keyed by language and carry the correct text direction | 1 Arabic template(s); direction mismatches: none |
@@ -405,7 +494,7 @@ English and Arabic are supported from Phase 1, with no redesign required to add 
 | `LNG-07` | PASS | Arabic text passes through canonical serialisation unchanged | Arabic description preserved verbatim in the canonical string |
 | `LNG-08` | PASS | Arabic text is NFC-normalised without alteration | text is already NFC and is unchanged by normalisation |
 | `LNG-09` | PASS | Arabic-Indic digits in names are preserved as written | غرفة ١٢ مبنى أ retains Arabic-Indic digits |
-| `LNG-10` | PASS | Every controlled vocabulary carries an Arabic label for every value | 26 vocabularies, every value labelled in both languages |
+| `LNG-10` | PASS | Every controlled vocabulary carries an Arabic label for every value | 30 vocabularies, every value labelled in both languages |
 | `LNG-11` | PASS | Seeded reference data is populated in Arabic, not merely capable of it | roles, units, disciplines, activities, document types and classifications all carry Arabic |
 | `LNG-12` | PASS | Supervisors can record descriptions and captions in Arabic | 6 visits and 9 photo captions carry Arabic |
 | `LNG-13` | PASS | Arabic is never written into an English column to satisfy a requirement | English columns contain no Arabic text |
@@ -424,7 +513,7 @@ The operating rules the owner approved, expressed as assertions so that weakenin
 | `GOV-06` | PASS | No role may delete any row: history is evidence | 460 grants, every delete denied |
 | `GOV-07` | PASS | The audit log is append-only for every role, administrators and break-glass included | roles able to alter the audit log: none |
 | `GOV-08` | PASS | An administrator cannot create or alter an approval | neither administrator role nor break-glass can create or alter an approval |
-| `GOV-09` | PASS | No advisory AI field is part of any content hash (D-06, C-06) | 5 AI fields, 0 in a hash |
+| `GOV-09` | PASS | No advisory AI field is part of any content hash (D-06, C-06) | 13 AI fields, 0 in a hash |
 | `GOV-10` | PASS | No decision or completion field is sourced from AI | AI-sourced decision fields: none |
 | `GOV-11` | PASS | No monetary or measured-quantity field is sourced from AI (invariant I-4) | AI-sourced monetary or quantity fields: none (AIConfidence is advisory metadata, not a measurement) |
 | `GOV-12` | PASS | The approved write-once evidence contract is fully represented (D-13) | missing: none |
@@ -440,7 +529,7 @@ The operating rules the owner approved, expressed as assertions so that weakenin
 ## 6. Reproducing this run
 
 ```
-git checkout 3ab49573ae58f9918b48f891b1cf57e4d89fa1ce
+git checkout 854c06272dd9a62a67b3e4fd6695b4a1c8995e25
 python3 tools/run_validation.py
 ```
 

@@ -17,12 +17,22 @@ AUTO_SOURCES = {"system", "integration", "calculation", "ai"}
 SYNCS_TO_DEVICE = {"Users", "Projects", "ProjectAssignments", "Locations", "ActivityTypes",
                    "SiteVisits", "VisitActivities", "Photos", "Snags"}
 ADMIN_ONLY_TABLES = {"AuditLog", "IntegrationJobs", "Approvals"}
-# The fields a supervisor actually touches on the normal form
+# The fields a supervisor actually touches on the normal form, after the capture-once
+# correction (D-16..D-20). Anything not in MANDATORY is optional or pre-filled, and a
+# normal photographic submission can be completed without touching it.
 FIELD_FORM = {
-    "SiteVisits": ["ProjectID", "LocationID", "VisitDate", "OverallDescriptionEN",
-                   "OverallDescriptionAR", "SafetyObservation"],
+    "SiteVisits": ["ProjectID", "LocationID", "VisitDate", "CaptureMode",
+                   "AdditionalSiteNote", "SiteNoteCategory", "SafetyObservation",
+                   "OverallDescriptionEN", "OverallDescriptionAR"],
     "VisitActivities": ["ActivityTypeID", "DescriptionEN", "Quantity", "PercentComplete"],
-    "Photos": ["EvidenceStage", "CaptionEN", "CaptionAR"],
+    "Photos": ["EvidenceStage", "CaptionEN", "CaptionAR", "AIProposalDisposition"],
+}
+# What a supervisor must supply to submit a normal photographic visit. Everything else
+# on the form is optional, pre-filled, or a confirmation of an AI proposal.
+MANDATORY = {
+    "SiteVisits": ["ProjectID", "LocationID", "VisitDate", "CaptureMode"],
+    "VisitActivities": [],
+    "Photos": ["EvidenceStage"],
 }
 REVIEWER_EXTRA = {
     "SiteVisits": ["RejectionReason"],
@@ -45,10 +55,11 @@ def classify(model, tables):
         syncs = total if t in SYNCS_TO_DEVICE else 0
         admin = total if t in ADMIN_ONLY_TABLES else 0
         field_form = len(FIELD_FORM.get(t, []))
+        mandatory = len(MANDATORY.get(t, []))
         reviewer = field_form + len(REVIEWER_EXTRA.get(t, []))
         rows.append({"table": t, "total": total, "auto": auto, "typed": total - auto,
                      "sensitive": sensitive, "syncs": syncs, "admin": admin,
-                     "field_form": field_form, "reviewer": reviewer})
+                     "field_form": field_form, "mandatory": mandatory, "reviewer": reviewer})
     return rows
 
 
@@ -62,13 +73,14 @@ def main():
     syncs = sum(r["syncs"] for r in rows)
     admin = sum(r["admin"] for r in rows)
     field_form = sum(r["field_form"] for r in rows)
+    mandatory = sum(r["mandatory"] for r in rows)
     reviewer = sum(r["reviewer"] for r in rows)
 
     o, w = [], None
     w = o.append
     w("# Release 1 — Twelve Tables, and What Reaches a Field User")
     w("")
-    w("**Document ID:** AH-SYS-P2A-021 · **Revision:** 1 · **Status:** generated — do not hand-edit")
+    w("**Document ID:** AH-SYS-P2A-021 · **Revision:** 2 · **Status:** generated — do not hand-edit")
     w(f"**Generated:** {TODAY} from `model/model.json` by `tools/gen_release1_scope.py`")
     w("")
     w("> **Storage field counts come from the canonical model.** Exposure counts come from the")
@@ -103,7 +115,8 @@ def main():
     w(f"| Of which **generated, never typed** | **{auto}** | System, integration or AI sourced. A person never sees a keyboard for these |")
     w(f"| **Synchronised to a field device** | **{syncs}** | Only from the nine tables a supervisor's phone holds at all |")
     w(f"| **Administrative only** | **{admin}** | Approvals, audit log and integration log. **Absent from the field data set entirely** |")
-    w(f"| **On the normal field form** | **{field_form}** | What a supervisor actually fills in |")
+    w(f"| **On the normal field form** | **{field_form}** | What a supervisor can touch, most of it optional |")
+    w(f"| **Mandatory to submit a normal photographic visit** | **{mandatory}** | Project, location, date, capture mode, evidence stage. **No written description among them (D-18)** |")
     w(f"| **Visible to a reviewer** | **{reviewer}** | The supervisor's fields plus the review controls |")
     w("")
     w("**An honest caveat on the sync number.** A row synchronises whole: if a table is in a")
@@ -116,18 +129,34 @@ def main():
     w("")
     w("### The normal field form, in full")
     w("")
-    w("| Screen | Fields the supervisor touches |")
+    w("Bold is mandatory. Everything else is pre-filled, conditional, optional, or a one-tap")
+    w("confirmation of an AI proposal.")
+    w("")
+    w("| Screen | Fields the supervisor can touch |")
     w("|---|---|")
     for t, fields in FIELD_FORM.items():
-        w(f"| {t} | {', '.join('`%s`' % f for f in fields)} |")
+        mand = MANDATORY.get(t, [])
+        w(f"| {t} | " + ", ".join(("**`%s`**" % f) if f in mand else ("`%s`" % f)
+                                  for f in fields) + " |")
     w("")
-    w(f"**{field_form} fields across three screens**, and several of those are pre-filled or")
-    w("conditional: the project defaults, the date defaults, the Arabic description is an")
-    w("alternative to the English one rather than an addition, the quantity appears only when the")
-    w("activity rule requires it, and percent complete is optional.")
+    w(f"**{field_form} fields across three screens, of which {mandatory} are mandatory.** The")
+    w("project defaults from the supervisor's assignment, the date defaults from the device, the")
+    w("Arabic description is an alternative to the English one rather than an addition, the")
+    w("quantity appears only when the activity rule requires it, percent complete is optional, and")
+    w("**the work description is optional in every normal case (D-18)** — the photographs are the")
+    w("submission.")
     w("")
     w(f"So of **{total}** fields in storage, a supervisor meets **{field_form}** — about")
-    w(f"**{field_form / total * 100:.0f}%** — and types fewer than that on a normal visit.")
+    w(f"**{field_form / total * 100:.0f}%** — and must supply only **{mandatory}**")
+    w(f"(**{mandatory / total * 100:.0f}%**) on a normal visit.")
+    w("")
+    w("### Capture once, use twice")
+    w("")
+    w("The photographs are captured or selected **exactly once** (CAP-01). The same stored files")
+    w("are handed to the main-contractor group through the native share sheet and re-used by every")
+    w("later report. `Photos.CaptureBatchID` and `Photos.CaptureSequence` are the mechanism; a")
+    w("failed or cancelled share is retried from stored evidence and never asks the supervisor to")
+    w("select the images again. See [`24-capture-once-workflow.md`](24-capture-once-workflow.md).")
     w("")
     w("### Why the storage model is larger than the form")
     w("")
@@ -142,11 +171,11 @@ def main():
     w("")
     w("## 4. Per-table exposure")
     w("")
-    w("| Table | Fields | Syncs to device | Field form | Reviewer view | Admin only |")
-    w("|---|---|---|---|---|---|")
+    w("| Table | Fields | Syncs to device | Field form | Of which mandatory | Reviewer view | Admin only |")
+    w("|---|---|---|---|---|---|---|")
     for r in rows:
         w(f"| `{r['table']}` | {r['total']} | {'Yes' if r['syncs'] else 'No'} | "
-          f"{r['field_form'] or '—'} | {r['reviewer'] or '—'} | "
+          f"{r['field_form'] or '—'} | {r['mandatory'] or '—'} | {r['reviewer'] or '—'} | "
           f"{'**Yes**' if r['admin'] else 'No'} |")
     w("")
     w("## 5. What release 1 deliberately cannot do")
@@ -167,7 +196,7 @@ def main():
     with open(OUT, "w", encoding="utf-8") as fh:
         fh.write("\n".join(o) + "\n")
     print(f"wrote {os.path.relpath(OUT, modeldef.ROOT)}: {total} fields, "
-          f"{field_form} on the field form")
+          f"{field_form} on the field form, {mandatory} mandatory")
 
 
 if __name__ == "__main__":

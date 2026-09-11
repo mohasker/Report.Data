@@ -114,7 +114,8 @@ end-to-end.
 | Materials, MaterialUsage, Equipment, Manpower tables | 5b–6 | Valuable for cost control, not required to produce an accepted report. Schema is designed in Phase 1 so adding them later is additive. |
 | Client acknowledgement / client portal | Post-MVP | Client-facing surface increases risk before internal process is stable. |
 | OwlAgent conversational interface | Post-MVP, optional | Convenience only. Never a system of record, never the sole trigger for a critical workflow. |
-| WhatsApp as an input channel | Not planned | Operating rules 12–13. |
+| WhatsApp as an **input** channel | Not planned | Operating rules 12–13. AppSheet is the field-input channel |
+| WhatsApp as an **output** channel | **In scope, by native share only (D-16)** | The supervisor shares the stored files to the existing contractor group through the operating system's share sheet. A human chooses the destination; the system automates nothing, reads nothing back, and creates no public link. Unverified: `CAP-GATE` |
 | Payroll data, HR records | Not planned | Explicitly excluded from field-visible data (§5.13). |
 
 ## MVP acceptance criteria

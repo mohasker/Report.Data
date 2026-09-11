@@ -98,14 +98,81 @@
       "type": "string",
       "x-source": "user",
       "x-bilingual-pair": "OverallDescriptionAR",
-      "x-in-content-hash": true
+      "x-in-content-hash": true,
+      "description": "NOT mandatory. A normal submission is established by photographs. A written description is required only in the declared exceptional workflows. Validation: Optional for a normal photographic submission (D-18)"
     },
     "OverallDescriptionAR": {
       "type": "string",
       "x-source": "user",
       "x-language": "ar",
       "x-in-content-hash": true,
-      "description": "A supervisor may write in either language; both are carried to the report (D-11)."
+      "description": "A supervisor may write in either language; both are carried to the report (D-11). Validation: Optional for a normal photographic submission (D-18)"
+    },
+    "AdditionalSiteNote": {
+      "type": "string",
+      "x-source": "user",
+      "description": "For facts a photograph cannot establish (D-18). Speech-to-text is a future input method for this field, not a new field. Validation: Optional. Mandatory only in the exceptional workflows listed in capture_once.optional_note.mandatory_exceptions"
+    },
+    "SiteNoteCategory": {
+      "type": "string",
+      "enum": [
+        "ClientInstruction",
+        "AccessRestriction",
+        "PermitIssue",
+        "HiddenDefect",
+        "MeasuredQuantity",
+        "MaterialQuantityOrBatch",
+        "EquipmentFailure",
+        "NonCompletionReason",
+        "SafetyRestriction",
+        "PostponedByOtherParty"
+      ],
+      "x-enum": "SiteNoteCategory",
+      "x-source": "user",
+      "description": "Classifies the optional note so it can be routed and reported. Never inferred by AI."
+    },
+    "CaptureMode": {
+      "type": "string",
+      "enum": [
+        "QuickShare",
+        "AIReviewedShare"
+      ],
+      "x-enum": "CaptureMode",
+      "x-source": "user",
+      "description": "Quick Share or AI Reviewed Share (D-16). Both capture the images exactly once."
+    },
+    "ShareStatus": {
+      "type": "string",
+      "enum": [
+        "NotShared",
+        "ShareInitiated",
+        "ShareConfirmed",
+        "ShareCancelled",
+        "ShareFailed"
+      ],
+      "x-enum": "ShareStatus",
+      "x-source": "user",
+      "description": "Recorded from the supervisor's confirmation. The app cannot observe delivery inside the messaging application."
+    },
+    "SharedAt": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "SharedByUserID": {
+      "type": "string",
+      "x-references": "Users.UserID",
+      "x-source": "system",
+      "description": "References Users.UserID"
+    },
+    "ShareTargetLabel": {
+      "type": "string",
+      "x-source": "config",
+      "description": "A label for the destination group, held as project configuration. NEVER a telephone number, group invitation link or messaging identifier (D-19)."
+    },
+    "ShareAttemptCount": {
+      "type": "integer",
+      "x-source": "system",
+      "description": "Incremented on every share attempt. A retry re-uses the stored evidence and must never ask the supervisor to select the images again (CAP-01)."
     },
     "SafetyObservation": {
       "type": "string",
@@ -211,6 +278,9 @@
     "LocationID",
     "VisitDate",
     "SupervisorUserID",
+    "CaptureMode",
+    "ShareStatus",
+    "ShareAttemptCount",
     "WorkflowStatus",
     "EntityVersion",
     "ContentHash",

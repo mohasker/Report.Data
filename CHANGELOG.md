@@ -337,3 +337,67 @@ in a dedicated `AHFR` folder, with a naming convention, a label, system-account 
 project-only connections.
 
 **Validation:** 191 checks across 12 suites, all passing, including six new release-1 checks.
+
+---
+
+## [0.6.0] — 2026-09-11 — Capture once, use twice, and the portable handoff package
+
+The owner's operational correction, applied to the canonical model first and to every affected
+document from there, plus a self-contained handoff package for transfer to another account.
+
+**Owner decisions D-16 to D-21** — recorded in `docs/00-discovery/10-owner-decisions.md`:
+
+- **D-16 Capture once, use twice.** The supervisor never uploads, selects or describes the same
+  evidence twice. One capture serves the contractor-group share and every report. Two operating
+  modes, Quick Share and AI Reviewed Share, both capturing exactly once. **`CAP-01`: the workflow
+  fails acceptance if the supervisor must select or upload the images a second time.**
+- **D-17 AI proposes; the supervisor decides.** Eight advisory proposal columns, separate from the
+  confirmed values, with the human disposition recorded.
+- **D-18 The written description is not mandatory** for a normal photographic submission. An
+  optional site note with a ten-value category vocabulary; four named exceptional workflows where a
+  reason is still required.
+- **D-19 What AI may not infer**, and where trusted context comes from.
+- **D-20 No quantitative or contractual field may originate from an image.**
+- **D-21 The capture platform is an interface decision, and it is gated** by `CAP-GATE`.
+
+**Added**
+
+- `model/model.json` → `capture_once` — the canonical block: the nine workflow steps, both modes,
+  the optional-note rule, what AI proposes, the nine forbidden inferences, sixteen columns closed to
+  AI, the sharing rules, and the fifteen-condition platform gate.
+- `tools/gen_capture_once.py` → `docs/02a-plan/24-capture-once-workflow.md`, generated.
+- `tools/test_capture_once.py` — **28 new checks (`CAP-01` … `CAP-26`)**, including a regression
+  guard that fails if any document reintroduces a mandatory work description.
+- `docs/00-discovery/adr/ADR-0009-capture-once-native-share.md`.
+- `schemas/ai/evidence-analysis-batch.v1.json` — one advisory analysis per **capture batch**.
+- Twenty columns: `SiteVisits.CaptureMode`, `ShareStatus`, `SharedAt`, `SharedByUserID`,
+  `ShareTargetLabel`, `ShareAttemptCount`, `AdditionalSiteNote`, `SiteNoteCategory`;
+  `Photos.CaptureBatchID`, `CaptureSequence`, `AIProposedEvidenceStage`, `AIProposedActivityText`,
+  `AIProposedCaptionEN/AR`, `AIVisibleCondition`, `AIPossibleSnag`, `AIImageQualityWarning`,
+  `AIUncertaintyNote`, `AIProposalDisposition`, `AIAnalysedAt`. Four new enums.
+- Risks **R-33 … R-39**; external facts **EF-24 … EF-26**; open questions **OQ-15 … OQ-19**.
+- `docs/02a-plan/19-real-device-test-protocol.md` §4b — the `CAP-GATE` test, fifteen conditions,
+  both platforms, both modes, with an explicit blocking rule for each.
+- **The portable handoff package:** `START-HERE-NEW-CLAUDE.md`, `MASTER-SPEC-CONSOLIDATED.md`,
+  `CURRENT-STATUS-AND-NEXT-PROMPT.md`, `DECISIONS-AND-ASSUMPTIONS.md`, `HANDOFF-MANIFEST.json`,
+  `HANDOFF-MANIFEST.md`.
+
+**Changed — and not quietly**
+
+- **AI analysis is re-costed upward.** Every captured photograph is analysed, not only the ~60% a
+  reviewer later approves, because a proposal that arrives after the review proposes nothing to
+  anybody. Pilot cost rises from ~$4.50 to **~$7.56 a month**; derivative transfer roughly doubles,
+  moving the Option A ceiling from twenty projects down to about ten.
+- **The AI proposal does not fit the free orchestration tier.** Roughly 1,440 operations a month
+  against a 1,000 limit, and a third scenario against a ceiling of two. Four honest responses are
+  costed in `23-operations-budget.md` §6b; release 1 ships Quick Share and the capture-once
+  guarantee holds regardless.
+- `MASTER_SPEC.md` is retained as the **received baseline** and now points at
+  `MASTER-SPEC-CONSOLIDATED.md` as the current authority. §3a carries the correction.
+- WhatsApp is now explicitly an **output** channel by native share, while remaining out of scope as
+  an input channel. Corrected in `01-mvp-boundary.md`, `02-architecture.md` and the discovery
+  summary, which previously said only "no WhatsApp automation".
+- `21-release-1-twelve-tables.md` now reports **282 fields, 17 on the field form, of which 5 are
+  mandatory** — and none of the five is a description.
+
+**Validation:** **219 checks across 13 suites, all passing.** Byte-identical regeneration confirmed.

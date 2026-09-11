@@ -1,8 +1,11 @@
 # Real-Device Test Protocol
 
-**Document ID:** AH-SYS-P2A-019 · **Revision:** 1 · **Date:** 2026-09-11
+**Document ID:** AH-SYS-P2A-019 · **Revision:** 2 · **Date:** 2026-09-11
 **Status:** Completed · **Not executed** — no device, no app, no supervisor
 **Supersedes the measurement sections of:** `05-offline-test-plan.md`, `13-field-workflow-and-taps.md`
+**Revision 2** adds §4b, the `CAP-GATE` native-share test — the pass/fail requirement the
+owner set on 2026-09-11. It is the most consequential section in this protocol: a failure
+there changes the capture platform, not the form.
 
 > **The target is a design target, not a validated result.** Recorded as the owner specified:
 >
@@ -17,8 +20,11 @@
 ## 1. What is being measured
 
 **In the measured time:** opening the app, selecting project and location, choosing activities,
-entering a quantity where required, opening the camera, tagging evidence stages, typing a
-description, submitting, confirming.
+entering a quantity where required, opening the camera, tagging evidence stages or confirming the
+AI proposal, submitting, confirming, **and completing the native share to the contractor group**.
+
+A typed description is **not** in the measured flow: it is optional for a normal photographic
+submission (D-18). If a supervisor chooses to add a site note, that run is recorded separately.
 
 **Excluded from the measured time:** walking to the subject, positioning the phone, waiting for
 focus, the physical act of framing and taking each photograph. These vary with the site, not the
@@ -84,6 +90,64 @@ reopening each time, or M-3 shows time per photograph rising, measure Method B o
 and compare. **Do not switch on impression** — switch on M-1, M-3 and M-9 together, because
 Method B trades a faster loop for a more complex failure mode.
 
+## 4b. CAP-GATE — the native share test *(pass/fail, blocking)*
+
+**The question:** can the capture platform reliably share multiple actual image files and formatted
+text through the native share sheet to an **existing** WhatsApp or WhatsApp Business group, on iOS
+and Android?
+
+**The acceptance rule, before anything else is measured:**
+
+> **CAP-01 — the workflow fails acceptance if the supervisor must select or upload the images a
+> second time.**
+
+### The fifteen conditions
+
+| # | Condition | Recorded | Pass |
+|---|---|---|---|
+| 1 | One photograph | Attached as a file? | File, not a link |
+| 2 | Six photographs | All six attached? | All six, none dropped |
+| 3 | Portrait and landscape mixed | Orientation preserved? | Preserved, not rotated |
+| 4 | Image order | Order as captured? | Matches `CaptureSequence` |
+| 5 | Formatted summary | Text arrives with the images? | Text present and legible, Arabic included |
+| 6 | Standard WhatsApp | Group reachable from the share sheet? | Existing group appears |
+| 7 | WhatsApp Business | Same | Existing group appears |
+| 8 | Normal connection | Time to complete | Recorded |
+| 9 | Weak connection | Behaviour and time | No silent loss |
+| 10 | Offline capture, then synchronisation | Share offered again on reconnect? | Offered, **from stored files** |
+| 11 | Images attached, or only links | Which one | **Files. A link-only share is a FAIL** |
+| 12 | **Must the user select the images again?** | Yes / no | **No. Yes is a FAIL — this is CAP-01** |
+| 13 | Is a public Drive link created? | Yes / no | **No. Yes is a FAIL** |
+| 14 | Temporary files left on the device | What, where, how long | Recorded; anything persistent is a finding |
+| 15 | Failed or cancelled share recovery | Can it be retried without re-capture? | Retry from stored evidence |
+
+Each condition is run on **both** devices in the §2 matrix, in **both** operating modes (Quick Share
+and AI Reviewed Share). Screenshots of the share sheet and of the received group message are part of
+the record.
+
+### What a failure means
+
+| Result | Action |
+|---|---|
+| All fifteen pass on both platforms | **AppSheet is confirmed as the capture platform.** Proceed |
+| Condition 12 fails (second selection required) | **Blocking. Do not implement a duplicate-upload workaround.** Produce the capture-platform decision comparison |
+| Condition 11 or 13 fails (link instead of files, or a public link) | **Blocking**, for the same reason: it breaks both the evidence-control rule and the capture-once rule |
+| Conditions 3, 4, 5, 9, 14 fail | Findings, not blockers. Record, then decide whether they are acceptable |
+| Condition 10 or 15 fails | **Blocking for field use.** A supervisor who loses a share after leaving the site re-visits, and the habit dies |
+
+### The comparison that runs if it fails
+
+1. AppSheet with a proven native-share method.
+2. A lightweight custom PWA or mobile field application using supported native file sharing.
+3. Any other official, policy-compliant approach.
+
+**Forbidden in all three:** unofficial WhatsApp Web automation, group scraping, and any publicly
+accessible Drive link.
+
+**What does not change if the platform does:** the canonical data model, Drive security, Make
+orchestration, Claude controls, approval rules and audit requirements. They are defined independently
+of the capture interface, which is the whole reason this is a survivable failure.
+
 ## 5. Image fidelity
 
 | # | Test | Records |
@@ -145,11 +209,18 @@ with a location.
 | Any evidence loss, in any run | **Blocking.** Nothing proceeds until the cause is found |
 | Photographs re-encoded | Not blocking. Record it and keep the verification flag FALSE |
 | Segregation failure | **Blocking, and treated as a security incident** even on synthetic data |
+| **CAP-01 fails: a second image selection is required** | **Blocking.** No workaround. The capture-platform comparison runs |
+| **A link-only share, or a public link** | **Blocking**, for evidence control as well as usability |
+| A share cannot be retried after failure without re-capture | **Blocking for field use** |
 
 ## 10. Recording
 
 One row per run, in a results sheet: date, device, OS version, connection state, visit shape,
-capture method, elapsed time, taps, failures, mistakes, sync time, observations.
+capture method, operating mode (Quick Share or AI Reviewed Share), elapsed time, taps, **times the
+images were selected**, share result, failures, mistakes, sync time, observations.
+
+**Times the images were selected** is the one column that cannot be argued about afterwards. It is
+either 1 or it is a failure.
 
 **Failures are recorded as prominently as successes.** A protocol whose results contain only passes
 has not been executed honestly, and the numbers that matter here are the ones nobody wanted.

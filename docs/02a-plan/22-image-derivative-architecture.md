@@ -1,8 +1,12 @@
 # Image Derivative Architecture — Three Classes and How AI Analysis Gets Its Copy
 
-**Document ID:** AH-SYS-P2A-022 · **Revision:** 1 · **Date:** 2026-09-11
+**Document ID:** AH-SYS-P2A-022 · **Revision:** 2 · **Date:** 2026-09-11
 **Status:** Completed · Submitted for Owner Review · **Nothing connected, no API call made**
 **Corrects:** the rule that image bytes must "never" pass through the orchestration layer, which conflicted with visual AI analysis
+**Revision 2** re-costs the analysis against the capture-once workflow (D-16, D-17): analysis now runs
+on **every captured photograph**, before the review decision, not only on the ~60% a reviewer later
+approves. That raises the volume by two thirds and the cost with it. Stated here rather than absorbed
+quietly.
 
 ---
 
@@ -108,29 +112,48 @@ original untouched; they differ only in which component reads the derivative.
 ## 5. The numbers, under Option A
 
 Assumptions stated: expected scenario, three pilot projects, 120 photographs per project per month,
-**only reviewer-approved photographs analysed** (~60%), derivative 400 KB average.
+derivative 400 KB average.
+
+**The volume assumption changed with D-17.** Revision 1 analysed only the ~60% of photographs a
+reviewer later approved. The capture-once workflow analyses **every captured photograph**, because
+the proposal is what the supervisor confirms — an analysis that arrives after the review decision
+proposes nothing to anybody. So the analysed count is now the captured count.
 
 | Quantity | Pilot (3 projects) | 10 projects | 20 projects |
 |---|---|---|---|
 | Photographs captured per month | 360 | 1,200 | 2,400 |
-| **Analysed** (approved only, ~60%) | **216** | 720 | 1,440 |
+| **Analysed** — rev 1, approved only (~60%) | 216 | 720 | 1,440 |
+| **Analysed** — rev 2, **every captured photograph** | **360** | **1,200** | **2,400** |
 | Average derivative size | 400 KB | 400 KB | 400 KB |
-| **Make transfer per month** | **~86 MB** | ~288 MB | **~576 MB** |
-| Against the verified 512 MB/month limit | **17%** | 56% | **112% — breached** |
+| **Make transfer per month** (rev 2) | **~144 MB** | ~480 MB | **~960 MB** |
+| Against the verified 512 MB/month limit | **28%** | **94% — at the edge** | **188% — breached** |
 | 5 MB per-file compliance | ✅ 400 KB, 8% of the limit | ✅ | ✅ |
 
-**Option A holds to about ten projects and breaks somewhere before twenty.** That is the trigger to
-move to Option B — a measured threshold, not a guess.
+**Option A now holds comfortably only at pilot scale.** Revision 1 put the break somewhere before
+twenty projects; on the corrected volume it is **at roughly ten**, where transfer reaches 94% of the
+limit with no headroom for a retry. The threshold to move to Option B — a Workspace-side component
+that never routes bytes through the orchestration layer — is therefore **ten projects, or 400 MB of
+measured monthly transfer, whichever comes first.**
+
+That is a real cost of the capture-once correction, and it is the honest one: proposing to a
+supervisor is worth more than saving transfer, but it does not come free.
 
 ### Claude input cost
 
 Per analysed photograph, at 1024×768 (1,036 visual tokens) plus ~600 tokens of prompt and caption,
 returning ~500 output tokens of schema-valid JSON:
 
-| Model | Input | Output | **Per image** | **216/month (pilot)** | 1,440/month (20 projects) |
+| Model | Input | Output | **Per image** | **360/month (pilot, rev 2)** | 2,400/month (20 projects) |
 |---|---|---|---|---|---|
-| **Claude Opus 5** (default) | ~1,636 tok @ $5/M = $0.0082 | ~500 tok @ $25/M = $0.0125 | **~$0.021** | **~$4.50** | ~$30 |
-| Claude Haiku 4.5 (owner's choice, if wanted) | @ $1/M = $0.0016 | @ $5/M = $0.0025 | ~$0.004 | ~$0.90 | ~$6 |
+| **Claude Opus 5** (default) | ~1,636 tok @ $5/M = $0.0082 | ~500 tok @ $25/M = $0.0125 | **~$0.021** | **~$7.56** | ~$50 |
+| Claude Haiku 4.5 (owner's choice, if wanted) | @ $1/M = $0.0016 | @ $5/M = $0.0025 | ~$0.004 | ~$1.50 | ~$10 |
+
+*(Revision 1 quoted ~$4.50 and ~$30 on the approved-only volume of 216 and 1,440. Those figures are
+superseded, not withdrawn as wrong: they were right for the workflow as it then stood.)*
+
+**Batching does not change the per-image cost**, because the images are the tokens. What it changes
+is the **orchestration** cost: one request per capture batch rather than one per photograph is the
+difference between 703 Make operations and roughly 2,160 (`23-operations-budget.md`).
 
 Opus 5 is the default. Haiku is listed because the owner may reasonably choose it for a per-image
 classification task — **that is a decision for the owner, not a change I would make to save money.**
@@ -138,6 +161,9 @@ A pilot at roughly five dollars a month is not where cost discipline matters.
 
 If the derivative were left at 2000×1500 instead of 1024×768, the input cost roughly **triples** with
 no change to anything else.
+
+**A cap the owner sets still bounds all of this** (EF-04). At pilot volume the cap is not the binding
+constraint; at twenty projects it is, and that is the point of having one.
 
 ## 6. What is sent, and what is not
 

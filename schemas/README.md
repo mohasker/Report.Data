@@ -25,15 +25,16 @@ the integration testable.
 | File | Purpose |
 |---|---|
 | `evidence-analysis.v1.json` | Advisory analysis of one photograph (spec 9.1) |
+| `evidence-analysis-batch.v1.json` | Advisory analysis of one **capture batch** — every photograph captured in a single action, in one request (D-17). One request per capture rather than one per photograph: the capture-once unit, and the only affordable one |
 | `report-qa.v1.json` | Review of a generated draft against its source records (spec 9.3) |
 
-Both are **closed** (`additionalProperties: false`) and validated before anything is stored. A
+All three are **closed** (`additionalProperties: false`) and validated before anything is stored. A
 response that does not validate is classified `SchemaMismatch`, dead-lettered with the sanitised
 payload, and never retried blindly.
 
 ### The deliberate absence
 
-`evidence-analysis.v1.json` contains **no numeric quantity, measurement, area, length or count field
+Both evidence schemas contain **no numeric quantity, measurement, area, length or count field
 of any kind**. A model cannot report a quantity because the schema gives it nowhere to put one. This
 is a structural control, not an instruction that can be argued with — and it is why GOV-09 and
 GOV-11 can assert that no AI field reaches a content hash or a monetary path.

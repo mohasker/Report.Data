@@ -42,9 +42,9 @@
 | [`ApprovalMatrix`](#approvalmatrix) | master | project | internal | Phase 1–2 (MVP core) | 13 | Who approves what, per project and stage (D-09, D-15 item 6). The GM is the MVP approver, and the structure supports delegation without redesign. |
 | [`ApprovalDelegations`](#approvaldelegations) | master | global | internal | Phase 1–2 (MVP core) | 17 | Temporary delegation of an approval authority (D-09). Every delegated decision records both the acting user and the original responsible user. |
 | [`ResidencyAssignments`](#residencyassignments) | master | project | internal | Phase 1–2 (MVP core) | 14 | Binds a residency requirement to a client, contract or project (D-12). |
-| [`SiteVisits`](#sitevisits) | operational | project | confidential | Phase 1–2 (MVP core) | 29 | One reporting event at a location on a date. The unit of submission and review. |
+| [`SiteVisits`](#sitevisits) | operational | project | confidential | Phase 1–2 (MVP core) | 37 | One reporting event at a location on a date. The unit of submission and review. |
 | [`VisitActivities`](#visitactivities) | operational | project | confidential | Phase 1–2 (MVP core) | 19 | What was actually done during a visit. One row per activity. |
-| [`Photos`](#photos) | operational | project | confidential | Phase 1–2 (MVP core) | 44 | One photograph per row. The received file is write-once and is never altered (D-13). |
+| [`Photos`](#photos) | operational | project | confidential | Phase 1–2 (MVP core) | 56 | One photograph per row. The received file is write-once and is never altered (D-13). |
 | [`Snags`](#snags) | operational | project | confidential | Phase 1–2 (MVP core) | 24 | Defects and observations tracked to closure with evidence. |
 | [`DocumentJobs`](#documentjobs) | document | project | internal | Phase 5 | 27 | A request to produce a document from a frozen snapshot of approved records. |
 | [`Documents`](#documents) | document | project | confidential | Phase 5 | 25 | A produced document revision. Approval binds to ContentHash (ADR-0006). |
@@ -67,7 +67,7 @@
 | [`Employees`](#employees) | master | global | personal | Phase 5 | 12 | Crew register for resource reporting. Payroll data is deliberately excluded (spec 5.13). |
 | [`VisitManpower`](#visitmanpower) | operational | project | internal | Phase 5 | 12 | Manpower present during a visit, for resource summaries only. |
 
-**46 tables · 829 columns · 26 controlled vocabularies.**
+**46 tables · 849 columns · 30 controlled vocabularies.**
 
 ---
 
@@ -715,8 +715,16 @@ One reporting event at a location on a date. The unit of submission and review.
 | `SupervisorUserID` | ref → `Users.UserID` | ✔ | system |  | ✔ | Defaults from USEREMAIL(); must hold an active assignment to ProjectID. |
 | `GPSLatitude` | decimal(7) |  | device |  |  |  |
 | `GPSLongitude` | decimal(7) |  | device |  |  |  |
-| `OverallDescriptionEN` | longtext |  | user |  | ✔ |  |
-| `OverallDescriptionAR` | longtext |  | user |  | ✔ | A supervisor may write in either language; both are carried to the report (D-11). |
+| `OverallDescriptionEN` | longtext |  | user |  | ✔ | Optional for a normal photographic submission (D-18). NOT mandatory. A normal submission is established by photographs. A written description is required only in the declared exceptional workflows. |
+| `OverallDescriptionAR` | longtext |  | user |  | ✔ | Optional for a normal photographic submission (D-18). A supervisor may write in either language; both are carried to the report (D-11). |
+| `AdditionalSiteNote` | longtext |  | user |  |  | Optional. Mandatory only in the exceptional workflows listed in capture_once.optional_note.mandatory_exceptions. For facts a photograph cannot establish (D-18). Speech-to-text is a future input method for this field, not a new field. |
+| `SiteNoteCategory` | enum `SiteNoteCategory` |  | user |  |  | Classifies the optional note so it can be routed and reported. Never inferred by AI. |
+| `CaptureMode` | enum `CaptureMode` | ✔ | user |  |  | Default `AIReviewedShare`. Quick Share or AI Reviewed Share (D-16). Both capture the images exactly once. |
+| `ShareStatus` | enum `ShareStatus` | ✔ | user |  |  | Default `NotShared`. Recorded from the supervisor's confirmation. The app cannot observe delivery inside the messaging application. |
+| `SharedAt` | datetime |  | system |  |  |  |
+| `SharedByUserID` | ref → `Users.UserID` |  | system |  |  |  |
+| `ShareTargetLabel` | text |  | config |  |  | A label for the destination group, held as project configuration. NEVER a telephone number, group invitation link or messaging identifier (D-19). |
+| `ShareAttemptCount` | int | ✔ | system |  |  | Default `0`. Incremented on every share attempt. A retry re-uses the stored evidence and must never ask the supervisor to select the images again (CAP-01). |
 | `SafetyObservation` | longtext |  | user |  | ✔ |  |
 | `ClientRepresentative` | text |  | user | personal | ✔ |  |
 | `ClientAcknowledgementStatus` | text |  | user |  | ✔ | NotRequested\|Claimed\|Declined. A CLAIM recorded on site. Never treated as a client approval (A-20). |
@@ -800,10 +808,22 @@ One photograph per row. The received file is write-once and is never altered (D-
 | `CaptionAR` | text |  | user |  | ✔ |  |
 | `GPSLatitude` | decimal(7) |  | device |  |  |  |
 | `GPSLongitude` | decimal(7) |  | device |  |  |  |
+| `CaptureBatchID` | text |  | system |  |  | Groups the photographs captured in one action, so the share and the report both re-use the same stored set. The mechanism behind capture once, use twice (CAP-01). |
+| `CaptureSequence` | int |  | system |  |  | Order within the capture batch. Share order and report order derive from this; the supervisor never re-orders by re-selecting files. |
 | `IsDuplicateSuspected` | bool | ✔ | system |  |  | Default `FALSE`. Flag only. A suspected duplicate is never deleted or merged (S-09). |
 | `DuplicateOfPhotoID` | ref → `Photos.PhotoID` |  | system |  |  |  |
 | `AIAnalysisStatus` | enum `AIAnalysisStatus` | ✔ | system |  |  | Default `NotRequested`. |
 | `AIObservation` | json |  | ai |  |  | ADVISORY ONLY. Schema-validated output, displayed as an AI observation, visually distinct from the caption and the reviewer decision (D-06). |
+| `AIProposedEvidenceStage` | enum `EvidenceStage` |  | ai |  |  | A PROPOSAL. Never written to EvidenceStage. The supervisor confirms or corrects it (D-17). |
+| `AIProposedActivityText` | text |  | ai |  |  | Free text describing the visible activity. Deliberately NOT a reference to ActivityTypes: a contractual activity is a trusted structured field and may not originate from an image (D-20). |
+| `AIProposedCaptionEN` | text |  | ai |  |  | Proposed professional caption. Copied into CaptionEN only by a human action. |
+| `AIProposedCaptionAR` | text |  | ai |  |  |  |
+| `AIVisibleCondition` | text |  | ai |  |  | Visible condition only. Never a cause, never a compliance judgement (D-20). |
+| `AIPossibleSnag` | bool |  | ai |  |  | Raises a question for the supervisor. Creates no Snag record by itself. |
+| `AIImageQualityWarning` | text |  | ai |  |  | Blur, exposure, obstruction, framing. Advisory; never blocks a submission. |
+| `AIUncertaintyNote` | text |  | ai |  |  | What the model could not determine. Required by the analysis schema so that uncertainty is stated rather than hidden. |
+| `AIProposalDisposition` | enum `AIProposalDisposition` | ✔ | user |  |  | Default `NotOffered`. What the supervisor did with the proposal. Set only by a human (D-17). |
+| `AIAnalysedAt` | datetime |  | system |  |  | In Quick Share this is later than SharedAt, by design. |
 | `AIConfidence` | decimal(2) |  | ai |  |  | 0.00-1.00. Advisory. Never a threshold for automatic approval. |
 | `AIModel` | text |  | ai |  |  | Recorded for reproducibility. |
 | `AIPromptVersion` | text |  | ai |  |  |  |
@@ -1564,6 +1584,55 @@ What a photograph is evidence of (spec 5.10).
 | `Equipment` | Equipment | معدات |  |
 | `Safety` | Safety | السلامة | Caption mandatory. |
 | `Other` | Other | أخرى |  |
+
+### CaptureMode
+
+How a submission reaches the main-contractor group (D-16).
+
+| Code | English | العربية | Meaning |
+|---|---|---|---|
+| `QuickShare` | Quick share | مشاركة فورية | Capture, store, then open the native share sheet immediately. AI analysis runs afterwards and prepares the internal report metadata. |
+| `AIReviewedShare` | AI reviewed share | مشاركة بعد المراجعة | Capture, AI proposal, supervisor confirmation, then the native share sheet. |
+
+### ShareStatus
+
+Outcome of the native share action. Never set by AI (D-16).
+
+| Code | English | العربية | Meaning |
+|---|---|---|---|
+| `NotShared` | Not shared | لم تتم المشاركة | Default. |
+| `ShareInitiated` | Share initiated | بدأت المشاركة | The share sheet was opened. The system cannot observe what happened inside it. |
+| `ShareConfirmed` | Share confirmed | تم تأكيد المشاركة | The supervisor confirmed the share completed. A human claim, not a platform receipt. |
+| `ShareCancelled` | Share cancelled | أُلغيت المشاركة | Recoverable; the evidence is retained. |
+| `ShareFailed` | Share failed | فشلت المشاركة | Recoverable. Re-sharing must never require re-selecting the images (CAP-01). |
+
+### AIProposalDisposition
+
+What the supervisor did with the AI proposal (D-17).
+
+| Code | English | العربية | Meaning |
+|---|---|---|---|
+| `NotOffered` | Not offered | لم تُعرض | Quick Share, or analysis not yet complete. |
+| `Accepted` | Accepted | مقبول | Confirmed unchanged. Still a human decision. |
+| `Corrected` | Corrected | مُصحح | The supervisor changed one or more proposed values. |
+| `Rejected` | Rejected | مرفوض | The proposal was discarded entirely. |
+
+### SiteNoteCategory
+
+Why an optional site note was written (D-18). Facts a photograph cannot establish.
+
+| Code | English | العربية | Meaning |
+|---|---|---|---|
+| `ClientInstruction` | Client instruction | تعليمات العميل |  |
+| `AccessRestriction` | Access restriction | قيود الدخول |  |
+| `PermitIssue` | Permit issue | مشكلة تصريح |  |
+| `HiddenDefect` | Hidden or underground defect | عيب مخفي أو تحت الأرض |  |
+| `MeasuredQuantity` | Measured quantity | كمية مقاسة | Typed by a person. Never proposed by image analysis. |
+| `MaterialQuantityOrBatch` | Material quantity or batch | كمية أو دفعة المواد |  |
+| `EquipmentFailure` | Equipment failure | عطل معدات |  |
+| `NonCompletionReason` | Reason for non-completion | سبب عدم الإنجاز |  |
+| `SafetyRestriction` | Safety restriction | قيد يتعلق بالسلامة |  |
+| `PostponedByOtherParty` | Work postponed by another party | تأجيل من طرف آخر |  |
 
 ### ReviewerDecision
 

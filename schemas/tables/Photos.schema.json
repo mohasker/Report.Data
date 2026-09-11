@@ -154,6 +154,16 @@
       "x-storage": "decimal string; never a float (spec 11)",
       "x-source": "device"
     },
+    "CaptureBatchID": {
+      "type": "string",
+      "x-source": "system",
+      "description": "Groups the photographs captured in one action, so the share and the report both re-use the same stored set. The mechanism behind capture once, use twice (CAP-01)."
+    },
+    "CaptureSequence": {
+      "type": "integer",
+      "x-source": "system",
+      "description": "Order within the capture batch. Share order and report order derive from this; the supervisor never re-orders by re-selecting files."
+    },
     "IsDuplicateSuspected": {
       "type": "boolean",
       "x-source": "system",
@@ -187,6 +197,76 @@
       ],
       "x-source": "ai",
       "description": "ADVISORY ONLY. Schema-validated output, displayed as an AI observation, visually distinct from the caption and the reviewer decision (D-06)."
+    },
+    "AIProposedEvidenceStage": {
+      "type": "string",
+      "enum": [
+        "Before",
+        "During",
+        "After",
+        "Observation",
+        "Snag",
+        "Material",
+        "Equipment",
+        "Safety",
+        "Other"
+      ],
+      "x-enum": "EvidenceStage",
+      "x-source": "ai",
+      "description": "A PROPOSAL. Never written to EvidenceStage. The supervisor confirms or corrects it (D-17)."
+    },
+    "AIProposedActivityText": {
+      "type": "string",
+      "x-source": "ai",
+      "description": "Free text describing the visible activity. Deliberately NOT a reference to ActivityTypes: a contractual activity is a trusted structured field and may not originate from an image (D-20)."
+    },
+    "AIProposedCaptionEN": {
+      "type": "string",
+      "x-source": "ai",
+      "x-bilingual-pair": "AIProposedCaptionAR",
+      "description": "Proposed professional caption. Copied into CaptionEN only by a human action."
+    },
+    "AIProposedCaptionAR": {
+      "type": "string",
+      "x-source": "ai",
+      "x-language": "ar"
+    },
+    "AIVisibleCondition": {
+      "type": "string",
+      "x-source": "ai",
+      "description": "Visible condition only. Never a cause, never a compliance judgement (D-20)."
+    },
+    "AIPossibleSnag": {
+      "type": "boolean",
+      "x-source": "ai",
+      "description": "Raises a question for the supervisor. Creates no Snag record by itself."
+    },
+    "AIImageQualityWarning": {
+      "type": "string",
+      "x-source": "ai",
+      "description": "Blur, exposure, obstruction, framing. Advisory; never blocks a submission."
+    },
+    "AIUncertaintyNote": {
+      "type": "string",
+      "x-source": "ai",
+      "description": "What the model could not determine. Required by the analysis schema so that uncertainty is stated rather than hidden."
+    },
+    "AIProposalDisposition": {
+      "type": "string",
+      "enum": [
+        "NotOffered",
+        "Accepted",
+        "Corrected",
+        "Rejected"
+      ],
+      "x-enum": "AIProposalDisposition",
+      "x-source": "user",
+      "description": "What the supervisor did with the proposal. Set only by a human (D-17)."
+    },
+    "AIAnalysedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "In Quick Share this is later than SharedAt, by design."
     },
     "AIConfidence": {
       "type": "string",
@@ -307,6 +387,7 @@
     "EvidenceStage",
     "IsDuplicateSuspected",
     "AIAnalysisStatus",
+    "AIProposalDisposition",
     "ReviewerDecision",
     "ApprovedForReport",
     "ClassificationCode",

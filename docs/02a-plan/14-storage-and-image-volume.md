@@ -1,6 +1,6 @@
 # Storage and Image Volume — Assumptions and Three Scenarios
 
-**Document ID:** AH-SYS-P2A-014 · **Revision:** 2 · **Date:** 2026-09-11
+**Document ID:** AH-SYS-P2A-014 · **Revision:** 4 · **Date:** 2026-09-11
 **Status:** Completed · Submitted for Owner Review
 **Nature:** arithmetic from stated assumptions. **Not a measurement, and not a forecast.**
 
@@ -123,21 +123,30 @@ Per project per month, expected scenario, 120 photographs:
 | # | Class | Count | Unit size | **Total** | Retention | Reproducible? |
 |---|---|---|---|---|---|---|
 | 1 | **Original evidence** | 120 | 2.5 MB | **300 MB** | Full retention period | **No — this is the evidence** |
-| 2 | **AI review derivatives** | ~72 (approved only) | 400 KB | **29 MB** | **Deleted after 7 days** | Yes, from the original |
+| 2 | **AI review derivatives** | **120 — every captured photograph** (D-17) | 400 KB | **48 MB** | **Deleted after 7 days** | Yes, from the original |
 | 3 | **Report derivatives** | ~40 (those printed) | 600 KB | **24 MB** | With the document | Yes |
 | 4 | **Generated documents** (PDF, and Word if exported) | 1–2 | 2 MB | **2–4 MB** | Full retention period | Yes, from the frozen snapshot |
 | 5 | **Rejected and superseded temporary derivatives** | ~10 | 400 KB | **4 MB** | Deleted with their parent derivative | Yes |
 | 6 | **Backup / export copies** | all of 1 and 4 | — | **~302 MB** | Per backup policy | No — that is the point of a backup |
 | 7 | Version history of documents | ~1 superseded revision | 2 MB | **2 MB** | With the document | Yes |
-| | **Live total (1–5, 7)** | | | **~361 MB** | | |
-| | **With one backup copy (1–7)** | | | **~663 MB** | | |
+| | **Live total (1–5, 7)** | | | **~380 MB** | | |
+| | **With one backup copy (1–7)** | | | **~682 MB** | | |
+
+*Revision 3 put these at ~361 MB and ~663 MB, when only reviewer-approved photographs were analysed.
+The capture-once correction analyses every captured photograph, so class 2 grows from ~72 to 120
+derivatives: **+19 MB per project per month**, and the steady-state figure below is unchanged in
+character because these are still deleted after seven days.*
 
 **A backup copy nearly doubles the requirement.** That is the single largest storage decision in the
 system, and it is a policy question (EF-12), not a technical one.
 
 Steady state is smaller than it looks: classes 2 and 5 are deleted on a schedule, so they occupy
-roughly one week of accumulation rather than a month — about **7 MB** rather than 33 MB in the steady
-state.
+roughly one week of accumulation rather than a month — about **12 MB** rather than 52 MB in the
+steady state.
+
+**The native share adds no storage class.** It hands the operating system the files that class 1
+already holds; it creates no copy in Drive, no derivative, and no public link. Whether the device
+leaves a temporary file behind is condition 14 of `CAP-GATE` — a device question, not a Drive one.
 
 ## 9. The high scenario is material — what it requires
 

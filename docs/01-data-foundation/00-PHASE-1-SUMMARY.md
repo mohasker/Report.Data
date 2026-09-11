@@ -13,7 +13,7 @@ Recorded honestly, per operating rule 1.
 
 | | |
 |---|---|
-| **Built** | A canonical model of 46 tables and 829 columns, with every schema and the data dictionary generated from it; reference implementations of row-level security, evidence rules, content hashing, document numbering and deterministic calculation; synthetic data for three materially different projects; ten executable check suites; nineteen specifications; and the owner review pack |
+| **Built** | A canonical model of 46 tables and 849 columns, with every schema and the data dictionary generated from it; reference implementations of row-level security, evidence rules, content hashing, document numbering and deterministic calculation; synthetic data for three materially different projects; ten executable check suites; nineteen specifications; and the owner review pack |
 | **Executed** | `python3 tools/run_validation.py` — 172 checks across 11 suites, all passing. Full reproduction record, including what the checks are **not** evidence of, in `17-validation-evidence.md` |
 | **Not done, deliberately** | No Google account connected · no capture application built or connected · no orchestration scenario created · no AI credential created or call made · no accounting system connected · no real photograph, client, project, employee or financial record loaded · no email sent · no invoice or accounting transaction created · no external document published or shared |
 

@@ -226,8 +226,16 @@ One reporting event at a location on a date. The unit of submission and review.
 | `SupervisorUserID` | Ref → Users | Yes | No | `LOOKUP(USEREMAIL(), Users, Email, UserID)` — initial value; not editable. Identity comes from the signed-in user, never typed |
 | `GPSLatitude` | Decimal |  | Yes |  |
 | `GPSLongitude` | Decimal |  | Yes |  |
-| `OverallDescriptionEN` | LongText |  | Yes |  |
-| `OverallDescriptionAR` | LongText |  | Yes |  |
+| `OverallDescriptionEN` | LongText |  | Yes | Optional for a normal photographic submission (D-18) |
+| `OverallDescriptionAR` | LongText |  | Yes | Optional for a normal photographic submission (D-18) |
+| `AdditionalSiteNote` | LongText |  | Yes | Optional. Mandatory only in the exceptional workflows listed in capture_once.optional_note.mandatory_exceptions |
+| `SiteNoteCategory` | Enum (ClientInstruction, AccessRestriction, PermitIssue, HiddenDefect…) |  | Yes |  |
+| `CaptureMode` | Enum (QuickShare, AIReviewedShare) | Yes | Yes | Initial value `AIReviewedShare` |
+| `ShareStatus` | Enum (NotShared, ShareInitiated, ShareConfirmed, ShareCancelled…) | Yes | Yes | Initial value `NotShared` |
+| `SharedAt` | DateTime |  | No |  |
+| `SharedByUserID` | Ref → Users |  | No |  |
+| `ShareTargetLabel` | Text |  | Yes |  |
+| `ShareAttemptCount` | Number | Yes | No | Initial value `0` |
 | `SafetyObservation` | LongText |  | Yes |  |
 | `ClientRepresentative` | Text |  | Yes | **[personal]** |
 | `ClientAcknowledgementStatus` | Text |  | Yes | NotRequested\|Claimed\|Declined |
@@ -303,10 +311,22 @@ One photograph per row. The received file is write-once and is never altered (D-
 | `CaptionAR` | Text |  | Yes |  |
 | `GPSLatitude` | Decimal |  | Yes |  |
 | `GPSLongitude` | Decimal |  | Yes |  |
+| `CaptureBatchID` | Text |  | No |  |
+| `CaptureSequence` | Number |  | No |  |
 | `IsDuplicateSuspected` | Yes/No | Yes | No | Initial value `FALSE` |
 | `DuplicateOfPhotoID` | Ref → Photos |  | No |  |
 | `AIAnalysisStatus` | Enum (NotRequested, Queued, Completed, Failed…) | Yes | No | Initial value `NotRequested` |
 | `AIObservation` | LongText |  | No |  |
+| `AIProposedEvidenceStage` | Enum (Before, During, After, Observation…) |  | No |  |
+| `AIProposedActivityText` | Text |  | No |  |
+| `AIProposedCaptionEN` | Text |  | No |  |
+| `AIProposedCaptionAR` | Text |  | No |  |
+| `AIVisibleCondition` | Text |  | No |  |
+| `AIPossibleSnag` | Yes/No |  | No |  |
+| `AIImageQualityWarning` | Text |  | No |  |
+| `AIUncertaintyNote` | Text |  | No |  |
+| `AIProposalDisposition` | Enum (NotOffered, Accepted, Corrected, Rejected) | Yes | Yes | Initial value `NotOffered` |
+| `AIAnalysedAt` | DateTime |  | No |  |
 | `AIConfidence` | Decimal |  | No | 0.00-1.00 |
 | `AIModel` | Text |  | No |  |
 | `AIPromptVersion` | Text |  | No |  |
