@@ -1,6 +1,6 @@
 # Current Status and the Next Prompt
 
-**Document ID:** AH-SYS-HAND-003 · **Version:** 1.1 · **Date:** 2026-09-11
+**Document ID:** AH-SYS-HAND-003 · **Version:** 1.2 · **Date:** 2026-09-11
 **Branch:** `claude/alharam-field-reporting-spec-afq1fr`
 **Validated commit:** `4b19fc19fb926a0bf8a426e88150751b904426d9`
 **Package commit:** see `HANDOFF-MANIFEST.json` → `package_commit`
@@ -8,6 +8,17 @@
 ---
 
 ## 1. Last completed task
+
+**Recommendations for the eight open questions, OQ-15 to OQ-22 (2026-09-11).**
+`docs/02a-plan/25-open-question-recommendations.md` (AH-SYS-P2A-025) states each question, what the
+canonical model assumes today, the options with their trade-offs, and **one recommendation each**
+with the model cost of approving it and the cost of reversing it. Three of the eight end in
+*measure first* — OQ-17 is routed into `CAP-GATE` rather than guessed at, and OQ-20 and OQ-22 wait
+on a distribution and a frequency that nobody has yet observed. **Nothing was implemented: no column
+was added, no check was altered, and all eight questions remain open until the owner answers.**
+Validation unchanged at **240 of 240 across 13 suites**, byte-identical regeneration confirmed.
+
+### Before that
 
 **The owner's correction pass of 2026-09-11 — minimum interaction, a confirmed structured activity,
 and filtered analysis (D-22 to D-24)** — applied to the canonical model and to every affected
@@ -46,7 +57,7 @@ exact packaged source commit validated without modifying tracked files.**
 
 **Phase 2A — plan and synthetic prototype design. Completed · Submitted for Owner Review.**
 
-Phase 2A connects nothing and costs nothing. It has produced 25 planning documents on top of the
+Phase 2A connects nothing and costs nothing. It has produced 26 planning documents on top of the
 Phase 1 data foundation. **Phase 2B — the first external connection — is not authorised.**
 
 | Scope | Status (seven-value vocabulary) |
@@ -70,7 +81,7 @@ Phase 1 data foundation. **Phase 2B — the first external connection — is not
 | 5 | Legal identity from the current Commercial Registration | Owner | Production documents |
 | 6 | The existing manual numbering register | Owner | Phase 5 number issue |
 | 7 | Device inventory and the real supervisors who will test | Owner | Phase 2B field measurement |
-| 8 | Answers to OQ-15 … OQ-19 (default mode, summary policy, internal group, draft sharing, voice notes) | Owner | Phase 2A finalisation — **but these can be drafted as recommendations without waiting** |
+| 8 | **Answers to OQ-15 … OQ-22** (default mode, summary policy, internal group, draft sharing, voice notes, filter thresholds, pending classification, GPS location). **Recommendations are now written:** `docs/02a-plan/25-open-question-recommendations.md` §11 is the answer form | Owner | Phase 2A finalisation. **Judgement only — no console, credential, device or purchase needed** |
 
 ---
 
@@ -84,9 +95,8 @@ Phase 1 data foundation. **Phase 2B — the first external connection — is not
 3. **Report the current status and blockers back to the owner**, using the seven-value vocabulary,
    making clear that the Admin Console check and `CAP-GATE` are what is waiting on a human.
 4. **Then continue Phase 2A on synthetic data only**, which means any of:
-   - drafting recommendations for **OQ-15 to OQ-22** for the owner to decide, including the
-     quality and near-duplicate thresholds and whether a pending classification should expire into
-     a reviewer task;
+   - ~~drafting recommendations for **OQ-15 to OQ-22**~~ — **done**, AH-SYS-P2A-025. What remains
+     is the owner's answer, not more drafting;
    - writing the **Phase 2B test scripts** — the segregation, evidence-rule and configurability
      tests to be executed once a platform exists;
    - writing the **disabled Make blueprints** for the capture-once actions, following the existing

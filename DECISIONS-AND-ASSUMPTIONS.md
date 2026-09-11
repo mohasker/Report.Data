@@ -1,6 +1,6 @@
 # Decisions, Withdrawals, Assumptions and Open Questions
 
-**Document ID:** AH-SYS-HAND-004 · **Version:** 1.1 · **Date:** 2026-09-11
+**Document ID:** AH-SYS-HAND-004 · **Version:** 1.2 · **Date:** 2026-09-11
 
 **Read this before proposing any change to the design.** Most things that look wrong in this
 repository are decisions taken deliberately, with the reasoning recorded. This file is the
@@ -151,7 +151,10 @@ load-bearing without being written down.
 | **OQ-21** | Whether a **pending classification** should expire into a reviewer task after some number of days, or simply accumulate in a queue | Phase 2A |
 | **OQ-22** | Whether the location prompt, when it does appear, should offer the nearest location by GPS rather than the last used | Phase 2A |
 
-**OQ-15 to OQ-22 need no external access.** They are the natural next work for a new account.
+**OQ-15 to OQ-22 need no external access.** **Written recommendations for all eight now exist** in
+`docs/02a-plan/25-open-question-recommendations.md` (AH-SYS-P2A-025) — one recommendation each, with
+the reasoning, the model cost of approving it and the cost of reversing it. **They are recommendations
+submitted for owner review, not decisions: all eight questions stay open until the owner answers.**
 
 ---
 

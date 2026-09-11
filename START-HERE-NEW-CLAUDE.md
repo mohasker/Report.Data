@@ -2,7 +2,7 @@
 
 **This file is the entry point for a new Claude account taking this project over.**
 
-**Package version:** 1.1 · **Date:** 2026-09-11
+**Package version:** 1.2 · **Date:** 2026-09-11
 **Repository:** `mohasker/Report.Data` · **Branch:** `claude/alharam-field-reporting-spec-afq1fr`
 **Validated commit:** `4b19fc19fb926a0bf8a426e88150751b904426d9`
 **Package commit:** recorded in `HANDOFF-MANIFEST.json` → `package_commit`
@@ -629,10 +629,12 @@ specifications, schemas, generators and checks; use synthetic data; commit and p
 3. **Summarise the current status and blockers back to the owner**, using the seven-value vocabulary
    in §15, and say plainly that the Admin Console check and `CAP-GATE` are the two things waiting on
    a human.
-4. **Then continue Phase 2A from its existing state.** The open work that needs no external access:
-   OQ-15 to OQ-19 (the default operating mode, whether a formatted summary accompanies every share,
-   internal-group sharing, whether a draft may be shared, voice-note handling); the Phase 2B test
-   scripts; and the Make scenario blueprints for the capture-once actions, written disabled.
+4. **Then continue Phase 2A from its existing state.** OQ-15 to OQ-22 now carry written
+   recommendations — `docs/02a-plan/25-open-question-recommendations.md` (AH-SYS-P2A-025), one
+   recommendation per question, **submitted for owner review and not decided**; what is needed there
+   is the owner's answer, not more drafting. The open work that still needs no external access: the
+   **Phase 2B test scripts**; the **Make scenario blueprints** for the capture-once actions, written
+   disabled; and **extending the check suites** where a rule is specified but not yet tested.
 5. **Make no external connection until the owner authorises it separately and in writing.**
 
 ---

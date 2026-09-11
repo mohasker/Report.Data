@@ -4,20 +4,20 @@
 ID, a revision, a date and an approval status. A document that has not been approved is marked as
 such and may not be treated as a decision.
 
-**Repository version:** 0.7.0 (minimum interaction, confirmed classification, filtered analysis — the correction pass of 2026-09-11) · **Date:** 2026-09-11
+**Repository version:** 0.7.1 (recommendations for the eight open questions, OQ-15 … OQ-22 — **recommendations only, nothing decided**) · **Date:** 2026-09-11
 
 | Document ID | Document | Rev | Date | Status |
 |---|---|---|---|---|
 | — | `MASTER-SPEC-CONSOLIDATED.md` | 1.1 | 2026-09-11 | **Current authoritative specification** — supersedes `MASTER_SPEC.md` |
 | — | `MASTER_SPEC.md` | 1.1 | 2026-09-11 | Received baseline, retained for audit; §3a carries the capture-once correction |
-| — | `START-HERE-NEW-CLAUDE.md` | 1.1 | 2026-09-11 | **Portable handoff entry point** — self-contained |
-| — | `CURRENT-STATUS-AND-NEXT-PROMPT.md` | 1.1 | 2026-09-11 | Handoff status and the next prompt |
-| — | `DECISIONS-AND-ASSUMPTIONS.md` | 1.1 | 2026-09-11 | Consolidated decisions D-01…D-24, withdrawals, assumptions, open questions, external facts |
+| — | `START-HERE-NEW-CLAUDE.md` | 1.2 | 2026-09-11 | **Portable handoff entry point** — self-contained |
+| — | `CURRENT-STATUS-AND-NEXT-PROMPT.md` | 1.2 | 2026-09-11 | Handoff status and the next prompt |
+| — | `DECISIONS-AND-ASSUMPTIONS.md` | 1.2 | 2026-09-11 | Consolidated decisions D-01…D-24, withdrawals, assumptions, open questions, external facts |
 | AH-SYS-P0-000 | `00-DISCOVERY-SUMMARY.md` | 1 | 2026-09-11 | **Approved** 2026-09-11 (D-01 … D-15) |
 | AH-SYS-P0-001 | `01-mvp-boundary.md` | 1 | 2026-09-11 | Approved — scope corrected per D-01 |
 | AH-SYS-P0-002 | `02-architecture.md` | 0 | 2026-09-10 | Approved unchanged |
 | AH-SYS-P0-003 | `03-assumptions-register.md` | 1 | 2026-09-11 | Approved — A-06/A-07 superseded, A-10 amended |
-| AH-SYS-P0-004 | `04-open-questions.md` | 2 | 2026-09-11 | All ten dispositioned; OQ-15 … OQ-19 added |
+| AH-SYS-P0-004 | `04-open-questions.md` | 3 | 2026-09-11 | All ten dispositioned; OQ-15 … OQ-22 registered, recommendations in AH-SYS-P2A-025 |
 | AH-SYS-P0-005 | `05-risk-and-controls-register.md` | 3 | 2026-09-11 | Approved — R-33 … R-43 added for capture once and the correction pass |
 | AH-SYS-P0-006 | `06-spec-conflicts-and-platform-limits.md` | 1 | 2026-09-11 | Approved — C-01, C-02, C-05, C-09, S-03, P-09 updated |
 | AH-SYS-P0-007 | `07-phase-plan.md` | 1 | 2026-09-11 | Approved — Phase 0 closed, Phase 1 authorised |
@@ -52,6 +52,7 @@ such and may not be treated as a decision.
 | AH-SYS-P2A-022 | `02a-plan/22-image-derivative-architecture.md` | 3 | 2026-09-11 | Completed · Re-costed: only eligible photographs are analysed |
 | AH-SYS-P2A-023 | `02a-plan/23-operations-budget.md` | 3 | 2026-09-11 | Completed · 703 ops · §6b: both analysis policies priced; neither fits the free tier through Make |
 | AH-SYS-P2A-024 | `02a-plan/24-capture-once-workflow.md` | 2 | 2026-09-11 | **Generated** — capture once, minimum interaction, classification, analysis policy |
+| AH-SYS-P2A-025 | `02a-plan/25-open-question-recommendations.md` | 1 | 2026-09-11 | Completed · **Submitted for Owner Review** — recommendations only, OQ-15 … OQ-22, nothing implemented |
 | AH-SYS-P1-000 | `01-data-foundation/00-PHASE-1-SUMMARY.md` | 1 | 2026-09-11 | Awaiting owner review |
 | AH-SYS-P1-001 | `01-data-dictionary.md` | 1 | 2026-09-11 | **Generated** from `model/model.json` |
 | AH-SYS-P1-002 | `02-key-id-and-hash-strategy.md` | 1 | 2026-09-11 | Awaiting owner review — closes C-06 |

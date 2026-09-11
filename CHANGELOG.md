@@ -461,3 +461,58 @@ model call.
 
 **Validation:** **240 checks across 13 suites, all passing.** Byte-identical regeneration confirmed,
 at the packaged commit and from the extracted archive.
+
+---
+
+## [0.7.1] — 2026-09-11 — Recommendations for the eight open questions
+
+The one piece of outstanding Phase 2A work that waits on judgement rather than on a console, a
+credential, a device or a purchase. **Recommendations only — nothing was decided, nothing was
+implemented, and all eight questions remain open until the owner answers.**
+
+**Added**
+
+- `docs/02a-plan/25-open-question-recommendations.md` (**AH-SYS-P2A-025**) — OQ-15 … OQ-22, each with
+  the question, what `model/model.json` assumes today, the options with their trade-offs, **one
+  recommendation**, the model cost of approving it, the cost of reversing it, and an answer form.
+  - **OQ-15** Quick Share stays the default; the **project** may override it; the supervisor switches
+    only by explicit action, never by a question. Costs one `Projects` column and no extra tap.
+  - **OQ-16** A summary with every share, in two lengths. **And the consequence stated plainly:** a
+    Quick Share summary carries no activity names, because classification is still `Pending` and
+    D-23 forbids an advisory value reaching a client message.
+  - **OQ-17** Two explicit share actions, not one; nothing in release 1. **Routed into `CAP-GATE`**
+    as a new condition — whether one share invocation can reach two groups is unverified platform
+    behaviour, and modelling a capability that may not exist is the error to avoid.
+  - **OQ-18** Draft sharing permitted **and recorded**, as a view over existing columns rather than a
+    new one; with the rule that a shared visit is corrected by a new version, never erased.
+  - **OQ-19** Transcript only, with the input method recorded so a transcript is never mistaken for
+    typed text. Consent for a site recording is raised as an open matter, not resolved.
+  - **OQ-20** Conservative and relative, not absolute: Hamming ≤ 5 within one `CaptureBatchID` and
+    one `LocationID`; **no absolute quality cutoff** until a distribution is measured; both as
+    project configuration; and a monthly skip count by class, without which no threshold is safe.
+    The asymmetry is stated: a false skip loses an observation permanently, a false analysis costs
+    about $0.021 (estimate).
+  - **OQ-21** A pending classification **accumulates and ages; it never expires into a value** — a
+    timeout that promotes a proposal would be an AI-written trusted value, which D-23 forbids.
+    Overdue after 7 days, project-configurable, counted in the existing weekly digest, blocking
+    nothing.
+  - **OQ-22** GPS location ordering deferred, with the revisit trigger recorded: **measure how often
+    the prompt appears at all first**, and if it is revisited, GPS may order the list and never
+    select the value.
+- **OQ-20 … OQ-22 registered in `docs/00-discovery/04-open-questions.md`**, where only OQ-15 … OQ-19
+  had been carried before.
+
+**Changed**
+
+- `START-HERE-NEW-CLAUDE.md` §22, `CURRENT-STATUS-AND-NEXT-PROMPT.md` §1, §3 and §4, and
+  `DECISIONS-AND-ASSUMPTIONS.md` §4 — the OQ work is drafted; what remains is the owner's answer.
+  Package documents to version 1.2; `04-open-questions.md` to revision 3.
+
+**Not done, deliberately**
+
+- No column was added, no enum was created, no generated document was touched, and no check was
+  altered. Every model change named in AH-SYS-P2A-025 is contingent on an answer that has not been
+  given.
+
+**Validation:** **240 checks across 13 suites, all passing.** Byte-identical regeneration confirmed.
+Unchanged by this release, which adds no model content.

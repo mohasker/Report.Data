@@ -1,6 +1,6 @@
 # Blocking Questions and Open Questions
 
-**Document ID:** AH-SYS-P0-004 · **Revision:** 1 · **Status:** all ten answered, decided in principle, or converted to a Phase 1 deliverable on 2026-09-11
+**Document ID:** AH-SYS-P0-004 · **Revision:** 3 · **Status:** all ten answered, decided in principle, or converted to a Phase 1 deliverable on 2026-09-11 · OQ-20 … OQ-22 registered; OQ-15 … OQ-22 carry recommendations in AH-SYS-P2A-025
 
 > **Revision 1.** The owner's decisions are recorded in [`10-owner-decisions.md`](10-owner-decisions.md)
 > and summarised in the disposition table below. **The question text is retained unchanged** — the
@@ -234,3 +234,11 @@ To be resolved during the phase noted; none prevent starting Phase 1.
 | OQ-17 | Whether the same share should also reach an **internal** group, and whether that is a second share action or one action with two destinations. | Phase 2B |
 | OQ-18 | Whether a supervisor may share a visit that is **still in draft**, or only one they have submitted. Quick Share implies the former; evidence control argues for the latter. | Phase 2A |
 | OQ-19 | Whether voice-note capture should write the **audio file** as evidence, or only the transcribed text into `AdditionalSiteNote` (D-18). | Post-MVP |
+| OQ-20 | What the **quality threshold** and the **near-duplicate similarity threshold** should be. Both are project configuration, and both trade a saved model call against a missed observation (D-24). | Phase 2B |
+| OQ-21 | Whether a **pending classification** should expire into a reviewer task after some number of days, or simply accumulate in a queue (D-23). | Phase 2A |
+| OQ-22 | Whether the location prompt, when it does appear, should offer the **nearest location by GPS** rather than the last used (D-22). | Phase 2A |
+
+> **OQ-15 … OQ-22 now have written recommendations.** See
+> [`../02a-plan/25-open-question-recommendations.md`](../02a-plan/25-open-question-recommendations.md)
+> (AH-SYS-P2A-025). Those are **recommendations submitted for owner review, not decisions**; all
+> eight questions remain open until the owner answers.
