@@ -105,6 +105,16 @@ flowchart TB
 
 ### 2.2 Core entities — the relationships that matter
 
+Three chains meet in this model: **assignment → project → evidence**, **evidence → snapshot →
+document**, and **contract → certified quantity → invoice**. Approvals gate each junction, and the
+audit trail records every one. Each chain is drawn separately below, because one diagram of
+forty-six entities is a picture of complexity rather than an explanation of it.
+
+#### Chain 1 — assignment to evidence
+
+Who may act, on what, and what they capture. **`PROJECT_ASSIGNMENTS` is the only source of
+row-level access**; everything a user can see follows from it.
+
 ```mermaid
 erDiagram
     LEGAL_ENTITIES ||--o{ PROJECTS : "issues documents for"
@@ -112,12 +122,11 @@ erDiagram
     CLIENTS ||--o{ CONTACTS : "has"
     PROJECTS ||--o{ LOCATIONS : "contains"
     LOCATIONS ||--o{ LOCATIONS : "is parent of"
-    PROJECTS ||--o{ PROJECT_ASSIGNMENTS : "grants access through"
     USERS ||--o{ PROJECT_ASSIGNMENTS : "holds"
     ROLES ||--o{ PROJECT_ASSIGNMENTS : "typed by"
-    PROJECTS ||--o{ PROJECT_ACTIVITY_RULES : "overrides rules in"
+    PROJECTS ||--o{ PROJECT_ASSIGNMENTS : "grants access through"
     ACTIVITY_TYPES ||--o{ PROJECT_ACTIVITY_RULES : "is overridden by"
-
+    PROJECTS ||--o{ PROJECT_ACTIVITY_RULES : "overrides rules in"
     PROJECTS ||--o{ SITE_VISITS : "scopes"
     LOCATIONS ||--o{ SITE_VISITS : "sited at"
     SITE_VISITS ||--o{ VISIT_ACTIVITIES : "contains"
@@ -125,13 +134,37 @@ erDiagram
     VISIT_ACTIVITIES ||--o{ PHOTOS : "evidenced by"
     PHOTOS ||--o{ SNAGS : "raises"
     PHOTOS ||--o| SNAGS : "closes"
+```
 
+A photograph both **raises** a snag and, later, a different photograph **closes** it. That pair of
+relationships is the whole corrective-action loop.
+
+#### Chain 2 — evidence to document
+
+A document is produced from a **frozen snapshot** of approved evidence, and carries a number
+allocated from a configurable series.
+
+```mermaid
+erDiagram
     PROJECTS ||--o{ DOCUMENT_JOBS : "requested for"
+    SITE_VISITS ||--o{ DOCUMENT_JOBS : "supplies evidence to"
     DOCUMENT_JOBS ||--|| DOCUMENTS : "produces"
     DOCUMENT_TEMPLATES ||--o{ DOCUMENTS : "formats"
     NUMBERING_SERIES ||--o{ NUMBER_REGISTER : "allocates from"
     NUMBER_REGISTER ||--o| DOCUMENTS : "numbers"
+    ENTITY_VERSIONS ||--o{ DOCUMENTS : "freezes"
+```
 
+`NUMBER_REGISTER` sits between the series and the document deliberately: a number is **reserved**
+before a document exists, so a failed generation cancels a number rather than losing one.
+
+#### Chain 3 — contract to invoice
+
+Nothing here exists before Phase 6. It is drawn now because the evidence model has to be able to
+reach it without being rebuilt.
+
+```mermaid
+erDiagram
     CONTRACTS ||--o{ BOQ_ITEMS : "priced by"
     CONTRACTS ||--o{ WORK_ORDERS : "instructs"
     CONTRACTS ||--o{ INVOICE_REQUESTS : "governs"
@@ -139,16 +172,24 @@ erDiagram
     INVOICE_REQUESTS ||--o{ INVOICE_LINES : "itemised by"
     BOQ_ITEMS ||--o{ INVOICE_LINES : "certified through"
     TAX_RULES ||--o{ INVOICE_REQUESTS : "applies to"
+```
 
+An invoice line traces to a **BOQ item** and to an **approved document**. Neither alone is enough,
+which is what makes a certified quantity defensible.
+
+#### The gate on every junction — approvals
+
+```mermaid
+erDiagram
     APPROVAL_MATRIX ||--o{ APPROVALS : "routes"
     USERS ||--o{ APPROVALS : "decides"
     APPROVAL_DELEGATIONS ||--o{ APPROVALS : "permits acting on"
     ENTITY_VERSIONS ||--o{ APPROVALS : "binds to"
 ```
 
-Read the second diagram as three chains that meet: **assignment → project → evidence**,
-**evidence → snapshot → document**, and **contract → certified quantity → invoice**. Approvals gate
-each junction; the audit trail records every one.
+**`ENTITY_VERSIONS ||--o{ APPROVALS`** is the relationship that makes the audit trail defensible
+rather than decorative: an approval binds to an exact version and content hash, so changing what was
+approved invalidates the approval instead of silently altering it.
 
 ---
 
@@ -163,10 +204,10 @@ Columns per table in brackets. "Built in" is the phase in which the table is *po
 | `Users` | 15 | One row per person who may sign in. No shared accounts | 2 |
 | `Roles` | 13 | The ten roles and what each may fundamentally do | 2 |
 | `ProjectAssignments` | 14 | **The only source of row-level access.** Who may act on which project, in what role, between which dates | 2 |
-| `TemporaryAccessGrants` | 26 | Time-bound auditor access and break-glass emergency access | 2 |
+| `TemporaryAccessGrants` | 27 | Time-bound auditor access and break-glass emergency access | 2 |
 | `SystemRecoveryPlan` | 16 | How administrative control is recovered when no administrator is available | 2 |
 | `ApprovalDelegations` | 17 | Temporary, bounded transfer of the right to act | 2 |
-| `Languages` | 9 | Supported languages and text direction | 1 |
+| `Languages` | 10 | Supported languages and text direction | 1 |
 
 ### 2 · Clients and projects — 9 tables
 | Table | Cols | Purpose | Built in |
@@ -174,18 +215,18 @@ Columns per table in brackets. "Built in" is the phase in which the table is *po
 | `LegalEntities` | 29 | Registered entities that issue documents. Multi-entity from the start | 2 |
 | `Clients` | 20 | Bilingual names, billing terms, classification, accounting identifier | 2 |
 | `Contacts` | 16 | Who may receive a released document | 2 |
-| `Projects` | 28 | **Every project-varying behaviour is a column here** | 2 |
-| `Locations` | 17 | Hierarchical, project-scoped, up to five levels | 2 |
+| `Projects` | 29 | **Every project-varying behaviour is a column here** | 2 |
+| `Locations` | 16 | Hierarchical, project-scoped, up to five levels | 2 |
 | `ActivityTypes` | 18 | The catalogue of 34 activities with default evidence rules | 1 |
 | `ProjectActivityRules` | 16 | Per-project overrides of those rules | 2 |
-| `Disciplines`, `Units` | 5, 6 | Controlled vocabularies | 1 |
+| `Disciplines`, `Units` | 9, 10 | Controlled vocabularies | 1 |
 
 ### 3 · Visits, activities and photographs — 3 tables
 | Table | Cols | Purpose | Built in |
 |---|---|---|---|
-| `SiteVisits` | 28 | One reporting event. The unit of submission and review | 2 |
+| `SiteVisits` | 37 | One reporting event. The unit of submission and review | 2 |
 | `VisitActivities` | 19 | What was done. Quantity, percent complete, supervisor confirmation | 2 |
-| `Photos` | 45 | One photograph. Write-once original, advisory AI fields, reviewer decision | 2 |
+| `Photos` | 56 | One photograph. Write-once original, advisory AI fields, reviewer decision | 2 |
 
 ### 4 · Snags and corrective actions — 1 table
 | Table | Cols | Purpose | Built in |
@@ -196,24 +237,24 @@ Columns per table in brackets. "Built in" is the phase in which the table is *po
 | Table | Cols | Purpose | Built in |
 |---|---|---|---|
 | `Contracts` | 23 | Terms, retention, advance, tax rule, billing method | 6 |
-| `WorkOrders` | 13 | A discrete instruction under a contract | 6 |
+| `WorkOrders` | 14 | A discrete instruction under a contract | 6 |
 | `BOQItems` | 20 | Quantities and rates, with cumulative certification control | 6 |
 
 ### 6 · Reports and documents — 5 tables
 | Table | Cols | Purpose | Built in |
 |---|---|---|---|
-| `DocumentJobs` | 24 | A request to produce a document from a frozen snapshot | 5 |
+| `DocumentJobs` | 27 | A request to produce a document from a frozen snapshot | 5 |
 | `Documents` | 25 | A produced revision, hash-bound and release-controlled | 5 |
-| `DocumentTemplates` | 19 | Approved templates by type, language and project | 5 |
-| `NumberingSeries` | 21 | One configurable series per entity × type × year × scope | 5 |
+| `DocumentTemplates` | 20 | Approved templates by type, language and project | 5 |
+| `NumberingSeries` | 20 | One configurable series per entity × type × year × scope | 5 |
 | `NumberRegister` | 18 | Every number reserved, issued or cancelled | 5 |
 
 ### 7 · Certificates and invoices — 3 tables
 | Table | Cols | Purpose | Built in |
 |---|---|---|---|
-| `InvoiceRequests` | 30 | Calculated billing request with a stored calculation trace | 6 |
-| `InvoiceLines` | 18 | Calculated lines. `LineAmount` is computed, never entered | 6 |
-| `TaxRules` | 19 | Configurable, currently an explicitly unconfirmed placeholder | 6 |
+| `InvoiceRequests` | 32 | Calculated billing request with a stored calculation trace | 6 |
+| `InvoiceLines` | 19 | Calculated lines. `LineAmount` is computed, never entered | 6 |
+| `TaxRules` | 17 | Configurable, currently an explicitly unconfirmed placeholder | 6 |
 
 *A completion certificate is a `Documents` row of type `CompletionCertificate`. It uses the same
 engine, the same numbering service and the same approval model as a report — which is why adding a
@@ -222,15 +263,15 @@ document type is configuration rather than development.*
 ### 8 · Approvals and delegation — 3 tables
 | Table | Cols | Purpose | Built in |
 |---|---|---|---|
-| `ApprovalMatrix` | 14 | Who approves what, per project and stage | 2 |
+| `ApprovalMatrix` | 13 | Who approves what, per project and stage | 2 |
 | `Approvals` | 23 | Every decision, bound to a content hash and a version | 2 |
-| `EntityVersions` | 16 | Immutable version history of hashable records | 2 |
+| `EntityVersions` | 15 | Immutable version history of hashable records | 2 |
 
 ### 9 · Integrations and audit — 2 tables
 | Table | Cols | Purpose | Built in |
 |---|---|---|---|
 | `AuditLog` | 13 | Append-only for every role, including administrators and break-glass | 2 |
-| `IntegrationJobs` | 19 | One row per external call, with idempotency key and failure class | 3 |
+| `IntegrationJobs` | 18 | One row per external call, with idempotency key and failure class | 3 |
 
 ### Designed now, populated later — 7 tables
 `Materials`, `MaterialUsage`, `Equipment`, `VisitEquipment`, `Employees`, `VisitManpower`,
@@ -580,7 +621,7 @@ byte-identical repeatability of the trace.
 ## 11. Bilingual and right-to-left model
 
 **Delivered now:** every English text column has an Arabic counterpart, with no exceptions;
-all 26 controlled vocabularies carry an Arabic label for every value; roles, units, disciplines, all
+all 30 controlled vocabularies carry an Arabic label for every value; roles, units, disciplines, all
 34 activities, document types and classifications are populated in Arabic; users carry an individual
 language preference; text direction is stored as data; templates are keyed by type **and** language;
 a project can be configured to produce Arabic documents; Arabic survives canonical serialisation and
@@ -688,20 +729,22 @@ them depends on the capture interface.
 
 ---
 
-## 12. The five highest residual risks
+## 12. The six highest residual risks
 
-| # | Risk | Why it is top-five | What reduces it | What you would see first |
+| # | Risk | Why it is top-six | What reduces it | What you would see first |
 |---|---|---|---|---|
+| **0** | **`CAP-GATE` — the native share is unverified on every platform.** Whether the capture tool can hand several stored image files and a formatted summary to an existing WhatsApp group without a second image selection | It decides the **capture platform**, not a form layout, and a failure re-opens every other Phase 2 test on a different tool. It is also the one unknown that nobody can answer from documentation | Fifteen conditions, two phones, both messaging applications, online and offline, **before any build commitment** ([`02a-plan/19-real-device-test-protocol.md`](02a-plan/19-real-device-test-protocol.md) §4b). The backend is deliberately independent of the capture interface, so a failure costs the interface and nothing else | A share that arrives as a link rather than files, or a share sheet that asks the supervisor to pick the photographs again |
 | **1** | **Field adoption.** If supervisors find the app slower than sending photographs to a messaging group, evidence starves and everything downstream is worthless | This is the most likely cause of total failure, and it is not technical | Minimum fields, dependent dropdowns, choices over typing, offline capture. Measured with real supervisors at the Phase 2 gate as an acceptance criterion, not a training issue | Submissions per supervisor per week falling in month one |
 | **2** | **Platform entitlement is unverified.** Whether AppSheet is included, and whether security filters and offline image capture are available on it | Two of these have **no** Make fallback. Vendor pages are unreachable from the build environment, but the authoritative answer is in the company's own Admin Console anyway | The 15-minute checklist in [`02a-plan/12-appsheet-entitlement-checklist.md`](02a-plan/12-appsheet-entitlement-checklist.md). Do it **before** any app is built | Security filters absent — which changes the capture layer, not the budget |
 | **3** | **Image fidelity and offline behaviour are entirely untested.** Nothing is known about what the platform actually stores, or how it behaves offline on the company's phones | Touches the write-once evidence guarantee and the one workflow that cannot be retried — a supervisor who has left site | The approved D-13 wording claims only what can be defended. Real-device testing at the Phase 2 gate before any claim | A stored file materially smaller than the camera original |
 | **4** | **Key-person concentration.** One general manager approves everything; administrator identities are still unassigned | The company's own assessment names reliance on the owner as a weakness. A system with one approver reproduces it | Delegation modelled and tested from day one; recovery plan with a go-live blocker; break-glass with reason, expiry, notification and audit | A month where approvals stall because one person is travelling |
 | **5** | **Store ceiling as the estate grows**, and **Make's verified Free-plan limit of 2 active scenarios against a design needing 5** | The photograph table grows fastest, and the volume assumption is an estimate, not a measurement | Five measurable migration signals defined; monitoring starts in Phase 2, before the threshold can be reached | Sync duration on a field phone creeping past fifteen seconds |
 
-Risks 2 and 3 are the two you can retire cheaply and soon. Risk 1 cannot be retired by design at
-all — only by watching real supervisors use it.
+Risks 0, 2 and 3 are the three you can retire cheaply and soon — an afternoon with two phones and
+fifteen minutes in the Admin Console between them. Risk 1 cannot be retired by design at all — only
+by watching real supervisors use it.
 
-**Detail:** [`05-risk-and-controls-register.md`](00-discovery/05-risk-and-controls-register.md) — 32 risks.
+**Detail:** [`05-risk-and-controls-register.md`](00-discovery/05-risk-and-controls-register.md) — 39 risks, of which R-33 to R-39 were added with the capture-once correction.
 
 ---
 
@@ -769,11 +812,22 @@ came from a fixture that refused to accept an Arabic-only client name.
 
 ### If you approve, the next deliverable is
 
-Phase 2A: the AppSheet implementation workbook, column definitions and expressions, slices and
-views, the security-filter specification, actions and workflow definitions, the offline test plan,
-Drive folder-provisioning design, Make scenario specifications as disabled blueprints, deployment
-and rollback checklists, and the cost and licensing matrix — all against synthetic data, connecting
-nothing.
+**Phase 2A is already delivered** — twenty-five planning documents: the AppSheet implementation
+workbook, column definitions and expressions, slices and views, the security-filter specification,
+actions and workflow definitions, the offline test plan, Drive folder-provisioning design, Make
+scenario specifications as disabled blueprints, deployment and rollback checklists, the cost matrix,
+the release-1 scope, the operations budget, the image derivative architecture and the capture-once
+workflow. All against synthetic data, connecting nothing.
+
+**What comes next is measurement, not more documents:**
+
+1. The `CAP-GATE` native-share test — an afternoon, two phones, synthetic photographs.
+2. The Admin Console entitlement check — fifteen minutes, your own console.
+3. Then, and only with your written authorisation, the first external connection and the Phase 2B
+   gates in order: segregation, evidence rules, configurability, image fidelity, offline behaviour,
+   time-to-submit, and recovery.
+
+Until those two measurements exist, further specification would be writing with the lights off.
 
 ---
 

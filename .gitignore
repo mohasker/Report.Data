@@ -37,3 +37,6 @@ venv/
 .idea/
 *.swp
 *~
+
+# Handoff package build output — rebuilt by tools/build_handoff.py
+dist/

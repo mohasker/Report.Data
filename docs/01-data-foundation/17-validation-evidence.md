@@ -8,10 +8,10 @@
 
 | | |
 |---|---|
-| **Commit tested** | `854c06272dd9a62a67b3e4fd6695b4a1c8995e25` |
-| **Commit subject** | Add screenshot, blocking and fallback columns to the Admin Console checklist |
+| **Commit tested** | `9657e98eb243182602e691e8541ed41ef1cbb4e8` |
+| **Commit subject** | Capture once, use twice: the operational correction of 2026-09-11 |
 | **Command executed** | `python3 tools/run_validation.py` |
-| **Executed at** | 2026-09-11 13:10:15 UTC |
+| **Executed at** | 2026-09-11 13:29:55 UTC |
 | **Python** | 3.11.15 (CPython, GCC 13.3.0) |
 | **Operating system** | Linux 6.18.44-fc-v24 (x86_64) |
 | **Environment** | Ephemeral Linux container. This run made no network call, used no credential and contacted no external service |
@@ -20,52 +20,15 @@
 | **Working tree before the run** | MODIFIED — see below |
 
 ```
-M CHANGELOG.md
- M MASTER_SPEC.md
- M README.md
- M docs/00-discovery/00-DISCOVERY-SUMMARY.md
- M docs/00-discovery/01-mvp-boundary.md
- M docs/00-discovery/02-architecture.md
- M docs/00-discovery/04-open-questions.md
- M docs/00-discovery/05-risk-and-controls-register.md
- M docs/00-discovery/10-owner-decisions.md
- M docs/00-discovery/adr/README.md
- M docs/01-data-foundation/00-PHASE-1-SUMMARY.md
- M docs/01-data-foundation/01-data-dictionary.md
- M docs/01-data-foundation/15-claude-prompt-and-schema-spec.md
- M docs/01-data-foundation/16-external-facts-register.md
+M .gitignore
  M docs/01-data-foundation/17-validation-evidence.md
- M docs/02a-plan/00-PHASE-2A-PLAN.md
- M docs/02a-plan/01-appsheet-workbook.md
- M docs/02a-plan/03-views-and-slices.md
- M docs/02a-plan/04-actions-and-workflow.md
- M docs/02a-plan/05-offline-test-plan.md
- M docs/02a-plan/09-cost-and-licensing-matrix.md
- M docs/02a-plan/11-lean-mvp-scope.md
- M docs/02a-plan/13-field-workflow-and-taps.md
- M docs/02a-plan/14-storage-and-image-volume.md
- M docs/02a-plan/16-admin-console-checklist-owner.md
- M docs/02a-plan/17-lean-table-scope-matrix.md
- M docs/02a-plan/19-real-device-test-protocol.md
- M docs/02a-plan/21-release-1-twelve-tables.md
- M docs/02a-plan/22-image-derivative-architecture.md
- M docs/02a-plan/23-operations-budget.md
  M docs/OWNER-REVIEW-PACK.md
- M docs/STATUS-DEFINITIONS.md
- M docs/VERSION-MANIFEST.md
- M model/model.json
- M schemas/README.md
- M schemas/tables/Photos.schema.json
- M schemas/tables/SiteVisits.schema.json
- M tools/build_model.py
- M tools/evidence_meta.py
- M tools/gen_release1_scope.py
- M tools/run_validation.py
-?? docs/00-discovery/adr/ADR-0009-capture-once-native-share.md
-?? docs/02a-plan/24-capture-once-workflow.md
-?? schemas/ai/evidence-analysis-batch.v1.json
-?? tools/gen_capture_once.py
-?? tools/test_capture_once.py
+?? CURRENT-STATUS-AND-NEXT-PROMPT.md
+?? DECISIONS-AND-ASSUMPTIONS.md
+?? MASTER-SPEC-CONSOLIDATED.md
+?? START-HERE-NEW-CLAUDE.md
+?? tools/build_handoff.py
+?? tools/scan_secrets.py
 ```
 
 > The run was executed against a working tree containing uncommitted changes. The commit recorded above is the parent commit, not the exact state tested. Re-run after committing to obtain a clean reproduction record.
@@ -529,7 +492,7 @@ The operating rules the owner approved, expressed as assertions so that weakenin
 ## 6. Reproducing this run
 
 ```
-git checkout 854c06272dd9a62a67b3e4fd6695b4a1c8995e25
+git checkout 9657e98eb243182602e691e8541ed41ef1cbb4e8
 python3 tools/run_validation.py
 ```
 
