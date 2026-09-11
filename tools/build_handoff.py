@@ -140,9 +140,12 @@ def main():
             "validation_run_commit": "20af0a20c9770d9e782219b5a4186c3f4914800f",
             "validation_run_note": "The evidence document records the commit its run was executed "
                                    "against, so a run that follows a commit always modifies that "
-                                   "one file. The recorded run is dc8764f, clean tree. The package "
-                                   "commit adds only the regenerated evidence document on top of "
-                                   "it; no model, generator, check or specification differs.",
+                                   "one file. The run recorded in the evidence document was "
+                                   "executed on a clean tree at the commit named above. The "
+                                   "package commit adds only documentation on top of it - the "
+                                   "regenerated evidence document and these SHA references. No "
+                                   "model, generator, check, schema or specification differs "
+                                   "between the two; `git diff` between them shows only markdown.",
             "requires": "Python 3.11+, standard library only. No network, no credential, "
                         "no external service, no installation step.",
             "expected_result": "219/219 checks passed across 13 suites; "
