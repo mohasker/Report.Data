@@ -284,7 +284,7 @@ photograph alone; responsibility or negligence; date, unless supplied as trusted
 Al-Haram executed the visible work merely because it appears in the photograph.
 
 Project, location, date, assigned user, contract and work-order context come from **trusted system
-data**. Sixteen columns are closed to AI by declaration and by automated check (`CAP-14`).
+data**. Eighteen columns are closed to AI by declaration and by automated check (`CAP-14`).
 
 The share destination is held as a **label** in project configuration — never a telephone number,
 group invitation link or messaging identifier.

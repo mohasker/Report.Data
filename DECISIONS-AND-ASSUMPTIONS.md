@@ -57,8 +57,8 @@ Source documents, if you want the full reasoning: `docs/00-discovery/10-owner-de
 | **D-16** | **Capture once, use twice.** The supervisor never uploads, selects or describes the same evidence twice. Two modes: Quick Share and AI Reviewed Share | **`CAP-01`: the workflow fails acceptance if the supervisor must select or upload the images a second time.** Eight new columns on `SiteVisits`, two on `Photos` |
 | **D-17** | **AI proposes; the supervisor decides, with minimum interaction** | Eight advisory proposal columns separate from the confirmed values; `AIProposalDisposition` records accept or correct. **Analysis now runs on every captured photograph**, which raises the cost |
 | **D-18** | **A written description is not mandatory for a normal photographic submission** | Optional site note with a ten-value category vocabulary; four named exceptional workflows; voice input is a future *input method* for the same field. Regression-guarded by `CAP-26` |
-| **D-19** | **Nine inferences AI may never make**, and trusted context comes from system data | Sixteen columns closed to AI by declaration and by check. The share destination is a **label**, never a telephone number or invitation link |
-| **D-20** | **No quantitative or contractual field may originate from an image** | The AI's activity assessment is free text, deliberately **not** a reference to `ActivityTypes` |
+| **D-19** | **Nine inferences AI may never make**, and trusted context comes from system data | Eighteen columns closed to AI by declaration and by check. The share destination is a **label**, never a telephone number or invitation link |
+| **D-20** | **No quantitative or contractual field may originate from an image** | The AI's activity assessment is free text and untrusted. *Amended by D-23: a human-confirmed `ConfirmedActivityTypeID` sits beside it, and only that column is read by reports and rules* |
 | **D-21** | **The capture platform is an interface decision, and it is gated** | `CAP-GATE`, fifteen conditions on real devices. **No duplicate-upload workaround.** The backend is re-usable if the interface changes |
 
 ### The correction pass, 2026-09-11 — D-22 to D-24

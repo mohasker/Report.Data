@@ -302,7 +302,8 @@ photograph alone · 7. responsibility or negligence · 8. date, unless supplied 
 9. that Al-Haram executed the visible work merely because it appears in the photograph.
 
 **Project, location, date, assigned user, contract and work-order context come from trusted system
-data.** Sixteen columns are closed to AI by declaration and by check `CAP-14`. The AI's view of the
+data.** Eighteen columns are closed to AI by declaration and by check `CAP-14`, including the confirmed
+activity and the classification state. The AI's view of the
 activity is free text in `Photos.AIProposedActivityText`, deliberately **not** a reference to
 `ActivityTypes`, so no contractual activity can be created by an image (D-20).
 
@@ -419,7 +420,7 @@ That sentence is the whole position and it has been carefully worded. Three earl
 | AppSheet | **Assumed USD 0 incremental, pending verification.** If not included, a specific costed option goes to the owner. **No purchase without written approval** |
 | Make | Free plan fits release 1 at **703 operations, 70% of the verified limit, 2 active scenarios**. Not permanently free: restoring per-photograph processing needs **≥ 3,000 operations/month and ≥ 3 active scenarios**, price unverified |
 | Claude API | **~$0.021 per analysed photograph.** At pilot volume **~$6.28/month** under Quick Share (299 eligible of 360 captured) and ~$6.95 under AI Reviewed Share; ~$42/month at 20 projects. On Haiku 4.5 instead: ~$1.20 and ~$8. Duplicates, unusable, deleted and excluded images never reach a call (D-24). **Estimates, not measurements.** Bounded by a hard monthly cap the owner sets |
-| Drive storage | ~377 MB live per project-month; ~679 MB with one backup. A backup copy nearly doubles it, which makes backup policy the largest storage decision in the system |
+| Drive storage | ~373 MB live per project-month; ~675 MB with one backup. A backup copy nearly doubles it, which makes backup policy the largest storage decision in the system |
 
 **A finding you must not soften:** the AI proposal step **does not fit the Make free tier under
 either policy** — roughly **1,167** operations a month deferred and filtered, **1,353** immediate,

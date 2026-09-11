@@ -268,9 +268,9 @@ responsibility or negligence · date unless supplied as trusted metadata · that
 visible work merely because it appears in the photograph.
 
 **Project, location, date, assigned user, contract and work-order context must come from trusted
-system data.** Sixteen columns are closed to AI by declaration and by automated check. The AI's view
-of the activity is free text, deliberately **not** a reference to the activity catalogue, so no
-contractual activity can be created by an image.
+system data.** Eighteen columns are closed to AI by declaration and by automated check. The AI may suggest a candidate
+activity code, into an advisory column read by the confirmation screen and nothing else; the trusted
+`ConfirmedActivityTypeID` is set only by a human (D-23).
 
 Every proposal is written to its own advisory column, is excluded from every content hash, and is
 never copied into the confirmed value except by an explicit human action recorded in
@@ -521,8 +521,8 @@ platform can perform the native multi-file share at all**.
 Workspace and QuickBooks are already paid. AppSheet is **assumed** USD 0 incremental pending the
 Admin Console check; if it is not included, a specific costed option goes to the owner and **no
 purchase is made without written approval**. Make is free for release 1 and not permanently free. AI
-analysis is estimated at ~$6.28 a month at pilot volume. Storage is ~377 MB live per project-month,
-~679 MB with one backup.
+analysis is estimated at ~$6.28 a month at pilot volume. Storage is ~373 MB live per project-month,
+~675 MB with one backup.
 
 **W-01, W-02 and W-03 in §0 are withdrawn and must not reappear.**
 

@@ -8,10 +8,10 @@
 
 | | |
 |---|---|
-| **Commit tested** | `cc752599173d6ae3b9bae5eda6f915c6e6351665` |
-| **Commit subject** | Stamp the final validated commit |
+| **Commit tested** | `9e9a32fbe9d6f24a1b7c45f2f05fc6dbfe7281ce` |
+| **Commit subject** | Minimum interaction, a confirmed activity, and filtered analysis |
 | **Command executed** | `python3 tools/run_validation.py` |
-| **Executed at** | 2026-09-11 15:30:40 UTC |
+| **Executed at** | 2026-09-11 15:32:11 UTC |
 | **Python** | 3.11.15 (CPython, GCC 13.3.0) |
 | **Operating system** | Linux 6.18.44-fc-v24 (x86_64) |
 | **Environment** | Ephemeral Linux container. This run made no network call, used no credential and contacted no external service |
@@ -20,46 +20,16 @@
 | **Working tree before the run** | MODIFIED — see below |
 
 ```
-M CHANGELOG.md
- M CURRENT-STATUS-AND-NEXT-PROMPT.md
- M DECISIONS-AND-ASSUMPTIONS.md
+M DECISIONS-AND-ASSUMPTIONS.md
  M MASTER-SPEC-CONSOLIDATED.md
- M README.md
  M START-HERE-NEW-CLAUDE.md
  M docs/00-discovery/05-risk-and-controls-register.md
  M docs/00-discovery/10-owner-decisions.md
  M docs/00-discovery/adr/ADR-0009-capture-once-native-share.md
- M docs/00-discovery/adr/README.md
- M docs/01-data-foundation/00-PHASE-1-SUMMARY.md
- M docs/01-data-foundation/01-data-dictionary.md
- M docs/01-data-foundation/05-evidence-rules.md
  M docs/01-data-foundation/15-claude-prompt-and-schema-spec.md
- M docs/01-data-foundation/17-validation-evidence.md
- M docs/02a-plan/01-appsheet-workbook.md
- M docs/02a-plan/03-views-and-slices.md
  M docs/02a-plan/04-actions-and-workflow.md
- M docs/02a-plan/09-cost-and-licensing-matrix.md
- M docs/02a-plan/13-field-workflow-and-taps.md
- M docs/02a-plan/17-lean-table-scope-matrix.md
- M docs/02a-plan/21-release-1-twelve-tables.md
- M docs/02a-plan/22-image-derivative-architecture.md
- M docs/02a-plan/23-operations-budget.md
- M docs/02a-plan/24-capture-once-workflow.md
+ M docs/02a-plan/14-storage-and-image-volume.md
  M docs/OWNER-REVIEW-PACK.md
- M docs/STATUS-DEFINITIONS.md
- M docs/VERSION-MANIFEST.md
- M model/model.json
- M schemas/tables/Photos.schema.json
- M schemas/tables/SiteVisits.schema.json
- M tools/build_handoff.py
- M tools/build_model.py
- M tools/evidence.py
- M tools/gen_capture_once.py
- M tools/gen_release1_scope.py
- M tools/run_validation.py
- M tools/test_capture_once.py
- M tools/test_evidence_rules.py
-?? tools/render_review_pack.py
 ```
 
 > The run was executed against a working tree containing uncommitted changes. The commit recorded above is the parent commit, not the exact state tested. Re-run after committing to obtain a clean reproduction record.
@@ -545,7 +515,7 @@ The operating rules the owner approved, expressed as assertions so that weakenin
 ## 6. Reproducing this run
 
 ```
-git checkout cc752599173d6ae3b9bae5eda6f915c6e6351665
+git checkout 9e9a32fbe9d6f24a1b7c45f2f05fc6dbfe7281ce
 python3 tools/run_validation.py
 ```
 

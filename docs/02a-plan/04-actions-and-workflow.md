@@ -82,7 +82,7 @@ webhook is an external action, and external actions are off by default (operatin
 ## 4. What the app must never do
 
 1. **Change a workflow status by a route not in the matrix.** No hidden status set in a form, no bulk edit.
-2. **Let AI write a decision field.** `ReviewerDecision`, `ApprovedForReport` and `PercentComplete` are human or formula, never model output. Sixteen columns are closed to AI by declaration and by check `CAP-14`, including `ProjectID`, `LocationID`, `VisitDate`, `ActivityTypeID`, `Quantity`, `UnitID`, `EvidenceStage` and both captions.
+2. **Let AI write a decision field.** `ReviewerDecision`, `ApprovedForReport` and `PercentComplete` are human or formula, never model output. Eighteen columns are closed to AI by declaration and by check `CAP-14`, including `ProjectID`, `LocationID`, `VisitDate`, `ActivityTypeID`, `Quantity`, `UnitID`, `EvidenceStage` and both captions.
 3. **Let a user approve their own work**, in any view, by any route.
 4. **Delete anything.** No delete action exists for any role on any table.
 5. **Alter an original photograph.** No rotate, crop, annotate or replace action exists. Derivatives are separate records.

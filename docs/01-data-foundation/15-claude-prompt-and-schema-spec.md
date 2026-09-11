@@ -43,7 +43,7 @@ confirm:
 
 **Project, location, date, assigned user, contract and work-order context come from trusted system
 data**, are supplied to the model as context rather than asked of it, and are closed to AI writes by
-declaration and by check `CAP-14`. Sixteen columns are closed in total.
+declaration and by check `CAP-14`. Eighteen columns are closed in total.
 
 Two rules govern everything else:
 

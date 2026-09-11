@@ -57,9 +57,12 @@ another party.
 
 **AI proposes into its own columns and decides nothing.** Visible activity, evidence stage, caption,
 visible condition, possible snag, image-quality warning, uncertainty and confidence — each to a
-dedicated advisory field, none in any content hash. Sixteen columns are closed to AI by declaration
+dedicated advisory field, none in any content hash. Eighteen columns are closed to AI by declaration
 and by automated check. The AI's view of the activity is free text, deliberately **not** a reference
 to `ActivityTypes`, so no contractual activity can be created by an image.
+
+*(Amended by D-23 below: the assessment stays untrusted, but a **human-confirmed**
+`ConfirmedActivityTypeID` now sits beside it, because a report cannot group by free text.)*
 
 ## Consequences
 

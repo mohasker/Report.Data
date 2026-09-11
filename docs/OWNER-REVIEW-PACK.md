@@ -727,11 +727,12 @@ completion percentage, the project or location from the photograph alone, respon
 negligence, a date unless it comes from trusted metadata, or that Al-Haram did the work merely
 because the work appears in the photograph.
 
-**Sixteen columns are closed to AI by declaration and by automated test.** Project, location, date,
-assigned user, activity, quantity, unit, evidence stage, both captions, the reviewer's decision and
-the approval all come from trusted system data or a named person. The AI's view of the activity is
-free text, deliberately **not** a link to the activity catalogue, so no contractual activity can be
-created by an image.
+**Eighteen columns are closed to AI by declaration and by automated test.** Project, location, date,
+assigned user, activity, quantity, unit, evidence stage, both captions, the reviewer's decision, the
+approval, **the confirmed activity and the classification state** all come from trusted system data
+or a named person. The AI may suggest a candidate activity code, into an advisory column that the
+confirmation screen reads and nothing else does — so no contractual activity is ever created by an
+image.
 
 ### What it costs, honestly
 
@@ -742,7 +743,7 @@ of them with counts.
 |---|---|
 | AI analysis | **~$6.28 a month** at pilot volume under Quick Share, ~$6.95 under AI Reviewed Share. Not every photograph is analysed: near-duplicates, unusable images and anything you delete or exclude never reach a model call, which is roughly 17% of them. The filters that spot those cost nothing — they run on the device |
 | Make operations | **The proposal does not fit in the free orchestration tier under either policy** — roughly 1,167 operations a month deferred and filtered, 1,353 immediate, against a 1,000 limit. Filtering saves about 190 and does not change the answer, because carrying an image through an orchestrator costs three operations whatever else you do. Release 1 therefore ships Quick Share, and the proposal arrives when AppSheet can call the API directly (question 4 of the Admin Console check) or through a small Workspace-side component. **The capture-once guarantee holds regardless** |
-| Storage | +16 MB per project per month of derivatives, deleted after seven days |
+| Storage | +11 MB per project per month of derivatives against the original baseline, deleted after seven days |
 | Transfer | If derivatives route through the orchestrator, the ceiling is about ten projects |
 
 **Skipping an image is about waste, never about coverage.** A skipped photograph is kept as evidence
