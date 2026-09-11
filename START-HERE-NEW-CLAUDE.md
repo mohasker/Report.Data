@@ -634,9 +634,11 @@ specifications, schemas, generators and checks; use synthetic data; commit and p
 4. **Then continue Phase 2A from its existing state.** OQ-15 to OQ-22 now carry written
    recommendations — `docs/02a-plan/25-open-question-recommendations.md` (AH-SYS-P2A-025), one
    recommendation per question, **submitted for owner review and not decided**; what is needed there
-   is the owner's answer, not more drafting. The open work that still needs no external access: the
-   **Phase 2B test scripts**; the **Make scenario blueprints** for the capture-once actions, written
-   disabled; and **extending the check suites** where a rule is specified but not yet tested.
+   is the owner's answer, not more drafting. The **Phase 2B test scripts** are written too —
+   `docs/02a-plan/26-phase-2b-platform-test-scripts.md` (AH-SYS-P2A-026), 41 platform-neutral
+   scripts, **not executed**. What still needs no external access: the **Make scenario blueprints**
+   for the capture-once actions, written disabled, and **extending the check suites** where a rule
+   is specified but not yet tested.
 5. **Make no external connection until the owner authorises it separately and in writing.**
 
 ---

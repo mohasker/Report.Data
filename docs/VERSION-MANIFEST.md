@@ -4,7 +4,7 @@
 ID, a revision, a date and an approval status. A document that has not been approved is marked as
 such and may not be treated as a decision.
 
-**Repository version:** 0.7.1 (recommendations for the eight open questions, OQ-15 … OQ-22 — **recommendations only, nothing decided**) · **Date:** 2026-09-11
+**Repository version:** 0.7.2 (Phase 2B platform test scripts, written before any platform exists — **not executed**) · **Date:** 2026-09-11
 
 | Document ID | Document | Rev | Date | Status |
 |---|---|---|---|---|
@@ -53,6 +53,7 @@ such and may not be treated as a decision.
 | AH-SYS-P2A-023 | `02a-plan/23-operations-budget.md` | 3 | 2026-09-11 | Completed · 703 ops · §6b: both analysis policies priced; neither fits the free tier through Make |
 | AH-SYS-P2A-024 | `02a-plan/24-capture-once-workflow.md` | 2 | 2026-09-11 | **Generated** — capture once, minimum interaction, classification, analysis policy |
 | AH-SYS-P2A-025 | `02a-plan/25-open-question-recommendations.md` | 1 | 2026-09-11 | Completed · **Submitted for Owner Review** — recommendations only, OQ-15 … OQ-22, nothing implemented |
+| AH-SYS-P2A-026 | `02a-plan/26-phase-2b-platform-test-scripts.md` | 1 | 2026-09-11 | Completed · **Not executed** — 41 platform-neutral scripts, written before any platform exists |
 | AH-SYS-P1-000 | `01-data-foundation/00-PHASE-1-SUMMARY.md` | 1 | 2026-09-11 | Awaiting owner review |
 | AH-SYS-P1-001 | `01-data-dictionary.md` | 1 | 2026-09-11 | **Generated** from `model/model.json` |
 | AH-SYS-P1-002 | `02-key-id-and-hash-strategy.md` | 1 | 2026-09-11 | Awaiting owner review — closes C-06 |

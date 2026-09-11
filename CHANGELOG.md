@@ -516,3 +516,57 @@ implemented, and all eight questions remain open until the owner answers.**
 
 **Validation:** **240 checks across 13 suites, all passing.** Byte-identical regeneration confirmed.
 Unchanged by this release, which adds no model content.
+
+---
+
+## [0.7.2] — 2026-09-11 — The Phase 2B platform test scripts
+
+Written **before any platform exists**, and deliberately so. A test written after the platform exists
+is written against what the platform happens to do; a test written before it is written against what
+the system is required to do. When the two disagree, the disagreement has to surface as a failure
+rather than be absorbed as a setting.
+
+**Added**
+
+- `docs/02a-plan/26-phase-2b-platform-test-scripts.md` (**AH-SYS-P2A-026**) — **41 scripts**, every
+  one platform-neutral: no script names AppSheet, a slice, a view, a scenario or a webhook, so the
+  same script survives whatever the entitlement check and `CAP-GATE` decide.
+  - **14 segregation** scripts (`P2B-SEG-01 … 14`), mapped to `SEG-01 … SEG-12`. Two have **no local
+    counterpart**, because no data model can describe them: **what a notification discloses** to a
+    recipient who may not read the underlying row, and **what a device keeps readable after an
+    assignment is withdrawn**. Exports are tested from every screen that offers one — export is the
+    most common way segregation is lost.
+  - **17 evidence-rule** scripts (`P2B-EVD-01 … 17`), mapped to `EVD-01 … EVD-14`. Two are new:
+    **a refusal must survive retry, a second device and an offline replay**, and **a correction is a
+    new version, never an erasure**. The first is the script most likely to fail on a real platform,
+    because client-side validation that disappears on a replayed submission is ordinary platform
+    behaviour and a serious failure here.
+  - **10 configurability** scripts (`P2B-CFG-01 … 10`), mapped to `CFG-01 … CFG-12`. One is new: **a
+    rule changed on a project that already has submitted visits applies from now on, and records
+    already submitted keep the rule they were judged under.** `P2B-CFG-01` fails if any step of
+    adding a project needs a developer, however small.
+- **What the scripts do not cover, stated plainly:** whether the contractor actually received the
+  share — **not observable, and no document may claim otherwise**; capture once; offline; the
+  75-second target; Make operation consumption; AI proposal quality. A full pass proves the system
+  enforces its own rules and **proves nothing about delivery, speed, cost or adoption**.
+- Failure handling that does not let a failure evaporate: a segregation failure **stops** Phase 2B; an
+  evidence failure reproducible offline or by replay is **treated as a segregation failure**, because
+  a rule that can be bypassed is an access-control problem wearing a validation costume; a
+  configurability failure **withdraws the configurability claim** from every document that makes it.
+
+**Changed**
+
+- `START-HERE-NEW-CLAUDE.md` §22 and `CURRENT-STATUS-AND-NEXT-PROMPT.md` §1, §2 and §4 — the Phase 2B
+  scripts are no longer open work. What remains without external access: the disabled Make
+  blueprints, and extending the check suites where a rule is specified but not yet tested.
+- **The earlier branch `claude/alharam-field-reporting-spec-afq1fr` is kept as a fast-forwarded
+  mirror** of the working branch, so that following any earlier handoff package never lands on stale
+  work. It is never developed on and never force-pushed.
+
+**Not done, deliberately**
+
+- Not one script was executed. No platform exists, none is authorised, and a specification of
+  evidence is not evidence.
+
+**Validation:** **240 checks across 13 suites, all passing.** Byte-identical regeneration confirmed.
+Unchanged by this release, which adds no model content.

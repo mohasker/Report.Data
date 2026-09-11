@@ -8,10 +8,10 @@
 
 | | |
 |---|---|
-| **Commit tested** | `09d13a80c72ea317854dd5f0f71d4d59824b247d` |
-| **Commit subject** | Stamp the branch and validated commit into the handoff documents |
+| **Commit tested** | `9356c7e7641c5e3a11498d698f4ae708d3e6b2df` |
+| **Commit subject** | Keep the earlier branch as a fast-forwarded mirror |
 | **Command executed** | `python3 tools/run_validation.py` |
-| **Executed at** | 2026-09-11 20:38:20 UTC |
+| **Executed at** | 2026-09-11 20:41:52 UTC |
 | **Python** | 3.11.15 (CPython, GCC 13.3.0) |
 | **Operating system** | Linux 6.18.44-fc-v24 (x86_64) |
 | **Environment** | Ephemeral Linux container. This run made no network call, used no credential and contacted no external service |
@@ -20,8 +20,11 @@
 | **Working tree before the run** | MODIFIED — see below |
 
 ```
-M CURRENT-STATUS-AND-NEXT-PROMPT.md
+M CHANGELOG.md
+ M CURRENT-STATUS-AND-NEXT-PROMPT.md
  M START-HERE-NEW-CLAUDE.md
+ M docs/VERSION-MANIFEST.md
+?? docs/02a-plan/26-phase-2b-platform-test-scripts.md
 ```
 
 > The run was executed against a working tree containing uncommitted changes. The commit recorded above is the parent commit, not the exact state tested. Re-run after committing to obtain a clean reproduction record.
@@ -234,7 +237,7 @@ The evidence is captured exactly once; the description is optional; AI proposes 
 | `CAP-44` | PASS | Every eligibility proportion is labelled an estimate until measured | replaced by counts in the pilot's first month |
 | `CAP-45` | PASS | The eligible share is arithmetic on the stated assumptions, not a guess | 1 - (0.08 + 0.05 + 0.04) = 0.83; 360 x 0.83 = 299 |
 | `CAP-25` | PASS | The CAP-01 acceptance requirement appears in the documentation the owner reads, not only in the model | 14 documents cite CAP-01 |
-| `CAP-26` | PASS | No surviving document still makes the work description mandatory | 70 documents scanned |
+| `CAP-26` | PASS | No surviving document still makes the work description mandatory | 71 documents scanned |
 
 ### Lean operational MVP  ·  `structural`  ·  19/19 passed
 
@@ -507,7 +510,7 @@ The operating rules the owner approved, expressed as assertions so that weakenin
 ## 6. Reproducing this run
 
 ```
-git checkout 09d13a80c72ea317854dd5f0f71d4d59824b247d
+git checkout 9356c7e7641c5e3a11498d698f4ae708d3e6b2df
 python3 tools/run_validation.py
 ```
 

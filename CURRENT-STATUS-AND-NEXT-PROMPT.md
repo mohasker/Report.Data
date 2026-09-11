@@ -10,6 +10,17 @@
 
 ## 1. Last completed task
 
+**The Phase 2B platform test scripts (2026-09-11).** `docs/02a-plan/26-phase-2b-platform-test-scripts.md`
+(AH-SYS-P2A-026) — 41 scripts: 14 segregation, 17 evidence-rule, 10 configurability, each mapped to
+the local check it extends, and **five with no local counterpart at all**, because a running system
+can fail in ways a data model cannot describe: what a notification discloses, what a device has
+cached, whether a refusal survives a replay, whether a rule change reaches already-submitted
+records. **Written deliberately before any platform exists**, and platform-neutral throughout, so
+that a disagreement between the system and the requirement shows up as a failure rather than being
+absorbed as a setting. **Not executed: no platform exists and none is authorised.**
+
+### Before that
+
 **Recommendations for the eight open questions, OQ-15 to OQ-22 (2026-09-11).**
 `docs/02a-plan/25-open-question-recommendations.md` (AH-SYS-P2A-025) states each question, what the
 canonical model assumes today, the options with their trade-offs, and **one recommendation each**
@@ -58,7 +69,7 @@ exact packaged source commit validated without modifying tracked files.**
 
 **Phase 2A — plan and synthetic prototype design. Completed · Submitted for Owner Review.**
 
-Phase 2A connects nothing and costs nothing. It has produced 26 planning documents on top of the
+Phase 2A connects nothing and costs nothing. It has produced 27 planning documents on top of the
 Phase 1 data foundation. **Phase 2B — the first external connection — is not authorised.**
 
 | Scope | Status (seven-value vocabulary) |
@@ -98,8 +109,8 @@ Phase 1 data foundation. **Phase 2B — the first external connection — is not
 4. **Then continue Phase 2A on synthetic data only**, which means any of:
    - ~~drafting recommendations for **OQ-15 to OQ-22**~~ — **done**, AH-SYS-P2A-025. What remains
      is the owner's answer, not more drafting;
-   - writing the **Phase 2B test scripts** — the segregation, evidence-rule and configurability
-     tests to be executed once a platform exists;
+   - ~~writing the **Phase 2B test scripts**~~ — **done**, AH-SYS-P2A-026: 41 platform-neutral
+     scripts, not executed, waiting on a platform that is not authorised;
    - writing the **disabled Make blueprints** for the capture-once actions, following the existing
      pattern in `docs/02a-plan/blueprints/`;
    - extending the check suites where a rule is specified but not yet tested.
