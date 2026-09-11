@@ -104,9 +104,13 @@ def seed_suite(model):
 
 def main():
     started = datetime.datetime.now(datetime.timezone.utc)
-    commit = sh("git", "rev-parse", "HEAD")
-    commit_subject = sh("git", "log", "-1", "--format=%s")
-    tree_before = sh("git", "status", "--porcelain")
+    # The package can be extracted from an archive with no .git directory. That is a
+    # supported way to reproduce this run, so say so plainly instead of leaking a git error.
+    in_git = sh("git", "rev-parse", "--is-inside-work-tree") == "true"
+    NO_GIT = "not a git checkout (extracted from the handoff archive)"
+    commit = sh("git", "rev-parse", "HEAD") if in_git else NO_GIT
+    commit_subject = sh("git", "log", "-1", "--format=%s") if in_git else "—"
+    tree_before = sh("git", "status", "--porcelain") if in_git else ""
 
     before = snapshot()
     gen = regenerate()
@@ -252,10 +256,10 @@ def main():
     with open(OUT, "w", encoding="utf-8") as fh:
         fh.write(o.getvalue())
 
-    tree_after = sh("git", "status", "--porcelain")
+    tree_after = sh("git", "status", "--porcelain") if in_git else NO_GIT
     print("\n" + console_text)
     print(f"  byte-identical regeneration : {'yes' if identical else 'NO — ' + str(len(changed))}")
-    print(f"  commit tested               : {commit[:12]}")
+    print(f"  commit tested               : {commit[:12] if in_git else commit}")
     print(f"  working tree after the run  : "
           f"{tree_after.replace(chr(10), ' | ') if tree_after else 'clean'}")
     print(f"  evidence written to         : {os.path.relpath(OUT, ROOT)}")

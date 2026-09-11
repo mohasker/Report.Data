@@ -8,16 +8,23 @@
 
 | | |
 |---|---|
-| **Commit tested** | `dc8764f7ade1911275235591f70a63b41c7c0151` |
-| **Commit subject** | Stamp the validated commit into the handoff documents |
+| **Commit tested** | `38c4c7f8a3ae6b1038b65396ace1a7564c47157d` |
+| **Commit subject** | Include the rendered review pack in the handoff archive |
 | **Command executed** | `python3 tools/run_validation.py` |
-| **Executed at** | 2026-09-11 13:30:23 UTC |
+| **Executed at** | 2026-09-11 13:31:51 UTC |
 | **Python** | 3.11.15 (CPython, GCC 13.3.0) |
 | **Operating system** | Linux 6.18.44-fc-v24 (x86_64) |
 | **Environment** | Ephemeral Linux container. This run made no network call, used no credential and contacted no external service |
 | **Third-party dependencies** | **None.** Python standard library only |
 | **Model version** | 1.0.0 |
-| **Working tree before the run** | clean |
+| **Working tree before the run** | MODIFIED — see below |
+
+```
+M tools/run_validation.py
+```
+
+> The run was executed against a working tree containing uncommitted changes. The commit recorded above is the parent commit, not the exact state tested. Re-run after committing to obtain a clean reproduction record.
+
 
 ### Byte-identical regeneration
 
@@ -477,7 +484,7 @@ The operating rules the owner approved, expressed as assertions so that weakenin
 ## 6. Reproducing this run
 
 ```
-git checkout dc8764f7ade1911275235591f70a63b41c7c0151
+git checkout 38c4c7f8a3ae6b1038b65396ace1a7564c47157d
 python3 tools/run_validation.py
 ```
 
