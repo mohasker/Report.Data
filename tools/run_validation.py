@@ -30,7 +30,7 @@ SUITES = [test_lean_mvp, test_configurability, test_segregation, test_access_con
           test_calculations, test_bilingual, test_governance]
 OUT = os.path.join(ROOT, "docs", "01-data-foundation", "17-validation-evidence.md")
 GENERATORS = ("build_model.py", "gen_schemas.py", "gen_data_dictionary.py",
-              "gen_matrices.py", "gen_appsheet_workbook.py")
+              "gen_matrices.py", "gen_appsheet_workbook.py", "gen_scope_matrix.py")
 GENERATED = [
     "model/model.json",
     "docs/01-data-foundation/01-data-dictionary.md",
@@ -38,6 +38,7 @@ GENERATED = [
     "docs/01-data-foundation/04-security-model.md",
     "docs/02a-plan/01-appsheet-workbook.md",
     "docs/02a-plan/02-security-filter-specification.md",
+    "docs/02a-plan/17-lean-table-scope-matrix.md",
 ]
 
 

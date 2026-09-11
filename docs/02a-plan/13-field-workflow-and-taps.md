@@ -1,12 +1,19 @@
 # Field Workflow, Tap Count and Multi-Photograph Capture
 
 **Document ID:** AH-SYS-P2A-013 · **Revision:** 1 · **Date:** 2026-09-11
-**Status:** Completed · Submitted for Owner Review · **Target not yet measured on a device**
-**Target:** a supervisor submits a normal visit with photographs in **about one minute**
+**Revision 2** · **Status:** Completed · Submitted for Owner Review · **Target not yet measured**
+**Measurement protocol:** [`19-real-device-test-protocol.md`](19-real-device-test-protocol.md)
 
-> Every number below is a **design target derived from a tap count**, not a measurement. Nothing has
-> been built and nothing has been timed. The Phase 2B field test measures the real figure with a
-> real supervisor on a real phone, and the design changes if the measurement disagrees.
+> **Target: normal visit submission in no more than 75 seconds, excluding the physical time required
+> to position and take photographs.**
+>
+> This is a **design target derived from a tap count, not a validated result.** It will not be
+> described as achieved before the real-device protocol has been executed and its median, 90th
+> percentile, failures, user mistakes and synchronisation times recorded.
+
+> Nothing has been built and nothing has been timed. The tap counts below are the design; the
+> seconds are arithmetic on those taps. Both are replaced by measurement in Phase 2B, and the design
+> changes if the measurement disagrees.
 
 ---
 
@@ -45,9 +52,11 @@ week.
 | 13 | Confirm | **1** | A deliberate second tap, because submission locks the record |
 | | **Total** | **15–19 taps**, of which **6 are shutter presses** | |
 
-**Nine to thirteen interface taps plus six photographs.** At roughly three seconds per interface tap
-and four seconds per photograph including aiming, that is **55–75 seconds** — which is where the
-one-minute target comes from, and why it is a target rather than a promise.
+**Nine to thirteen interface taps plus six shutter presses.** At roughly three seconds per interface
+tap, the interface portion is **30–40 seconds**. Adding the shutter presses themselves — but *not*
+the physical time to walk to the subject, position the phone and wait for focus — gives the **75-second
+target**. Positioning time varies with the site, not the software, which is why it sits outside the
+measured figure.
 
 ### What makes it short
 
@@ -77,7 +86,7 @@ This is the single most important interaction in the app, and the platform's beh
 **unverified**. So all three methods are specified, with the trade-offs, and the choice is confirmed
 by measurement in Phase 2B.
 
-### Method A — child rows with a "capture again" action *(recommended to try first)*
+### Method A — child rows with a "capture again" action *(first test candidate, not the production decision)*
 
 Each photograph is a `Photos` row. After saving, an action re-opens the capture form for the same
 activity, so the supervisor stays in a capture loop.
@@ -105,9 +114,13 @@ The supervisor takes photographs with the phone camera as they work, then select
 - **Weakness:** weakens evidence freshness — a gallery photograph could be from any day; it needs the old-photograph warning and reviewer attention. Multi-select into separate rows may not be supported natively at all.
 - **Verdict:** only if the owner's policy permits gallery upload (OQ-05), and only alongside Method A.
 
-**Decision rule:** build Method A. Measure it at the Phase 2B gate with six photographs on the oldest
-handset. If a visit exceeds 90 seconds because of capture, switch to Method B and measure again.
-Record both measurements either way.
+**Decision rule:** build Method A as the first test candidate. Measure it on the full device matrix
+in [`19-real-device-test-protocol.md`](19-real-device-test-protocol.md) §4, which records taps,
+whether the camera reopens, time per additional photograph, camera reliability, stage classification,
+accidental duplicates, offline behaviour, image re-encoding and failed-sync recovery. **If Method A
+misses the target, measure Method B on the same matrix and compare on M-1, M-3 and M-9 before
+deciding** — Method B trades a faster capture loop for a more complex failure mode, and that trade
+is decided by numbers, not by impression.
 
 ## 4. What happens when the supervisor is offline
 
@@ -136,10 +149,13 @@ without a reason is just an obstacle to the supervisor.
 
 | Measurement | Where | Pass |
 |---|---|---|
-| Time to submit a normal visit, real supervisor, oldest handset | Phase 2B gate 6 | **≤ 90 seconds**, target ~60 |
+| Median time to submit, excluding photograph positioning | Phase 2B | **≤ 75 seconds** |
+| 90th percentile time | Phase 2B | ≤ 110 seconds |
 | Time to submit offline | Phase 2B | No worse than online |
-| Taps actually used, counted by observation | Phase 2B | Within the range above |
-| First use without training | Phase 2B | Completes unaided; note where they hesitate |
+| Taps actually used, counted by observation | Phase 2B | Within the 9–13 range |
+| Failures and user mistakes | Phase 2B | Recorded; any evidence loss is blocking |
+| Synchronisation time | Phase 2B | Recorded |
+| First use without training | Phase 2B | Completes unaided; every hesitation noted |
 | Reviewer time for a clean visit | Phase 2B | ≤ 30 seconds |
 
 **If the measurement misses, the form is simplified before the phase closes.** The target is an

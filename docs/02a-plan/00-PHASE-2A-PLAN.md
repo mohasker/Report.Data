@@ -44,7 +44,13 @@ platform**, and the platform's capabilities themselves remain unverified (see
 | 11 | **Lean MVP scope: 17 tables built, 29 deferred with fold-ins** | [`11-lean-mvp-scope.md`](11-lean-mvp-scope.md) | **Yes — from the model's lean manifest** |
 | 12 | **AppSheet entitlement verification checklist** | [`12-appsheet-entitlement-checklist.md`](12-appsheet-entitlement-checklist.md) | Hand-written |
 | 13 | **Field workflow, tap count and multi-photograph capture** | [`13-field-workflow-and-taps.md`](13-field-workflow-and-taps.md) | Hand-written |
-| 14 | **Expected storage and image volume** | [`14-storage-and-image-volume.md`](14-storage-and-image-volume.md) | Hand-written |
+| 14 | **Storage and image volume: assumptions and three scenarios** | [`14-storage-and-image-volume.md`](14-storage-and-image-volume.md) rev 2 | Hand-written |
+| 15 | **Make account inspection — read-only, VERIFIED from the live account** | [`15-make-inspection-record.md`](15-make-inspection-record.md) | Verified fact |
+| 16 | **Admin Console checklist, click by click, for the owner** | [`16-admin-console-checklist-owner.md`](16-admin-console-checklist-owner.md) | Hand-written |
+| 17 | **One-page 17-table scope matrix** | [`17-lean-table-scope-matrix.md`](17-lean-table-scope-matrix.md) | **Yes — generated** |
+| 18 | **Threshold-based migration strategy with the growth formula** | [`18-migration-threshold-strategy.md`](18-migration-threshold-strategy.md) | Hand-written |
+| 19 | **Real-device test protocol** | [`19-real-device-test-protocol.md`](19-real-device-test-protocol.md) | Hand-written |
+| 20 | **Administrator role placeholders and separation of duties** | [`20-administrator-role-placeholders.md`](20-administrator-role-placeholders.md) | Hand-written |
 
 Items 1, 2 and 11 regenerate from `model/model.json`, so the application specification, the security
 filters and the scope decision can never disagree with each other or with the data foundation. Run
@@ -57,11 +63,16 @@ filters and the scope decision can never disagree with each other or with the da
 | Lean MVP table list | [`11-lean-mvp-scope.md`](11-lean-mvp-scope.md) §1 — **17 tables** |
 | Deferred-table list | [`11-lean-mvp-scope.md`](11-lean-mvp-scope.md) §3 — **29 tables**, each folded in or scheduled |
 | AppSheet entitlement verification checklist | [`12-appsheet-entitlement-checklist.md`](12-appsheet-entitlement-checklist.md) |
-| Revised itemised monthly cost | [`09-cost-and-licensing-matrix.md`](09-cost-and-licensing-matrix.md) rev 2 — five categories, **USD 0 incremental expected** |
-| Expected storage and image volume | [`14-storage-and-image-volume.md`](14-storage-and-image-volume.md) |
+| Revised itemised monthly cost | [`09-cost-and-licensing-matrix.md`](09-cost-and-licensing-matrix.md) rev 3 — **no new mandatory subscription identified before entitlement verification** |
+| Expected storage and image volume | [`14-storage-and-image-volume.md`](14-storage-and-image-volume.md) — assumptions plus low, expected and high scenarios |
 | Field-user workflow and number of taps | [`13-field-workflow-and-taps.md`](13-field-workflow-and-taps.md) §2 — **9–13 interface taps plus 6 shutter presses** |
 | Multiple-photo capture method | [`13-field-workflow-and-taps.md`](13-field-workflow-and-taps.md) §3 — three methods, one recommended, decided by measurement |
 | Phase 2A implementation plan | This document |
+| Read-only Make inspection results | [`15-make-inspection-record.md`](15-make-inspection-record.md) |
+| One-page 17-table scope matrix | [`17-lean-table-scope-matrix.md`](17-lean-table-scope-matrix.md) |
+| Threshold-based migration strategy | [`18-migration-threshold-strategy.md`](18-migration-threshold-strategy.md) |
+| Real-device test protocol | [`19-real-device-test-protocol.md`](19-real-device-test-protocol.md) |
+| Administrator role placeholders | [`20-administrator-role-placeholders.md`](20-administrator-role-placeholders.md) |
 
 ## 3. Sequence, and what gates each step
 
@@ -81,6 +92,10 @@ on the owner's written approval**, and only after the three prerequisites below.
 2A.10 Deployment and rollback                        done
 2A.11 Cost matrix, five categories                   done, USD 0 incremental expected
 2A.12 Entitlement checklist                          done, AWAITING the owner's console check
+2A.13 Make inspection, read-only                     done, VERIFIED: Free plan, 1,000 ops,
+                                                     2 active scenarios, all integrations present
+2A.14 Scope matrix, migration thresholds,
+      device protocol, admin placeholders            done
  ---- gate: owner's WRITTEN approval + entitlement check (E-2, E-3, F-1, F-4) + EF-01 + EF-06 ----
 2B.1  Create the workbook in the company Workspace
 2B.2  Build the 17-table app against synthetic data only

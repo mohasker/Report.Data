@@ -44,7 +44,11 @@ step happens only once no in-flight record can carry the old shape.
 ADR-0002 accepted Google Sheets for the MVP on condition that a migration trigger be defined as a
 number rather than a feeling. It is:
 
-**Migrate when any one of these holds for two consecutive weeks:**
+**Migrate when any one of nine measured conditions holds for two consecutive weekly
+measurements.** The full set, the formula that converts measured growth into an estimated date, and
+the reason a fixed date was withdrawn are in
+[`../02a-plan/18-migration-threshold-strategy.md`](../02a-plan/18-migration-threshold-strategy.md).
+The capacity subset is:
 
 | Signal | Threshold | Why this number |
 |---|---|---|

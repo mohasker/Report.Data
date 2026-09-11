@@ -211,3 +211,64 @@ security filters are generated from one source and cannot disagree.
 
 **Status:** Phase 2A is **Completed · Submitted for Owner Review**. Phase 2B requires the owner's
 written approval and the Admin Console entitlement check. Nothing is purchased or connected.
+
+---
+
+## [0.4.0] — 2026-09-11 — Verified Make inspection, scope matrix, measured thresholds
+
+Responds to the owner's clarifications of 2026-09-11. **The first verified external fact in this
+project** arrives here: the Make account was inspected read-only under explicit authorisation.
+Nothing was created, changed, run or purchased.
+
+**Verified — Make account, read-only**
+
+Six read-only calls; four further capabilities deliberately not called and the reasons recorded.
+Findings that change the design:
+
+- Plan is **Free**: 1,000 operations a month, **2 active scenarios**, 1 data store of 1 MB, 512 MB transfer, 5 MB maximum file size, 15-minute minimum scheduling interval, no overage — work stops rather than billing. Zone is **us2**, a data-residency fact for the contract review.
+- **The design needs five scenarios and the plan allows two.** That is the binding constraint, not operations. Recommendation: start with two — submission validation and evidence registration — and make review notification a daily digest.
+- 512 MB of transfer against ~900 MB of photographs a month at three projects turns a design habit into a hard rule: **image bytes must never pass through the orchestration layer.**
+- ~800 estimated operations against 1,000 available is 80% of the ceiling with no overage.
+- **Every required integration is present**, including a dedicated AppSheet connector, Claude and QuickBooks. The constraint is capacity, not capability.
+
+**Changed — cost statement, revision 3**
+
+Revision 2's "expected pilot cost is USD 0" is withdrawn as an overstatement. The statement is now:
+**no new mandatory subscription has been identified before entitlement verification, and variable
+automation, AI and storage costs may arise when those capabilities are enabled.** Workspace and
+QuickBooks are existing costs; AppSheet Core is assumed USD 0 incremental pending the console check;
+Make is potentially free during limited testing but **not confirmed as permanently free**; Claude is
+optional for capture and a mandatory usage cost once analysis is enabled; additional storage is a
+future conditional cost.
+
+**Changed — migration timing**
+
+The "year 1.4" point is **withdrawn**. It extrapolated one variable and read as a forecast.
+`18-migration-threshold-strategy.md` replaces it with nine measured trigger conditions — row count,
+cell count, sync time, app open time, update conflicts, automation delay, API limits, error rate and
+administrative burden — plus the formula that converts a three-month trailing growth rate into an
+estimated date, and a scenario table explicitly labelled as scenarios rather than predictions.
+
+**Changed — volume**
+
+`14-storage-and-image-volume.md` revision 2 states all eleven assumptions with low, expected and
+high values, gives three scenarios at 3, 10, 20 and 50 projects, and lists the nine things the
+projection must be compared against — none of which is known until the Admin Console storage screen
+is read. The "non-issue" framing is withdrawn.
+
+**Changed — the one-minute target**
+
+Recorded in the owner's wording: **no more than 75 seconds, excluding the physical time to position
+and take photographs.** `19-real-device-test-protocol.md` defines the full matrix — oldest Android
+and iPhone, normal, weak and offline connections, one activity with six photographs and multiple
+activities — at least five runs per cell, recording median, 90th percentile, failures, user mistakes
+and synchronisation time. Method A is the first test candidate, not the production decision; nine
+measurements decide it against Method B.
+
+**Added**
+
+- `17-lean-table-scope-matrix.md` — **generated** one-page matrix: purpose, primary user, field count, expected monthly rows, app visibility, device sync, deferrability and dependencies for each of the 17 tables. Notes that a capture-and-review-only first release is 12 tables.
+- `16-admin-console-checklist-owner.md` — click-by-click, six steps, about 15 minutes, written for a non-technical reader, with a fill-in block and what each answer causes.
+- `20-administrator-role-placeholders.md` — the three role placeholders with responsibilities, recovery permissions and six separation-of-duties boundaries. **No name or email is invented.**
+
+**Validation:** 185 checks across 12 suites, all passing.

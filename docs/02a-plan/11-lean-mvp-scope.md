@@ -12,6 +12,9 @@
 
 ---
 
+**One-page matrix** with purpose, primary user, field count, expected monthly rows, app visibility,
+device sync, deferrability and dependencies: [`17-lean-table-scope-matrix.md`](17-lean-table-scope-matrix.md).
+
 ## 1. The lean build — 17 tables
 
 | # | Table | Carries | The owner's capability |
