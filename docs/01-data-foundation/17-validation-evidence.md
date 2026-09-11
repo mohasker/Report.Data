@@ -8,31 +8,16 @@
 
 | | |
 |---|---|
-| **Commit tested** | `9657e98eb243182602e691e8541ed41ef1cbb4e8` |
-| **Commit subject** | Capture once, use twice: the operational correction of 2026-09-11 |
+| **Commit tested** | `cde17537966bac6083f21469338493f737a412c7` |
+| **Commit subject** | Portable handoff package, and the review pack rendered for the owner |
 | **Command executed** | `python3 tools/run_validation.py` |
-| **Executed at** | 2026-09-11 13:29:55 UTC |
+| **Executed at** | 2026-09-11 13:30:02 UTC |
 | **Python** | 3.11.15 (CPython, GCC 13.3.0) |
 | **Operating system** | Linux 6.18.44-fc-v24 (x86_64) |
 | **Environment** | Ephemeral Linux container. This run made no network call, used no credential and contacted no external service |
 | **Third-party dependencies** | **None.** Python standard library only |
 | **Model version** | 1.0.0 |
-| **Working tree before the run** | MODIFIED — see below |
-
-```
-M .gitignore
- M docs/01-data-foundation/17-validation-evidence.md
- M docs/OWNER-REVIEW-PACK.md
-?? CURRENT-STATUS-AND-NEXT-PROMPT.md
-?? DECISIONS-AND-ASSUMPTIONS.md
-?? MASTER-SPEC-CONSOLIDATED.md
-?? START-HERE-NEW-CLAUDE.md
-?? tools/build_handoff.py
-?? tools/scan_secrets.py
-```
-
-> The run was executed against a working tree containing uncommitted changes. The commit recorded above is the parent commit, not the exact state tested. Re-run after committing to obtain a clean reproduction record.
-
+| **Working tree before the run** | clean |
 
 ### Byte-identical regeneration
 
@@ -492,7 +477,7 @@ The operating rules the owner approved, expressed as assertions so that weakenin
 ## 6. Reproducing this run
 
 ```
-git checkout 9657e98eb243182602e691e8541ed41ef1cbb4e8
+git checkout cde17537966bac6083f21469338493f737a412c7
 python3 tools/run_validation.py
 ```
 

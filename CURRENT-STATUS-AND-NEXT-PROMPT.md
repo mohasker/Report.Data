@@ -2,7 +2,7 @@
 
 **Document ID:** AH-SYS-HAND-003 · **Version:** 1.0 · **Date:** 2026-09-11
 **Branch:** `claude/alharam-field-reporting-spec-afq1fr`
-**Validated commit:** `9657e98eb243182602e691e8541ed41ef1cbb4e8`
+**Validated commit:** `cde17537966bac6083f21469338493f737a412c7`
 **Package commit:** see `HANDOFF-MANIFEST.json` → `package_commit`
 
 ---
