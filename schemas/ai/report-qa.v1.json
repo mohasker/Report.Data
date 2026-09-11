@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alharam.local/schemas/ai/report-qa.v1.json",
+  "title": "ReportQAV1",
+  "description": "Review of a generated draft against the structured records and the evidence manifest it was built from. Reports issues; never rewrites the document silently (spec 9.3).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["issues", "unsupported_claims_found", "data_gaps", "overall_assessment"],
+  "properties": {
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["severity", "category", "section", "explanation", "proposed_correction"],
+        "properties": {
+          "severity": {"type": "string", "enum": ["Critical", "High", "Medium", "Low"]},
+          "category": {
+            "type": "string",
+            "enum": ["unsupported claim", "inconsistent date", "mismatched location", "duplicate photograph", "missing before/after evidence", "unresolved placeholder", "contradictory quantity", "inconsistent terminology", "numbering error", "contractual risk", "language or direction error", "other"]
+          },
+          "section": {"type": "string", "maxLength": 200},
+          "evidence_reference": {"type": "string", "maxLength": 120, "description": "The record or photograph identifier the issue concerns."},
+          "explanation": {"type": "string", "maxLength": 600},
+          "proposed_correction": {"type": "string", "maxLength": 600}
+        }
+      },
+      "maxItems": 60
+    },
+    "unsupported_claims_found": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Count of statements in the draft not traceable to a supplied record or approved photograph. This is a count of findings about the document, not a measurement of work."
+    },
+    "data_gaps": {
+      "type": "array",
+      "description": "Information the draft needed and did not have. Reported explicitly rather than filled in by guessing.",
+      "items": {"type": "string", "maxLength": 300},
+      "maxItems": 30
+    },
+    "overall_assessment": {
+      "type": "string",
+      "enum": ["ready for technical review", "corrections required before review", "material problems: regenerate"]
+    },
+    "prompt_injection_detected": {"type": "boolean"}
+  }
+}

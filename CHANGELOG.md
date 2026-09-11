@@ -57,3 +57,51 @@ accepted multi-project MVP (§14).
 - **D-15.** The Phase 1 artifact manifest is rewritten to revision 1 with all seventeen additional deliverables and an explicit coverage table.
 
 **Status:** Phase 0 closed. Phase 1 authorised within the limits of D-14 — repository artifacts, schemas, synthetic data, specifications and documentation only; no production connection, no real data, no external action.
+
+---
+
+## [0.1.0] — 2026-09-11 — Phase 1: data foundation
+
+Phase 1 delivered within the limits of D-14: repository artifacts, schemas, synthetic data,
+specifications and documentation only. **No production system was connected, no credential exists,
+and no real data was introduced.**
+
+**Added — canonical model and generators**
+
+- `model/model.json` — the single source of truth: 44 tables, 763 columns, 24 bilingual controlled vocabularies, 65 declared status transitions with 29 explicitly forbidden, a role × table × operation matrix of 352 grants with 13 stated exceptions, and the canonical content-hash definition.
+- `tools/` — standard-library-only generators (`build_model`, `gen_schemas`, `gen_data_dictionary`, `gen_matrices`), reference implementations (`security`, `evidence`, `contenthash`, `numbering`, `calc`), nine check suites, and `run_validation.py` which regenerates every artifact and records the evidence.
+- `schemas/tables/` — 44 generated table schemas. `schemas/ai/` — two closed output contracts for Phase 4 and 5, neither containing any numeric quantity field.
+- `seed/` — controlled vocabularies plus three materially different synthetic projects carrying deliberate traps, so a segregation or validation bug is visible rather than subtle.
+- `config/` — configuration reference, `.env.example` (names only), rounding policy, tax-rule structure.
+
+**Added — specifications**
+
+Seventeen documents under `docs/01-data-foundation/`, covering the data dictionary, key and hash
+strategy, status transitions, the security matrix, evidence rules, naming and numbering, migration
+and versioning, the legal-entity and bilingual model, data classification and residency, approval
+and delegation, deterministic calculation, the capture-platform requirements matrix, accounting
+mapping and inspection, the orchestration contract and operator runbook, the AI prompt and schema
+specification, the external-facts register, and the executed validation evidence.
+
+**Executed**
+
+`python3 tools/run_validation.py` — **141 checks across 10 suites, all passing**, recorded in
+`docs/01-data-foundation/17-validation-evidence.md` with the evidence each produced.
+
+**Fixed — defects the checks found in the model as it was written**
+
+- `Documents.Cancelled` and `Approvals.Delegated` were unreachable from the transition matrix. Both now have declared transitions, including the delegation path that records the acting delegate and the accountable approver separately.
+- A project manager could create rows in the audit log through a group-level grant. Removed; the audit log is now append-only for every role including `SystemAdmin`.
+- Six controlled vocabularies carried no change attribution. `CreatedBy`/`UpdatedBy` added — configuration changes need attribution as much as records do under ISO 9001.
+- `Clients.LegalNameEN` was required, which made a client registered only in Arabic unsaveable. Changed to "at least one legal name in either language", because forcing an English name would invite an invented transliteration (D-11).
+- Column examples in the data dictionary resembled fixture identifiers. Replaced, so no example can be mistaken for real data.
+- `SystemAdmin` read access to operational and document tables removed: an administrator configures the system and works the error queue without needing to read client evidence.
+
+**Outstanding**
+
+23 external facts, each named with its owner and the phase it blocks
+(`docs/01-data-foundation/16-external-facts-register.md`). None blocks Phase 1; none has been
+guessed at.
+
+**Status:** Phase 1 complete, awaiting owner review of the data dictionary, the transition matrix
+and the security model. Phase 2 requires EF-01, EF-03, EF-05 and EF-06.

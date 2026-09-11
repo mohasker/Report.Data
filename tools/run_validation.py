@@ -27,7 +27,8 @@ OUT = os.path.join(ROOT, "docs", "01-data-foundation", "17-validation-evidence.m
 
 def regenerate():
     lines = []
-    for script in ("build_model.py", "gen_schemas.py", "gen_data_dictionary.py"):
+    for script in ("build_model.py", "gen_schemas.py", "gen_data_dictionary.py",
+                   "gen_matrices.py"):
         r = subprocess.run([sys.executable, os.path.join(HERE, script)],
                            capture_output=True, text=True)
         lines.append((script, r.returncode, (r.stdout + r.stderr).strip()))

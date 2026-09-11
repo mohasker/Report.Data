@@ -1,7 +1,7 @@
 # Phase 1 Validation Evidence
 
 **Document ID:** AH-SYS-P1-017 · **Revision:** 1 · **Status:** generated from an executed run
-**Executed:** 2026-09-11 00:59 UTC · **Model version:** 1.0.0 · **Python:** 3.11.15
+**Executed:** 2026-09-11 01:10 UTC · **Model version:** 1.0.0 · **Python:** 3.11.15
 
 > Produced by `python3 tools/run_validation.py`. Every result below comes from code that
 > actually ran; nothing here is asserted by hand. Re-run the command to reproduce it.
@@ -43,6 +43,7 @@ Phase 2 and later, and will carry their own recorded evidence (D-14).
 | `build_model.py` | ok | wrote /home/user/Report.Data/model/model.json;   tables      : 44;   columns     : 786;   enums       : 24;   transitions : 68 allowed, 29 explicitly forbidden;   security    : 8 roles x 44 tables = 352 grants, 14 exceptions |
 | `gen_schemas.py` | ok | wrote 44 table schemas to schemas/tables/ |
 | `gen_data_dictionary.py` | ok | wrote /home/user/Report.Data/docs/01-data-foundation/01-data-dictionary.md (1710 lines) |
+| `gen_matrices.py` | ok | wrote docs/01-data-foundation/03-status-transition-matrix.md; wrote docs/01-data-foundation/04-security-model.md |
 
 ## Seed conformance
 

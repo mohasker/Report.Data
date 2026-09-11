@@ -12,7 +12,8 @@ Implementation repository for the system specified in [`MASTER_SPEC.md`](MASTER_
 | | |
 |---|---|
 | **Phase 0 — Discovery** | **Approved 2026-09-11** subject to owner decisions D-01 … D-15 ([decision record](docs/00-discovery/10-owner-decisions.md)). |
-| **Current phase** | **Phase 1 — Data foundation.** Authorised within the limits of D-14. |
+| **Phase 1 — Data foundation** | **Complete 2026-09-11.** 141 of 141 checks executed and passing. Awaiting owner review of the data dictionary, transition matrix and security model. |
+| **Next phase** | Phase 2 — the multi-project capture and review application. Needs EF-01, EF-03, EF-05, EF-06. |
 | **Production systems touched** | **None.** No Google account, Drive folder, AppSheet app, Make scenario, API connection, QuickBooks company or credential has been created or connected. |
 | **Real data** | **None.** All data in this repository is synthetic and marked as such. |
 | **Tests executed** | Phase 1 validation checks run locally against synthetic data; results recorded in [`17-validation-evidence.md`](docs/01-data-foundation/17-validation-evidence.md). No claim is made about any system that has not been built. |
