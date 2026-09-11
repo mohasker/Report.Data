@@ -1,8 +1,9 @@
 # Owner Decision Record — Phase 0 Approval
 
-**Document ID:** AH-SYS-P0-010 · **Revision:** 1 · **Date:** 2026-09-11
+**Document ID:** AH-SYS-P0-010 · **Revision:** 2 · **Date:** 2026-09-11
 **Decision by:** General Manager (system owner) · **Effect:** Phase 0 approved; Phase 1 authorised
 **Revision 1** adds D-16 to D-21, the operational correction of 2026-09-11.
+**Revision 2** adds D-22 to D-24, the correction pass of the same day.
 
 This record is the authority for the revision 1 changes made to the Phase 0 documents. Where a
 decision below conflicts with an earlier revision of any Phase 0 document, **this record governs**.
@@ -314,3 +315,95 @@ approach.
 Drive link is forbidden.** The data model, Drive security, Make orchestration, Claude controls,
 approval rules and audit requirements must remain re-usable if the capture interface changes — which
 is why this is an interface decision and not an architecture decision.
+
+---
+
+# Correction pass, 2026-09-11 — minimum interaction, confirmed classification, filtered analysis
+
+Three further decisions, issued when the owner reviewed the capture-once implementation and found
+that it still asked the supervisor for more than it needed to, that it had removed the trusted
+activity classification along with the untrusted one, and that it assumed every photograph must be
+analysed. All three **govern over any earlier statement.**
+
+Canonical form: `model/model.json` → `capture_once.minimum_interaction`, `.classification` and
+`.ai_analysis_policy`. Rendered:
+[`../02a-plan/24-capture-once-workflow.md`](../02a-plan/24-capture-once-workflow.md) §3b, §3c, §3d.
+Tested by `tools/test_capture_once.py` (`CAP-27` … `CAP-45`).
+
+## D-22 — Minimum interaction: the normal path asks for nothing but the photographs
+
+The earlier statement that the supervisor "must supply five fields" did not match the approved
+workflow. It is withdrawn. **Zero fields are mandatory manual inputs on the normal path.**
+
+| Value | Where it comes from | When the supervisor is asked |
+|---|---|---|
+| User identity | The authenticated session | **Never** |
+| Date and time | The device clock, at first and last capture | **Never** |
+| Project | The single active assignment, else the last project used today, else the project default | Only when several assignments are active and none resolves — **a genuine choice, not a routine question** |
+| Location | The project's default location, else the last location used today | Only when several active locations exist and none resolves |
+| Capture mode | **Defaults to Quick Share** | Never on the normal path. AI Reviewed Share is chosen by an explicit action |
+| Evidence stage | Proposed by analysis, pre-tagged from the activity rule, or left `Pending` | **Never before capture.** It is not a mandatory manual field |
+| Additional site note | — | Optional, always |
+| Work description | — | **Not required** (D-18, unchanged) |
+
+**The normal path:** open the app → confirm project and location **if necessary** → capture the
+photographs → save and share.
+
+**Declaring an activity is not the price of submitting evidence.** A visit carrying photographs and
+no activity is a valid photographic submission; the completeness rule now requires *evidence*, not
+an activity. An activity that does exist still satisfies its effective rule in full — quantity,
+caption and minimum-photograph rules are unchanged.
+
+**Regression guard `CAP-29`:** no table on the normal path may carry a required, user-typed column
+with no automatic source. Reintroducing a mandatory supervisor input fails the validation suite.
+
+## D-23 — A confirmed structured activity, separate from the proposal
+
+Holding the AI's activity assessment as untrusted free text was right; discarding the structured
+classification with it was not. Reports and business rules need a controlled, human-confirmed
+activity. **Five columns, three roles:**
+
+| Column | Standing |
+|---|---|
+| `Photos.AIProposedActivityText` | **Advisory.** Free text. Untrusted |
+| `Photos.AIProposedActivityTypeID` | **Advisory candidate.** A suggested catalogue code, held in a typed column only so it can be shown beside the entry it points at. Nothing reads it except the confirmation screen |
+| `Photos.ConfirmedActivityTypeID` | **Trusted.** Set only by a supervisor or reviewer. Reports, rules, calculations, filters, joins and approvals read this and no other |
+| `Photos.AIProposalDisposition` | What the supervisor did with the proposal |
+| `Photos.ClassificationStatus` | `Pending` · `AIProposed` · `Confirmed` · `NotApplicable` · `Excluded` |
+
+**In Quick Share, classification stays `Pending` and is reviewed later.** Pending is a normal state
+and blocks nothing: the share has already happened and the record catches up.
+
+**AI-generated free text must never directly become the trusted structured activity.** Confirming
+copies a value into `ConfirmedActivityTypeID` by an explicit human action, and that column — not the
+candidate — binds the content hash, so changing a confirmed activity voids the approval.
+
+## D-24 — Analysis is filtered before it is paid for
+
+Do not assume every captured photograph requires a separate immediate AI call. **Two policies:**
+
+| | **AI Reviewed Share** | **Quick Share** *(default)* |
+|---|---|---|
+| Timing | Immediate, before the share | **Deferred**, after the share |
+| Filtering | Local duplicate and quality checks first | Duplicates, unusable images, deletions **and exclusions** first |
+| Why | The supervisor is waiting | Nothing is waiting, so the cheapest correct moment is after the waste has been removed |
+
+**Never analysed:** a near-duplicate of a photograph already analysed in the same batch; an image
+below the project's quality threshold; an image deleted or explicitly excluded before analysis ran;
+an image already analysed; anything in a project where analysis is off or the monthly cap is
+reached.
+
+**Still analysed: every photograph a reviewer may approve for a report.** Skipping is about waste,
+never about coverage. A skipped photograph is retained as evidence in full.
+
+**The filters cost nothing.** Perceptual hashing and the blur measure run locally, with no model
+call and no transfer. `Photos.PerceptualHash`, `Photos.QualityScore` and
+`Photos.AnalysisEligibility` carry the result.
+
+**Recalculated, and labelled as estimates until measured:** eligible ~83% under Quick Share and
+~92% under AI Reviewed Share, of 360 photographs a month at pilot volume. Claude: **~$6.28** and
+**~$6.95** a month. Make: **~1,167** and **~1,353** operations a month — so **neither policy fits
+the free orchestration tier**, because three operations per photograph is irreducible once bytes
+pass through an orchestrator. Full arithmetic:
+[`../02a-plan/23-operations-budget.md`](../02a-plan/23-operations-budget.md) §6b and
+[`../02a-plan/22-image-derivative-architecture.md`](../02a-plan/22-image-derivative-architecture.md) §5.

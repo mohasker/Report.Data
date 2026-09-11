@@ -401,3 +401,63 @@ document from there, plus a self-contained handoff package for transfer to anoth
   mandatory** — and none of the five is a description.
 
 **Validation:** **219 checks across 13 suites, all passing.** Byte-identical regeneration confirmed.
+
+---
+
+## [0.7.0] — 2026-09-11 — Minimum interaction, a confirmed activity, and filtered analysis
+
+The owner's correction pass on the capture-once implementation. Three things were wrong: it still
+asked the supervisor for more than it needed to, it had thrown out the trusted activity
+classification along with the untrusted one, and it assumed every photograph needs an immediate
+model call.
+
+**Owner decisions D-22 to D-24** — recorded in `docs/00-discovery/10-owner-decisions.md`:
+
+- **D-22 Minimum interaction.** The claim that the supervisor "must supply five fields" is
+  **withdrawn**. **Zero fields are mandatory manual inputs on the normal path.** Identity from the
+  session; date and time from the device; project from the single active assignment, the last used
+  today or the default; location from the project default or the last used; capture mode defaults to
+  Quick Share; evidence stage proposed by analysis, pre-tagged, or left `Pending`. **Declaring an
+  activity is no longer the price of submitting evidence** — the completeness rule now requires
+  *evidence*, not an activity.
+- **D-23 A confirmed structured activity.** `Photos.ConfirmedActivityTypeID` is trusted and set only
+  by a human; `AIProposedActivityText` and `AIProposedActivityTypeID` are advisory and read by the
+  confirmation screen and nothing else; `ClassificationStatus` carries the state, and `Pending` —
+  the normal Quick Share outcome — blocks nothing.
+- **D-24 Filtered analysis.** Immediate for AI Reviewed Share, deferred and filtered for Quick
+  Share. Near-duplicates, unusable images, deletions, exclusions and already-analysed files never
+  reach a model call. `PerceptualHash` and `QualityScore` detect them locally, at no cost.
+
+**Added**
+
+- Eight columns: `Photos.AIProposedActivityTypeID`, `ConfirmedActivityTypeID`,
+  `ClassificationStatus`, `ConfirmedByUserID`, `ConfirmedAt`, `AnalysisEligibility`,
+  `PerceptualHash`, `QualityScore`. Two enums: `ClassificationStatus`, `AnalysisEligibility`.
+- Three canonical blocks in `model/model.json` → `capture_once`: `minimum_interaction`,
+  `classification`, `ai_analysis_policy`.
+- **Twenty new checks (`CAP-27` … `CAP-45`), and `EVD-11b`.** Total **240 across 13 suites.**
+  `CAP-29` is the new regression guard: a required, user-typed column with no automatic source on a
+  field-path table fails the suite.
+- Risks **R-40 … R-43**; open questions **OQ-20 … OQ-22**; assumptions **A-13 … A-15**.
+- `tools/run_validation.py --out PATH` writes the evidence document **outside the repository**, so
+  an exact commit can be validated without modifying a tracked file.
+- `tools/render_review_pack.py` — the review-pack renderer, promoted from a scratch script.
+- `dist/DELIVERY-RECEIPT.md` and `.json` carry `SOURCE_COMMIT_SHA` and `PACKAGE_SHA256`. **The
+  manifest no longer records the archive's checksum**, and neither file is a member of the archive,
+  so nothing attempts to contain a digest of a file containing itself.
+
+**Changed**
+
+- `tools/build_handoff.py` now clones the exact commit, validates it off-tree, checks the clone is
+  clean before and after, builds the ZIP **from the clone rather than the working tree**, extracts
+  it and re-runs the full suite from the extracted copy.
+- The field workflow is rebuilt: **11–14 taps**, down from 16–21, entirely by not asking questions.
+- **Costs revised downward, and relabelled as estimates.** Claude ~$6.28/month (Quick Share) and
+  ~$6.95 (AI Reviewed) at pilot volume, from ~$7.56. Make ~1,167 and ~1,353 operations a month,
+  from ~1,440. **The conclusion is unchanged:** neither policy fits the free orchestration tier,
+  because three operations per photograph is irreducible once bytes pass through an orchestrator.
+- `evidence.py` — a visit carrying photographs and no activity is a valid photographic submission;
+  a visit carrying neither is still refused.
+
+**Validation:** **240 checks across 13 suites, all passing.** Byte-identical regeneration confirmed,
+at the packaged commit and from the extracted archive.

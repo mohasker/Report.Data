@@ -1,10 +1,11 @@
 # Make Operations Budget — Designing to 60–70% of the Verified Limit
 
-**Document ID:** AH-SYS-P2A-023 · **Revision:** 2 · **Date:** 2026-09-11
+**Document ID:** AH-SYS-P2A-023 · **Revision:** 3 · **Date:** 2026-09-11
 **Status:** Completed · Submitted for Owner Review · **Nothing built, nothing activated**
 **Verified limit:** 1,000 operations per month, 2 active scenarios, no overage
-**Revision 2** prices the AI proposal step that the capture-once correction introduces (D-16, D-17),
-and reports the result plainly: **it does not fit in the Free plan through Make.** §6b.
+**Revision 3** re-prices the AI proposal under the two analysis policies of D-24 — immediate for AI
+Reviewed Share, deferred and filtered for Quick Share — and reports the result plainly: **filtering
+helps, and it is still not enough to fit the Free plan through Make.** §6b.
 
 ---
 
@@ -105,48 +106,79 @@ Then the Free plan is insufficient, and the requirement is specific:
 scenarios.** The price is unverified — make.com is unreachable from this environment, and the owner
 can read it on their own billing page. **No purchase is proposed.**
 
-## 6b. The capture-once correction does not fit through Make on the Free plan
+## 6b. Analysis through Make: two policies, both priced, neither free
 
 This is the finding the owner needs, and it is not a comfortable one.
 
-**AI Reviewed Share requires an analysis before the supervisor confirms.** Batching by capture batch
-is the cheapest honest shape — one Claude call per visit rather than one per photograph — but the
-photographs still have to be fetched and encoded individually, and in Make a module inside an
-iterator consumes one operation **per bundle**.
+**Every figure in this section is an ESTIMATE** from the assumptions in §2 and in
+`model/model.json` → `capture_once.ai_analysis_policy.estimated_eligibility`. None has been
+measured. The pilot's first week replaces them with counts.
 
-| Module | Runs per visit | Operations |
+### What analysis actually costs in modules
+
+In Make a module inside an iterator consumes one operation **per bundle**, so three things are
+irreducible per photograph: fetching the derivative, encoding it for the request, and writing the
+advisory result back. **Three operations per analysed photograph**, whatever else changes.
+
+Everything else is per-batch or per-run and can be amortised.
+
+### Policy A — AI Reviewed Share: immediate, before the share
+
+Local duplicate and quality filtering runs first, so roughly **331 of 360** captured photographs a
+month are analysed (D-24). The supervisor is waiting, so the request cannot be deferred or pooled.
+
+| Module | Runs | Operations |
 |---|---|---|
-| Webhook / trigger on capture batch complete | 1 | 1 |
-| Read the batch's photograph rows | 1 | 1 |
-| Iterator over 6 photographs — fetch derivative | 6 | 6 |
-| Iterator over 6 photographs — encode for the request | 6 | 6 |
-| Aggregate into one request | 1 | 1 |
-| Call Claude once for the batch | 1 | 1 |
-| Parse and validate the response against the schema | 1 | 1 |
-| Iterator over 6 results — write the advisory columns | 6 | 6 |
-| Write the integration log row | 1 | 1 |
-| **Per visit** | | **24** |
-| **60 visits per month** | | **1,440** |
+| Trigger on capture batch complete | 1 per visit | 60 |
+| Read the batch's photograph rows | 1 per visit | 60 |
+| Fetch derivative · encode · write result | 3 per eligible photograph | **993** |
+| Aggregate · call Claude · parse and validate | 3 per visit | 180 |
+| Write the integration log row | 1 per visit | 60 |
+| **Total** | | **≈ 1,353** |
 
-**1,440 operations for analysis alone**, on top of the 703 already budgeted — **2,143 against a
-1,000 limit, and a third active scenario against a ceiling of two.** Neither fits.
+### Policy B — Quick Share: deferred, after the share, filtered first
 
-### The four honest responses
+Nothing is waiting. Duplicates, unusable images and anything the supervisor deleted or excluded are
+removed **before** a request is made, leaving roughly **299 of 360**. Batches are drained by a
+scheduled run rather than a webhook, so the per-run overhead is amortised across a day's work.
 
-| Option | Effect | Cost | Verdict |
+| Module | Runs | Operations |
+|---|---|---|
+| Scheduled trigger · read the queue · log the run | 3 per run, one run a day | 90 |
+| Fetch derivative · encode · write result | 3 per eligible photograph | **897** |
+| Aggregate · call Claude · parse and validate | 3 per capture batch | 180 |
+| **Total** | | **≈ 1,167** |
+
+### The result, stated plainly
+
+| | Operations | Plus the 703 baseline | Against the 1,000 limit | Active scenarios needed |
+|---|---|---|---|---|
+| No analysis (release 1 as budgeted) | 0 | **703** | **70% — fits** | 2 |
+| **Policy B — Quick Share, deferred and filtered** | ~1,167 | ~1,870 | **187% — does not fit** | 3 |
+| **Policy A — AI Reviewed Share, immediate** | ~1,353 | ~2,056 | **206% — does not fit** | 3 |
+| *(Revision 2, unfiltered, for comparison)* | *~1,440* | *~2,143* | *214%* | *3* |
+
+**Filtering saves roughly 190 operations a month and about 19% of the Claude bill. It does not
+change the conclusion.** Routing image bytes through an orchestrator costs three operations per
+photograph no matter how few photographs survive the filter, and three operations per photograph is
+more than the Free plan has.
+
+**Deferring is worth more than filtering for a different reason:** a deferred queue can be paused,
+re-ordered, capped and re-run without a supervisor waiting on it. That is an operational property,
+not a saving.
+
+### The four responses, unchanged in substance
+
+| Option | Effect | Make operations | Verdict |
 |---|---|---|---|
-| **A. Release 1 ships Quick Share only; AI analysis is deferred** | Capture once, store, native share. The internal record is complete; the *proposal* is not offered | **None.** 703 operations, 2 scenarios, unchanged | **Recommended for release 1.** It delivers the whole of CAP-01 — the second selection disappears — and defers only the convenience layer on top of it |
-| **B. AppSheet calls the Claude API directly, without Make** | The proposal returns to the supervisor without any orchestration operation | Make operations: **0**. Requires AppSheet API/webhook capability, which is question 4 of the Admin Console check | **The right answer if the entitlement allows it.** It is also architecturally better: the supervisor is waiting, and a round trip through an orchestrator is latency nobody needs |
-| **C. A Workspace-side component (Apps Script) performs the analysis** | Same as B, without depending on AppSheet's automation entitlement | Make operations: **0**. One more component to operate and monitor | The fallback if B is unavailable. It is the same component Option B of the derivative architecture already anticipates at scale |
-| **D. Pay for a Make plan** | The design runs as written | **≥ 3,000 operations/month and ≥ 3 active scenarios**, price unverified | Available, not recommended yet: paying to route bytes through an orchestrator that neither stores nor decides anything is the weakest of the four |
+| **A. Release 1 ships Quick Share; analysis deferred** | Capture once, store, native share. The record is complete; the *proposal* is not offered yet | **0** — 703 total, unchanged | **Recommended for release 1.** It delivers the whole of CAP-01 and the whole of D-22: the second selection disappears and the supervisor is asked nothing |
+| **B. AppSheet calls the Claude API directly** | The proposal returns without any orchestration operation | **0** | **The right answer if the entitlement allows it.** Question 4 of the Admin Console check settles it. Filtering still matters here — it cuts the Claude bill, not the Make bill |
+| **C. A Workspace-side component performs the analysis** | Same as B, without depending on AppSheet's automation entitlement | **0** | The fallback if B is unavailable, and the same component Option B of the derivative architecture already anticipates at scale |
+| **D. Pay for a Make plan** | The design runs as written | **≥ 3,000/month and ≥ 3 active scenarios** | Available, not recommended: paying an orchestrator three operations a photograph to carry bytes it neither stores nor decides on is the weakest of the four |
 
-**Recommendation: A for release 1, and test B during Phase 2A**, because question 4 of the Admin
-Console checklist already asks whether AppSheet has API access and webhook automation. If it does,
-the AI proposal costs zero Make operations and the capture-once workflow arrives complete. If it
-does not, C is the fallback and D is a decision the owner takes with a real price in front of them.
-
-**What does not change under any of the four:** the supervisor captures once. CAP-01 is satisfied by
-Option A alone; B and C add the proposal, not the guarantee.
+**Recommendation: A for release 1, and test B during Phase 2A.** Under every one of the four, the
+supervisor still captures once and is still asked nothing on the normal path. **CAP-01 and D-22 hold
+regardless**; what varies is only when the proposal arrives.
 
 ## 7. What is measured in Phase 3, before anything is trusted
 
@@ -157,8 +189,10 @@ Option A alone; B and C add the proposal, not the guarantee.
 | Operations consumed in week 1 against the projection | Whether the whole model holds |
 | Proportion of runs that retry | The 10% allowance |
 | Proportion of visits returned for correction | The 15% allowance |
-| Operations consumed by one batch analysis, if it ever runs through Make | The 24-per-visit estimate in §6b |
+| Operations consumed by one batch analysis, if it ever runs through Make | The per-photograph and per-batch estimates in §6b |
 | Latency of the batch analysis, measured from the supervisor's point of view | AI Reviewed Share is only usable if the wait is short |
+| **The real proportion of duplicates, unusable and excluded images** | The 8% / 5% / 4% eligibility estimates. This is the single assumption most likely to be wrong, in either direction |
+| How often a supervisor is actually asked to choose a project or a location | The D-22 claim that neither is a routine question |
 
 Make's own execution history retains 7 days, so **our `IntegrationJobs` table is the authoritative
 record** — which is why it is one of the twelve tables in release 1 and not something that could be

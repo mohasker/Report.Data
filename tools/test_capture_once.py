@@ -213,6 +213,146 @@ def run(model, data):
             len(gate["fallback_options"]) >= 3 and "re-usable" in gate["invariant"],
             gate["fallback_options"][1])
 
+    # ---- minimum interaction: the normal path asks for nothing but the photographs ----
+    mi = cap["minimum_interaction"]
+    c.check("CAP-27", "The normal path declares NO mandatory manual supervisor input",
+            mi["mandatory_manual_inputs"] == [],
+            "the supervisor supplies the photographs and nothing else")
+
+    c.check("CAP-28", "The normal path is four steps and none of them is typing",
+            len(mi["normal_path"]) == 4 and "capture the photographs" in mi["normal_path"],
+            " -> ".join(mi["normal_path"]))
+
+    # The regression this prevents: a required, user-sourced field with no automatic source
+    # appearing on a screen the supervisor meets on a normal visit.
+    FIELD_PATH_TABLES = tuple(mi["tables_on_the_normal_path"])
+    unnecessary = []
+    for tname in FIELD_PATH_TABLES:
+        for column in tables[tname]["columns"]:
+            if not column["required"]:
+                continue
+            if column.get("src") != "user":
+                continue
+            if column.get("auto") or column.get("default"):
+                continue
+            unnecessary.append(f"{tname}.{column['name']}")
+    c.check("CAP-29", "No field-path table has a required, user-typed column without an automatic "
+                      "source — the guard against reintroducing a mandatory supervisor input",
+            not unnecessary,
+            "none" if not unnecessary else f"would be asked of the supervisor: {unnecessary}")
+
+    no_source = []
+    for ref in mi["required_but_never_typed"]:
+        tn, cn = ref.split(".")
+        col_ = col(tables, tn, cn)
+        if col_ is None or not (col_.get("auto") or col_.get("default")
+                                or col_.get("src") in ("system", "device")):
+            no_source.append(ref)
+    c.check("CAP-30", "Every field required in storage has an automatic source, so 'required' "
+                      "never means 'the supervisor is asked'",
+            not no_source, f"{len(mi['required_but_never_typed'])} fields checked"
+            if not no_source else f"no automatic source: {no_source}")
+
+    c.check("CAP-30b", "Declaring an activity is not the price of submitting evidence",
+            "VisitActivities" not in mi["tables_on_the_normal_path"]
+            and "VisitActivities" in mi["not_required_on_the_normal_path"],
+            mi["not_required_on_the_normal_path"]["VisitActivities"])
+
+    c.check("CAP-31", "Identity, date and time are never supplied by hand",
+            all((col(tables, *f["field"].split(".")) or {}).get("src") in ("system", "device")
+                for f in mi["auto_populated"]
+                if f["field"].split(".")[1] in ("SupervisorUserID", "VisitDate", "StartTime",
+                                                "EndTime")),
+            "authenticated identity and device clock")
+
+    c.check("CAP-32", "Capture mode defaults to Quick Share and is never a routine question",
+            (col(tables, "SiteVisits", "CaptureMode") or {}).get("default") == "QuickShare"
+            and cap["modes"]["QuickShare"].get("default") is True,
+            "Quick Share is the default mode")
+
+    c.check("CAP-33", "Evidence stage is NOT a mandatory manual field before capture",
+            (col(tables, "Photos", "EvidenceStage") or {}).get("required") is False
+            and (col(tables, "Photos", "EvidenceStage") or {}).get("optional_by_design") is True,
+            "proposed, pre-tagged, or left pending")
+
+    # ---- a confirmed structured activity, separate from the proposal ------------------
+    cl = cap["classification"]
+    prop_text = col(tables, "Photos", "AIProposedActivityText")
+    prop_ref = col(tables, "Photos", "AIProposedActivityTypeID")
+    confirmed = col(tables, "Photos", "ConfirmedActivityTypeID")
+    status = col(tables, "Photos", "ClassificationStatus")
+
+    c.check("CAP-34", "The proposal and the confirmation are separate columns",
+            all(x is not None for x in (prop_text, prop_ref, confirmed, status))
+            and cl["trusted"] == "Photos.ConfirmedActivityTypeID",
+            "AIProposedActivityText + AIProposedActivityTypeID propose; "
+            "ConfirmedActivityTypeID is trusted")
+
+    c.check("CAP-35", "The AI candidate activity is marked advisory and candidate-only",
+            prop_ref.get("src") == "ai" and prop_ref.get("advisory") is True
+            and prop_ref.get("candidate_only") is True,
+            "nothing reads it except the confirmation screen")
+
+    c.check("CAP-36", "The trusted activity is human-sourced and never AI-sourced",
+            confirmed.get("src") == "user" and confirmed.get("trusted") is True
+            and "Photos.ConfirmedActivityTypeID" in cap["forbidden_ai_written_columns"],
+            "set only by a supervisor or reviewer")
+
+    c.check("CAP-37", "A pending classification is a normal, non-blocking state",
+            cl["pending_is_normal"] is True
+            and status.get("default") == "Pending"
+            and "Pending" in [v["code"] for v in model["enums"]["ClassificationStatus"]["values"]],
+            cl["quick_share_behaviour"])
+
+    c.check("CAP-38", "The trusted activity binds an approval; the candidate does not",
+            "ConfirmedActivityTypeID" in tables["Photos"]["content_hash_fields"]
+            and "AIProposedActivityTypeID" not in tables["Photos"]["content_hash_fields"],
+            "changing a confirmed activity voids the approval; a proposal never does")
+
+    c.check("CAP-39", "Reports, rules, calculations, filters, joins and approvals are all barred "
+                      "from reading the candidate",
+            set(["reports", "business rules", "calculations", "filters", "joins", "approvals"])
+            <= set(cl["may_not_read_candidate"]),
+            f"{len(cl['may_not_read_candidate'])} readers barred")
+
+    # ---- analysis is filtered before it is paid for -----------------------------------
+    pol = cap["ai_analysis_policy"]
+    c.check("CAP-40", "Two analysis policies are declared, one immediate and one deferred",
+            pol["policies"]["AIReviewedShare"]["timing"].startswith("immediate")
+            and pol["policies"]["QuickShare"]["timing"].startswith("deferred"),
+            "Quick Share defers; AI Reviewed Share does not")
+
+    c.check("CAP-41", "Duplicates, unusable, deleted, excluded and already-analysed images are "
+                      "excluded from analysis BEFORE the call",
+            len(pol["never_analysed"]) >= 5
+            and (col(tables, "Photos", "AnalysisEligibility") or {}).get("src") == "system",
+            f"{len(pol['never_analysed'])} exclusion classes")
+
+    c.check("CAP-42", "The filters themselves cost no model call",
+            "locally" in pol["filters_cost_nothing"]
+            and col(tables, "Photos", "PerceptualHash") is not None
+            and col(tables, "Photos", "QualityScore") is not None,
+            "perceptual hash and blur measure run on the device or in the store")
+
+    c.check("CAP-43", "Skipping is about waste, not coverage: a report still uses every relevant "
+                      "approved photograph",
+            "never about coverage" in pol["still_analysed"],
+            pol["still_analysed"][:70] + "…")
+
+    c.check("CAP-44", "Every eligibility proportion is labelled an estimate until measured",
+            "ESTIMATE" in pol["estimates_only"] and "measured" in pol["estimates_only"],
+            "replaced by counts in the pilot's first month")
+
+    est = pol["estimated_eligibility"]
+    share = round(1 - sum(a["share"] for a in est["assumptions"]), 2)
+    c.check("CAP-45", "The eligible share is arithmetic on the stated assumptions, not a guess",
+            abs(est["eligible_share"] - share) < 0.005
+            and est["eligible_per_month_quick_share"] == round(
+                est["captured_per_month_pilot"] * est["eligible_share"]),
+            f"1 - ({' + '.join(str(a['share']) for a in est['assumptions'])}) = {share}; "
+            f"{est['captured_per_month_pilot']} x {share} = "
+            f"{est['eligible_per_month_quick_share']}")
+
     # ---- the requirement is present in the documentation, not only in the model -------
     hits = []
     for dirpath, dirnames, filenames in os.walk(os.path.join(ROOT, "docs")):

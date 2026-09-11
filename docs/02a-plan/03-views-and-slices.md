@@ -1,6 +1,6 @@
 # Views and Slices
 
-**Document ID:** AH-SYS-P2A-003 · **Revision:** 1 · **Date:** 2026-09-11
+**Document ID:** AH-SYS-P2A-003 · **Revision:** 3 · **Date:** 2026-09-11
 **Status:** Completed · Submitted for Owner Review · **Not built, not tested**
 
 > Views and slices control **presentation**. They are never enforcement: a slice that hides a column
@@ -27,6 +27,10 @@ to a messaging group (R-06). Every decision below follows from that:
   twice (CAP-01).**
 - **Never ask for a description of what the photograph already shows (D-18).** A written work
   description is optional in every normal case.
+- **Minimum interaction (D-22).** The form asks for nothing the system can resolve itself: not the
+  project, the location, the date, the time, the identity, the capture mode or the evidence stage.
+  A question appears only when a genuine choice exists. **Prefilled is not hidden** — project and
+  location are always *visible* on the capture screen, and one tap changes either (R-40).
 
 ## 2. Slices
 
@@ -46,6 +50,8 @@ to a messaging group (R-06). Every decision below follows from that:
 | `AdminErrors` | IntegrationJobs | `IN([Status], LIST("Failed","DeadLettered"))` | Administrator error queue |
 | `PendingShare` | SiteVisits | `AND([SupervisorUserID] = ME(), COUNT(Photos of this visit) > 0, IN([ShareStatus], LIST("NotShared","ShareCancelled","ShareFailed")))` | **Captured but not yet shared to the contractor group.** Also the retry queue: a failed or cancelled share is re-offered here **from the stored files** (CAP-01) |
 | `AwaitingProposal` | Photos | `AND([CaptureBatchID] = [_THISROW].[CaptureBatchID], [AIAnalysisStatus] = "Completed", [AIProposalDisposition] = "NotOffered")` | The confirm-or-correct queue for one capture batch. AI Reviewed Share waits on it; Quick Share does not |
+| `PendingClassification` | Photos | `AND(IN([ProjectID], MY_PROJECTS()), [ClassificationStatus] = "Pending")` | **The catch-up queue.** The normal state after a Quick Share. Counted in the weekly digest so it cannot be forgotten (R-41) |
+| `AnalysisQueue` | Photos | `AND([AnalysisEligibility] = "Eligible", [AIAnalysisStatus] = "NotRequested")` | Administrative. What deferred analysis will draw from — duplicates, unusable, deleted and excluded images have already been filtered out (D-24) |
 
 **Column-level rule.** Field-role slices omit financial and personal columns entirely rather than
 hiding them. The strongest form of the control is that the data is not in the slice at all.
@@ -56,10 +62,11 @@ hiding them. The strongest form of the control is that the data is not in the sl
 | View | Type | Source | Notes |
 |---|---|---|---|
 | Home | Dashboard | — | Four tiles: **New Visit**, My Drafts, Needs Correction, Open Snags |
-| New Visit | Form | SiteVisits | Project → Location → capture mode. Project defaults to the last used. **No description field on the first screen** — the note is optional and lives behind a single "Add a site note" control (D-18) |
+| New Visit | Form | SiteVisits | **Nothing is asked.** Project and location are shown, prefilled and tappable; date, time, identity and capture mode are populated and not shown as inputs. The note is optional and lives behind a single "Add a site note" control (D-18, D-22) |
 | Add Activities | Form (inline) | VisitActivities | Activity filtered by project rules; quantity shown only when the effective rule requires it |
-| Add Photos | Form (inline) | Photos | Camera-first, **and the only file selection in the application (CAP-01)** |
-| Confirm Proposals | Deck | `AwaitingProposal` | **AI Reviewed Share only.** Proposed stage and caption shown beside the confirmed value, with one tap to accept and an edit to correct. `AIProposalDisposition` records which |
+| Add Photos | Form (inline) | Photos | Camera-first, **and the only file selection in the application (CAP-01)**. No stage, no activity, no caption asked at capture (D-22) |
+| Confirm Proposals | Deck | `AwaitingProposal` | Proposed stage, caption and **candidate activity** shown beside the confirmed value, with one tap to accept and an edit to correct. **The only route by which a candidate activity becomes `ConfirmedActivityTypeID`** (D-23) |
+| Classify Later | Deck | `PendingClassification` | The Quick Share catch-up queue. Reached from the home screen, never forced |
 | Share to Group | Detail action | `PendingShare` | **One action** opens the native share sheet with the stored files already attached. No re-selection, no public link. Unverified: `CAP-GATE` |
 | Photo Gallery | Gallery | Photos | Their own project's evidence, to avoid duplicate captures |
 | My Drafts | Deck | `MyDrafts` | Continue or submit |
@@ -122,6 +129,11 @@ supervisor to select the images again. Fifteen conditions, both platforms, both 
 [`19-real-device-test-protocol.md`](19-real-device-test-protocol.md) §4b. A second selection is not
 a usability finding; it fails acceptance.
 
-**A proposal view is not enforcement.** `AwaitingProposal` and `Confirm Proposals` present advice.
-Nothing in them writes a confirmed field: the copy from proposal to confirmed value happens only
-through an explicit human action, which is what `CAP-11` and `CAP-12` test.
+**A proposal view is not enforcement.** `AwaitingProposal`, `Confirm Proposals` and
+`PendingClassification` present advice. Nothing in them writes a confirmed field: the copy from
+proposal to confirmed value happens only through an explicit human action, which is what `CAP-11`,
+`CAP-12` and `CAP-34` … `CAP-39` test.
+
+**And a prefilled field is not a hidden one.** The Phase 2B gate must record how often a supervisor
+is prompted for a project or a location, and how often a submitted visit is later corrected for
+either. Asking nothing is only an improvement while the defaults are right (R-40).

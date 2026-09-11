@@ -1,10 +1,11 @@
 # AI Prompt and Schema Specification
 
-**Document ID:** AH-SYS-P1-015 · **Revision:** 2 · **Date:** 2026-09-11
+**Document ID:** AH-SYS-P1-015 · **Revision:** 3 · **Date:** 2026-09-11
 **Status:** Completed · Submitted for Owner Review · **No API call has been made**
 **Implements:** D-06, **D-17, D-19, D-20** · **Relates to:** ADR-0004 rev 1, ADR-0009, spec §3a, §9
 **Revision 2** adds batch analysis for a capture batch, the nine forbidden inferences, and the
-separation between a proposal and a confirmed value.
+separation between a proposal and a confirmed value. **Revision 3** adds the eligibility filter that
+runs before any call (D-24) and the candidate-activity column (D-23).
 **Status:** specifications and schemas defined. **No API credential exists and no call is made** (D-14)
 
 ---
@@ -23,6 +24,7 @@ The owner's correction to ADR-0004 defines the boundary precisely:
 | Emit an explicit `DATA GAP` where information is missing | Filling a gap by inference |
 | Propose an evidence stage, activity text, caption, visible condition, possible snag, quality warning, uncertainty and confidence — each to its **own advisory column** (D-17) | Writing any of them into the confirmed column. The supervisor confirms or corrects; `AIProposalDisposition` records which |
 | Suggest the formatted text that accompanies a native share | Performing the share, choosing the destination, or asserting that it was delivered |
+| Suggest a **candidate** activity code from the catalogue, into `Photos.AIProposedActivityTypeID` | Writing `Photos.ConfirmedActivityTypeID`. That column is set only by a human, and it is what every report and rule reads (D-23) |
 
 ### The nine inferences that are forbidden outright (D-19)
 
@@ -63,6 +65,34 @@ and a shared prompt inherits the loosest of them.
 
 Every generated document records `AIModel` and `PromptVersion`, so any output can be reproduced and
 explained months later.
+
+### What is never sent — the eligibility filter (D-24)
+
+A request is made only for photographs marked `Eligible`. Filtering happens **before** the call,
+never after it, and the filters themselves cost no model call:
+
+| Skipped | Why | How it is detected |
+|---|---|---|
+| A near-duplicate of one already analysed in the batch | The second copy tells the reviewer nothing new | `PerceptualHash`, computed locally at registration |
+| Below the project's quality threshold | A blurred or dark image produces a confident description of nothing | `QualityScore`, a local blur and exposure measure |
+| Deleted or explicitly excluded before analysis ran | Nobody will report on it | The supervisor's own action |
+| Already analysed | Analysis never runs twice on the same file | `AIAnalysisStatus` |
+| Analysis off for the project, or the monthly cap reached | The owner's switch and the owner's cap | Configuration |
+
+**Skipping is about waste, never about coverage.** A skipped photograph is retained as evidence in
+full and remains approvable for a report. Estimated eligibility — labelled as an estimate until the
+pilot measures it — is ~83% under Quick Share and ~92% under AI Reviewed Share.
+
+### Two timings, because one of them has someone waiting
+
+| | AI Reviewed Share | Quick Share *(default)* |
+|---|---|---|
+| When | Immediately, before the share | **Deferred**, after the share |
+| Filters applied | Duplicate and quality | Duplicate, quality, **and exclusions** |
+| Who is waiting | The supervisor | Nobody |
+
+Quick Share defers because nothing is waiting, which also makes the queue pausable, cappable and
+re-runnable — an operational property worth more than the money it saves.
 
 ### Why analysis is batched by capture, not by photograph
 

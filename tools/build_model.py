@@ -166,6 +166,34 @@ enum("AIProposalDisposition", "What the supervisor did with the AI proposal (D-1
     ("Rejected", "Rejected", "مرفوض", "The proposal was discarded entirely."),
 ])
 
+enum("ClassificationStatus", "How far a photograph's activity classification has got (D-23). "
+     "Pending is a normal, non-blocking state.", [
+    ("Pending", "Pending", "قيد الانتظار",
+     "Captured, not yet classified. The normal state immediately after a Quick Share."),
+    ("AIProposed", "AI proposed", "اقتراح من الذكاء الاصطناعي",
+     "An advisory proposal exists. **Still untrusted.** No report or business rule may use it."),
+    ("Confirmed", "Confirmed", "مؤكد",
+     "A supervisor or reviewer set ConfirmedActivityTypeID. The only trusted state."),
+    ("NotApplicable", "Not applicable", "لا ينطبق",
+     "The photograph carries no activity to classify — a safety observation, a material delivery."),
+    ("Excluded", "Excluded", "مستبعد",
+     "Deliberately left out: a duplicate, an unusable image, or evidence excluded from this report."),
+])
+
+enum("AnalysisEligibility", "Whether a photograph is worth sending to analysis (D-24). Filtering "
+     "happens before the call, never after it.", [
+    ("Eligible", "Eligible", "مؤهل", "Analysis has value and has not run."),
+    ("Analysed", "Analysed", "تم التحليل", "Already analysed. Never analysed twice."),
+    ("SkippedDuplicate", "Skipped — duplicate", "تم التخطي - مكرر",
+     "A near-identical photograph in the same batch was analysed instead."),
+    ("SkippedQuality", "Skipped — unusable", "تم التخطي - جودة غير كافية",
+     "Blurred, dark or obstructed beyond usefulness. Retained as evidence, not analysed."),
+    ("SkippedExcluded", "Skipped — excluded", "تم التخطي - مستبعد",
+     "Deleted or explicitly excluded by the supervisor before analysis ran."),
+    ("SkippedDisabled", "Skipped — analysis off", "تم التخطي - التحليل متوقف",
+     "Analysis is switched off for this project, or the monthly cap is reached."),
+])
+
 enum("SiteNoteCategory", "Why an optional site note was written (D-18). Facts a photograph "
      "cannot establish.", [
     ("ClientInstruction", "Client instruction", "تعليمات العميل", ""),
@@ -824,17 +852,32 @@ table("SiteVisits", "operational", "project", "confidential", 1,
       "One reporting event at a location on a date. The unit of submission and review.",
       "زيارة موقع", "VisitID", [
     col("VisitID", "id", True, key="pk", ex="VIS-Q8C4K1"),
-    col("ProjectID", "ref", True, ref="Projects.ProjectID", src="user", hash=True),
-    col("LocationID", "ref", True, ref="Locations.LocationID", src="user", hash=True,
-        validation="Location must belong to ProjectID"),
+    col("ProjectID", "ref", True, ref="Projects.ProjectID", src="system", hash=True,
+        auto="Prefilled from the supervisor's single active assignment, or from the last project "
+             "used today, or from the project default.",
+        prompts_user="only when the supervisor holds more than one active assignment and no "
+                     "default resolves — a genuine choice, not a routine question",
+        note="Required in storage, never a routine question (D-22). Trusted system data; never "
+             "inferred from a photograph (D-19)."),
+    col("LocationID", "ref", True, ref="Locations.LocationID", src="system", hash=True,
+        validation="Location must belong to ProjectID",
+        auto="Prefilled from the project's default location, or the last location used today.",
+        prompts_user="only when the project has several active locations and none resolves",
+        note="Required in storage, confirmed rather than typed (D-22)."),
     col("WorkOrderID", "ref", False, ref="WorkOrders.WorkOrderID", src="user", hash=True),
-    col("VisitDate", "date", True, src="user", hash=True,
-        note="Defaults to the device date; correctable by an authorised user (spec 7.3)."),
-    col("StartTime", "time", False, src="user", hash=True),
-    col("EndTime", "time", False, src="user", hash=True, validation="Must be after StartTime"),
+    col("VisitDate", "date", True, src="device", hash=True,
+        auto="The device date, captured automatically.",
+        note="Never typed on the normal path. Correctable by an authorised user (spec 7.3)."),
+    col("StartTime", "time", False, src="device", hash=True,
+        auto="The device time at the first capture in the batch."),
+    col("EndTime", "time", False, src="device", hash=True,
+        validation="Must be after StartTime",
+        auto="The device time at the last capture in the batch."),
     col("Weather", "text", False, src="user", hash=True),
     col("SupervisorUserID", "ref", True, ref="Users.UserID", src="system", hash=True,
-        note="Defaults from USEREMAIL(); must hold an active assignment to ProjectID."),
+        auto="The signed-in user. Never selected, never typed.",
+        note="Resolved from the authenticated identity; must hold an active assignment to "
+             "ProjectID."),
     col("GPSLatitude", "decimal", False, src="device", scale=7),
     col("GPSLongitude", "decimal", False, src="device", scale=7),
     col("OverallDescriptionEN", "longtext", False, src="user", hash=True, ar="OverallDescriptionAR",
@@ -854,8 +897,12 @@ table("SiteVisits", "operational", "project", "confidential", 1,
              "method for this field, not a new field."),
     col("SiteNoteCategory", "enum", False, enum="SiteNoteCategory", src="user", hash=True,
         note="Classifies the optional note so it can be routed and reported. Never inferred by AI."),
-    col("CaptureMode", "enum", True, default="AIReviewedShare", enum="CaptureMode", src="user",
-        note="Quick Share or AI Reviewed Share (D-16). Both capture the images exactly once."),
+    col("CaptureMode", "enum", True, default="QuickShare", enum="CaptureMode", src="system",
+        auto="Defaults to Quick Share on every visit.",
+        prompts_user="never on the normal path — AI Reviewed Share is chosen deliberately, by an "
+                     "explicit action, when a reviewed caption is wanted before sharing",
+        note="Quick Share is the default so the contractor group is served first and nothing is "
+             "waited for (D-22). Both modes capture the images exactly once (D-16)."),
     col("ShareStatus", "enum", True, default="NotShared", enum="ShareStatus", src="user",
         note="Recorded from the supervisor's confirmation. The app cannot observe delivery inside "
              "the messaging application."),
@@ -920,7 +967,11 @@ table("Photos", "operational", "project", "confidential", 1,
       "الصور الفوتوغرافية كأدلة", "PhotoID", [
     col("PhotoID", "id", True, key="pk", ex="PHO-M9F2X5"),
     col("VisitID", "ref", True, ref="SiteVisits.VisitID", src="system", hash=True),
-    col("VisitActivityID", "ref", False, ref="VisitActivities.VisitActivityID", src="user", hash=True),
+    col("VisitActivityID", "ref", False, ref="VisitActivities.VisitActivityID", src="system",
+        hash=True,
+        note="Optional. A photograph belongs to a visit; it is attached to an activity only once "
+             "one has been confirmed. A photographic submission with no activity at all is valid "
+             "(D-22)."),
     col("ProjectID", "ref", True, ref="Projects.ProjectID", src="system", hash=True,
         note="Denormalised for row-level security and for folder routing."),
     col("LocationID", "ref", True, ref="Locations.LocationID", src="system", hash=True),
@@ -946,7 +997,14 @@ table("Photos", "operational", "project", "confidential", 1,
     col("IsOriginalDeviceImageVerified", "bool", True, default="FALSE", src="system",
         note="Stays FALSE until real-device testing proves no upstream re-encoding. No file may be "
              "described as the original device image while this is FALSE (D-13)."),
-    col("EvidenceStage", "enum", True, enum="EvidenceStage", src="user", hash=True),
+    col("EvidenceStage", "enum", False, enum="EvidenceStage", src="user", hash=True,
+        optional_by_design=True,
+        validation="Optional at capture (D-22). Never a mandatory manual field before the "
+                   "photograph is taken",
+        auto="Proposed by analysis into AIProposedEvidenceStage, or pre-tagged from the activity "
+             "rule's default stages, or left Pending for review.",
+        note="A supervisor may set it, and often will not. An unclassified photograph is valid "
+             "evidence and blocks no submission; ClassificationStatus carries how far it has got."),
     col("CaptionEN", "text", False, src="user", hash=True, ar="CaptionAR",
         validation="Mandatory for Snag, Observation, Material and Safety stages",
         note="The supervisor's own words. Never overwritten by AI (D-06)."),
@@ -963,6 +1021,16 @@ table("Photos", "operational", "project", "confidential", 1,
         note="Flag only. A suspected duplicate is never deleted or merged (S-09)."),
     col("DuplicateOfPhotoID", "ref", False, ref="Photos.PhotoID", src="system"),
     col("AIAnalysisStatus", "enum", True, default="NotRequested", enum="AIAnalysisStatus", src="system"),
+    col("AnalysisEligibility", "enum", True, default="Eligible", enum="AnalysisEligibility",
+        src="system",
+        note="Decided BEFORE any call is made (D-24). A duplicate, an unusable image, a deleted "
+             "or excluded one, and an already-analysed one all cost nothing."),
+    col("PerceptualHash", "text", False, src="system",
+        note="Computed at registration for near-duplicate detection. A flag only: a suspected "
+             "duplicate is never deleted or merged (S-09)."),
+    col("QualityScore", "decimal", False, src="system", scale=2, validation="0.00-1.00",
+        note="Local blur/exposure measure computed without a model call. Below the project "
+             "threshold the photograph is retained as evidence and skipped for analysis."),
     col("AIObservation", "json", False, src="ai",
         advisory=True,
         note="ADVISORY ONLY. Schema-validated output, displayed as an AI observation, visually "
@@ -971,9 +1039,29 @@ table("Photos", "operational", "project", "confidential", 1,
         note="A PROPOSAL. Never written to EvidenceStage. The supervisor confirms or corrects it "
              "(D-17)."),
     col("AIProposedActivityText", "text", False, src="ai", advisory=True,
-        note="Free text describing the visible activity. Deliberately NOT a reference to "
-             "ActivityTypes: a contractual activity is a trusted structured field and may not "
-             "originate from an image (D-20)."),
+        note="Free text describing the visible activity. Untrusted. Never becomes the structured "
+             "activity by itself (D-20, D-23)."),
+    col("AIProposedActivityTypeID", "ref", False, ref="ActivityTypes.ActivityTypeID", src="ai",
+        advisory=True, candidate_only=True,
+        validation="Advisory candidate only. No report, rule, calculation, filter or join may read "
+                   "this column",
+        note="A CANDIDATE code the analysis suggests, held in a typed column so it can be shown "
+             "beside the catalogue entry it points at. It is not the activity: nothing reads it "
+             "except the confirmation screen, and confirming copies the value into "
+             "ConfirmedActivityTypeID by an explicit human action (D-23)."),
+    col("ConfirmedActivityTypeID", "ref", False, ref="ActivityTypes.ActivityTypeID", src="user",
+        hash=True, trusted=True,
+        validation="Must be permitted for the project by the effective activity rule",
+        note="**The trusted structured activity.** Set only by a supervisor or reviewer, and only "
+             "when ClassificationStatus becomes Confirmed. Reports and business rules read this "
+             "column and no other (D-23)."),
+    col("ClassificationStatus", "enum", True, default="Pending", enum="ClassificationStatus",
+        src="system", hash=True,
+        note="Pending is normal after a Quick Share and blocks nothing. Only Confirmed makes the "
+             "activity trusted (D-23)."),
+    col("ConfirmedByUserID", "ref", False, ref="Users.UserID", src="system",
+        note="Who confirmed the classification. Attribution is the point."),
+    col("ConfirmedAt", "datetime", False, src="system"),
     col("AIProposedCaptionEN", "text", False, src="ai", advisory=True, ar="AIProposedCaptionAR",
         note="Proposed professional caption. Copied into CaptionEN only by a human action."),
     col("AIProposedCaptionAR", "text", False, src="ai", advisory=True, lang="ar"),
@@ -1012,8 +1100,9 @@ table("Photos", "operational", "project", "confidential", 1,
         enum="DataClassificationCode", src="system",
         note="Drives residency and sharing decisions (D-12)."),
 ] + VERSIONED + AUDIT,
-      content_hash=["VisitID", "VisitActivityID", "LocationID", "EvidenceStage", "CaptionEN",
-                    "CaptionAR", "ApprovedForReport", "ReportSequence"],
+      content_hash=["VisitID", "VisitActivityID", "LocationID", "EvidenceStage",
+                    "ConfirmedActivityTypeID", "CaptionEN", "CaptionAR", "ApprovedForReport",
+                    "ReportSequence"],
       notes=["Advisory AI fields are deliberately excluded from ContentHash: an AI observation "
              "arriving later must not void a human approval (C-06)."])
 
@@ -2228,10 +2317,14 @@ CAPTURE_ONCE = {
     "workflow": [
         {"step": 1, "actor": "supervisor", "action": "Opens the field application."},
         {"step": 2, "actor": "system",
-         "action": "The assigned project is prefilled where a single active assignment exists.",
-         "source": "ProjectAssignments — trusted system data, never the photograph."},
-        {"step": 3, "actor": "supervisor", "action": "Selects or confirms the location.",
-         "source": "Locations — trusted structured reference, never inferred from the photograph."},
+         "action": "Project, location, date, time, supervisor and capture mode are populated "
+                   "automatically. The supervisor is asked nothing unless a genuine choice exists.",
+         "source": "ProjectAssignments, the device clock and the authenticated identity — trusted "
+                   "system data, never the photograph (D-22)."},
+        {"step": 3, "actor": "supervisor",
+         "action": "Confirms the location — and only when it does not resolve automatically.",
+         "source": "Locations — prefilled from the project default or the last location used "
+                   "today. A trusted structured reference, never inferred from the photograph."},
         {"step": 4, "actor": "supervisor",
          "action": "Captures or selects the photographs ONCE.",
          "source": "Device camera or gallery. This is the only file selection in the workflow."},
@@ -2239,10 +2332,12 @@ CAPTURE_ONCE = {
          "action": "The photographs are stored in the controlled system, unchanged, and grouped "
                    "under one CaptureBatchID."},
         {"step": 6, "actor": "ai",
-         "action": "Analyses the photographs and PROPOSES the advisory fields below.",
+         "action": "Analyses the ELIGIBLE photographs and PROPOSES the advisory fields below — "
+                   "immediately in AI Reviewed Share, after the share in Quick Share (D-24).",
          "binding": "advisory"},
         {"step": 7, "actor": "supervisor",
-         "action": "Confirms or corrects the proposal with minimum interaction.",
+         "action": "Confirms or corrects the proposal with minimum interaction. In Quick Share "
+                   "this happens later; classification stays Pending and blocks nothing (D-23).",
          "binding": "authoritative"},
         {"step": 8, "actor": "supervisor",
          "action": "Shares the same image files and a formatted summary to the existing "
@@ -2255,14 +2350,19 @@ CAPTURE_ONCE = {
     "modes": {
         "QuickShare": {
             "sequence": ["capture", "store", "native share"],
-            "ai": "asynchronous, after the share; prepares internal report metadata",
-            "use_when": "The contractor group must receive the site evidence immediately.",
+            "default": True,
+            "ai": "deferred and filtered: after the share, once duplicates, unusable images and "
+                  "exclusions have been removed (D-24)",
+            "use_when": "The default. The contractor group is served first and nothing is "
+                        "waited for.",
             "capture_count": 1,
         },
         "AIReviewedShare": {
             "sequence": ["capture", "store", "AI proposal", "supervisor confirmation",
                          "native share"],
-            "ai": "synchronous, before the share",
+            "default": False,
+            "chosen_by": "an explicit action, never a routine question",
+            "ai": "immediate, before the share, on the batch's eligible photographs",
             "use_when": "A reviewed professional caption is wanted before group submission.",
             "capture_count": 1,
         },
@@ -2318,8 +2418,143 @@ CAPTURE_ONCE = {
         "VisitActivities.PercentComplete", "VisitActivities.UnitID",
         "Photos.EvidenceStage", "Photos.CaptionEN", "Photos.CaptionAR",
         "Photos.ReviewerDecision", "Photos.ApprovedForReport",
+        "Photos.ConfirmedActivityTypeID", "Photos.ClassificationStatus",
         "Snags.Severity", "Approvals.Decision",
     ],
+    # D-22: the normal path asks the supervisor for nothing but the photographs.
+    "minimum_interaction": {
+        "principle": "Minimum interaction. On the normal path the supervisor supplies the "
+                     "photographs and nothing else. Every other value is populated "
+                     "automatically, and a question is asked only when a genuine choice exists.",
+        "normal_path": ["open the app",
+                        "confirm project and location only if necessary",
+                        "capture the photographs",
+                        "save and share"],
+        "mandatory_manual_inputs": [],
+        "tables_on_the_normal_path": ["SiteVisits", "Photos"],
+        "not_required_on_the_normal_path": {
+            "VisitActivities": "Declaring an activity is not the price of submitting evidence "
+                               "(D-22). A visit carrying photographs and no activity is a valid "
+                               "photographic submission; the classification catches up "
+                               "afterwards. An activity that DOES exist still satisfies its "
+                               "effective rule in full — quantity, caption and minimum "
+                               "photographs are unchanged.",
+        },
+        "auto_populated": [
+            {"field": "SiteVisits.SupervisorUserID",
+             "source": "the authenticated identity",
+             "asks_user": "never"},
+            {"field": "SiteVisits.VisitDate",
+             "source": "the device date", "asks_user": "never"},
+            {"field": "SiteVisits.StartTime",
+             "source": "the device time at first capture", "asks_user": "never"},
+            {"field": "SiteVisits.EndTime",
+             "source": "the device time at last capture", "asks_user": "never"},
+            {"field": "SiteVisits.ProjectID",
+             "source": "the single active assignment, else the last project used today, else the "
+                       "project default",
+             "asks_user": "only when several assignments are active and none resolves"},
+            {"field": "SiteVisits.LocationID",
+             "source": "the project's default location, else the last location used today",
+             "asks_user": "only when several active locations exist and none resolves"},
+            {"field": "SiteVisits.CaptureMode",
+             "source": "defaults to QuickShare",
+             "asks_user": "never on the normal path"},
+            {"field": "Photos.EvidenceStage",
+             "source": "proposed by analysis, or pre-tagged from the activity rule, or left pending",
+             "asks_user": "never before capture"},
+            {"field": "Photos.CaptureBatchID",
+             "source": "generated at capture", "asks_user": "never"},
+            {"field": "Photos.CaptureSequence",
+             "source": "the order the device captured them", "asks_user": "never"},
+        ],
+        "optional_inputs": ["SiteVisits.AdditionalSiteNote", "SiteVisits.SiteNoteCategory",
+                            "SiteVisits.SafetyObservation", "SiteVisits.OverallDescriptionEN",
+                            "SiteVisits.OverallDescriptionAR", "Photos.CaptionEN",
+                            "Photos.CaptionAR", "Photos.EvidenceStage"],
+        "required_but_never_typed": ["SiteVisits.ProjectID", "SiteVisits.LocationID",
+                                     "SiteVisits.VisitDate", "SiteVisits.SupervisorUserID",
+                                     "SiteVisits.CaptureMode", "SiteVisits.ShareStatus",
+                                     "SiteVisits.ShareAttemptCount",
+                                     "Photos.ClassificationStatus", "Photos.AnalysisEligibility"],
+        "note": "Required in storage and required of the supervisor are different things. Every "
+                "field above is required for the record to be meaningful, and none of them is a "
+                "question on the normal path.",
+    },
+    # D-23: a controlled activity classification that a human confirms.
+    "classification": {
+        "principle": "AI-generated free text never becomes the trusted structured activity. A "
+                     "proposal and a confirmation are different columns, and only the "
+                     "confirmation is read by anything.",
+        "advisory": ["Photos.AIProposedActivityText", "Photos.AIProposedActivityTypeID"],
+        "trusted": "Photos.ConfirmedActivityTypeID",
+        "state": "Photos.ClassificationStatus",
+        "disposition": "Photos.AIProposalDisposition",
+        "pending_is_normal": True,
+        "rule": "Only ClassificationStatus = Confirmed makes ConfirmedActivityTypeID readable by a "
+                "report, a rule, a calculation or a filter. Pending is the normal state "
+                "immediately after a Quick Share and blocks nothing.",
+        "quick_share_behaviour": "Classification stays Pending and is reviewed later. The share "
+                                 "has already happened; the record catches up.",
+        "may_not_read_candidate": ["reports", "business rules", "calculations", "filters",
+                                   "joins", "approvals"],
+    },
+    # D-24: analysis is filtered before it is paid for.
+    "ai_analysis_policy": {
+        "principle": "Not every captured photograph needs an immediate model call. Filtering "
+                     "happens before the call, never after it, and reports still use every "
+                     "relevant approved photograph.",
+        "policies": {
+            "AIReviewedShare": {
+                "timing": "immediate, before the share",
+                "unit": "one request per capture batch",
+                "filtered": "local duplicate and quality checks run first; the rest of the batch "
+                            "is analysed",
+                "why": "the supervisor is waiting, so the proposal has to exist now",
+            },
+            "QuickShare": {
+                "timing": "deferred, after the share",
+                "unit": "one request per capture batch, batched again across visits where the "
+                        "queue allows",
+                "filtered": "duplicates, unusable images, deleted and explicitly excluded images "
+                            "are removed first; only then is a request made",
+                "why": "nothing is waiting, so the cheapest correct moment is after the "
+                       "supervisor has finished and the obvious waste has been removed",
+            },
+        },
+        "never_analysed": [
+            "a near-duplicate of a photograph already analysed in the same batch",
+            "an image below the project's quality threshold",
+            "an image deleted or explicitly excluded before analysis ran",
+            "an image already analysed — analysis never runs twice on the same file",
+            "any image in a project where analysis is switched off, or after the monthly cap",
+        ],
+        "still_analysed": "every photograph a reviewer may approve for a report. Skipping is "
+                          "about waste, never about coverage: an excluded image is one nobody "
+                          "will report on.",
+        "filters_cost_nothing": "Perceptual hashing and the blur measure run locally, without a "
+                                "model call.",
+        "estimates_only": "Every eligibility proportion below is an ESTIMATE from the stated "
+                          "assumptions. None has been measured. The pilot's first month replaces "
+                          "them with counts.",
+        "estimated_eligibility": {
+            "captured_per_month_pilot": 360,
+            "assumptions": [
+                {"class": "near-duplicate", "share": 0.08,
+                 "basis": "supervisors take two or three of the same subject to be sure"},
+                {"class": "below quality threshold", "share": 0.05,
+                 "basis": "movement, low light, an obstructed lens"},
+                {"class": "deleted or excluded before analysis", "share": 0.04,
+                 "basis": "wrong subject, accidental capture"},
+            ],
+            "eligible_share": 0.83,
+            "eligible_per_month_quick_share": 299,
+            "eligible_per_month_ai_reviewed": 331,
+            "ai_reviewed_note": "Immediate mode filters duplicates and unusable images locally "
+                                "but cannot know what the supervisor will later exclude, so its "
+                                "eligible count is higher.",
+        },
+    },
     "sharing": {
         "method": "native operating-system share sheet",
         "payload": "the stored image files themselves, plus a formatted text summary",
@@ -2456,6 +2691,30 @@ def main():
             for c in TABLES[tn]["columns"]:
                 if c["name"] == cn and c["required"]:
                     problems.append(f"{ref} must be optional for a photographic submission")
+    mi = CAPTURE_ONCE["minimum_interaction"]
+    if mi["mandatory_manual_inputs"]:
+        problems.append("the normal path declares a mandatory manual input")
+    for entry in mi["auto_populated"]:
+        tn, cn = entry["field"].split(".")
+        if tn not in TABLES or cn not in [c["name"] for c in TABLES[tn]["columns"]]:
+            problems.append(f"minimum_interaction names unknown column {entry['field']}")
+        else:
+            c = [x for x in TABLES[tn]["columns"] if x["name"] == cn][0]
+            if c["required"] and not (c.get("auto") or c.get("default")):
+                problems.append(f"{entry['field']} is required with no automatic source")
+    for ref in mi["optional_inputs"]:
+        tn, cn = ref.split(".")
+        c = [x for x in TABLES.get(tn, {"columns": []})["columns"] if x["name"] == cn]
+        if c and c[0]["required"]:
+            problems.append(f"{ref} is listed as optional but is required")
+    cl = CAPTURE_ONCE["classification"]
+    for ref in cl["advisory"] + [cl["trusted"], cl["state"], cl["disposition"]]:
+        tn, cn = ref.split(".")
+        if tn not in TABLES or cn not in [c["name"] for c in TABLES[tn]["columns"]]:
+            problems.append(f"classification names unknown column {ref}")
+    tcol = [c for c in TABLES["Photos"]["columns"] if c["name"] == "ConfirmedActivityTypeID"]
+    if not tcol or tcol[0].get("src") == "ai":
+        problems.append("the trusted activity column is missing or AI-sourced")
     for m, spec in CAPTURE_ONCE["modes"].items():
         if spec["capture_count"] != 1:
             problems.append(f"capture mode {m} captures more than once")
@@ -2499,6 +2758,10 @@ def main():
           f"{len(SECURITY['roles']) * len(TABLES)} grants, {len(SECURITY['exceptions'])} exceptions")
     print(f"  lean MVP    : {len(LEAN_MVP['tables'])} tables, "
           f"{len(TABLES) - len(LEAN_MVP['tables'])} deferred but designed")
+    print(f"  interaction : {len(CAPTURE_ONCE['minimum_interaction']['mandatory_manual_inputs'])} "
+          f"mandatory manual inputs on the normal path, "
+          f"{len(CAPTURE_ONCE['minimum_interaction']['auto_populated'])} fields populated "
+          f"automatically")
     print(f"  capture once: {len(CAPTURE_ONCE['workflow'])} workflow steps, "
           f"{len(CAPTURE_ONCE['modes'])} modes, "
           f"{len(CAPTURE_ONCE['forbidden_ai_written_columns'])} columns closed to AI")

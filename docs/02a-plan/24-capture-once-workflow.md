@@ -1,8 +1,8 @@
 # Capture Once, Use Twice — Field Workflow Specification
 
-**Document ID:** AH-SYS-P2A-024 · **Revision:** 1 · **Status:** generated — do not hand-edit
+**Document ID:** AH-SYS-P2A-024 · **Revision:** 2 · **Status:** generated — do not hand-edit
 **Generated:** 2026-09-11 from `model/model.json` by `tools/gen_capture_once.py`
-**Authority:** the owner's operational correction of 2026-09-11 (decisions D-16 to D-21)
+**Authority:** the owner's operational corrections of 2026-09-11 (decisions D-16 to D-24)
 
 > This document is generated from the canonical model. The automated checks in
 > `tools/test_capture_once.py` test the same block, so the specification and the tests
@@ -31,12 +31,12 @@ It applies to every one of these, not only the first share:
 | Step | Actor | Action | Where the fact comes from |
 |---|---|---|---|
 | 1 | Supervisor | Opens the field application. |  |
-| 2 | System | The assigned project is prefilled where a single active assignment exists. | ProjectAssignments — trusted system data, never the photograph. |
-| 3 | Supervisor | Selects or confirms the location. | Locations — trusted structured reference, never inferred from the photograph. |
+| 2 | System | Project, location, date, time, supervisor and capture mode are populated automatically. The supervisor is asked nothing unless a genuine choice exists. | ProjectAssignments, the device clock and the authenticated identity — trusted system data, never the photograph (D-22). |
+| 3 | Supervisor | Confirms the location — and only when it does not resolve automatically. | Locations — prefilled from the project default or the last location used today. A trusted structured reference, never inferred from the photograph. |
 | 4 | Supervisor | Captures or selects the photographs ONCE. | Device camera or gallery. This is the only file selection in the workflow. |
 | 5 | System | The photographs are stored in the controlled system, unchanged, and grouped under one CaptureBatchID. |  |
-| 6 | AI (advisory) | Analyses the photographs and PROPOSES the advisory fields below. | Advisory only. Binds nothing, approves nothing. |
-| 7 | Supervisor | Confirms or corrects the proposal with minimum interaction. | The human decision. This is what the record carries. |
+| 6 | AI (advisory) | Analyses the ELIGIBLE photographs and PROPOSES the advisory fields below — immediately in AI Reviewed Share, after the share in Quick Share (D-24). | Advisory only. Binds nothing, approves nothing. |
+| 7 | Supervisor | Confirms or corrects the proposal with minimum interaction. In Quick Share this happens later; classification stays Pending and blocks nothing (D-23). | The human decision. This is what the record carries. |
 | 8 | Supervisor | Shares the same image files and a formatted summary to the existing main-contractor group through ONE native share action. | Native share sheet only. No public link, no re-selection, no web automation. |
 | 9 | System | The same stored evidence is re-used in daily, weekly, monthly, corrective-action, inspection and completion reports. |  |
 
@@ -47,11 +47,129 @@ what step 5 stored.
 
 | Mode | Sequence | AI | Use when | Times the evidence is captured |
 |---|---|---|---|---|
-| **QuickShare** | capture → store → native share | asynchronous, after the share; prepares internal report metadata | The contractor group must receive the site evidence immediately. | **1** |
-| **AIReviewedShare** | capture → store → AI proposal → supervisor confirmation → native share | synchronous, before the share | A reviewed professional caption is wanted before group submission. | **1** |
+| **QuickShare** | capture → store → native share | deferred and filtered: after the share, once duplicates, unusable images and exclusions have been removed (D-24) | The default. The contractor group is served first and nothing is waited for. | **1** |
+| **AIReviewedShare** | capture → store → AI proposal → supervisor confirmation → native share | immediate, before the share, on the batch's eligible photographs | A reviewed professional caption is wanted before group submission. | **1** |
 
 Both modes end at the native share sheet, and both capture exactly once. The difference is
 only whether the AI proposal is waited for.
+
+## 3b. Minimum interaction — what the supervisor actually supplies
+
+**Minimum interaction. On the normal path the supervisor supplies the photographs and nothing else. Every other value is populated automatically, and a question is asked only when a genuine choice exists.**
+
+### The normal path
+
+```
+   open the app  ->  confirm project and location only if necessary  ->  capture the photographs  ->  save and share
+```
+
+**Mandatory manual inputs on that path: 0.** The supervisor supplies the photographs and nothing else.
+
+### What is populated automatically
+
+| Field | Where the value comes from | When the supervisor is asked |
+|---|---|---|
+| `SiteVisits.SupervisorUserID` | the authenticated identity | never |
+| `SiteVisits.VisitDate` | the device date | never |
+| `SiteVisits.StartTime` | the device time at first capture | never |
+| `SiteVisits.EndTime` | the device time at last capture | never |
+| `SiteVisits.ProjectID` | the single active assignment, else the last project used today, else the project default | only when several assignments are active and none resolves |
+| `SiteVisits.LocationID` | the project's default location, else the last location used today | only when several active locations exist and none resolves |
+| `SiteVisits.CaptureMode` | defaults to QuickShare | never on the normal path |
+| `Photos.EvidenceStage` | proposed by analysis, or pre-tagged from the activity rule, or left pending | never before capture |
+| `Photos.CaptureBatchID` | generated at capture | never |
+| `Photos.CaptureSequence` | the order the device captured them | never |
+
+### Required in storage is not the same as required of the supervisor
+
+These fields are required for the record to mean anything, and none of them is a question
+on the normal path:
+
+- `SiteVisits.ProjectID`
+- `SiteVisits.LocationID`
+- `SiteVisits.VisitDate`
+- `SiteVisits.SupervisorUserID`
+- `SiteVisits.CaptureMode`
+- `SiteVisits.ShareStatus`
+- `SiteVisits.ShareAttemptCount`
+- `Photos.ClassificationStatus`
+- `Photos.AnalysisEligibility`
+
+> Required in storage and required of the supervisor are different things. Every field above is required for the record to be meaningful, and none of them is a question on the normal path.
+
+### What is not required at all
+
+**`VisitActivities`** — Declaring an activity is not the price of submitting evidence (D-22). A visit carrying photographs and no activity is a valid photographic submission; the classification catches up afterwards. An activity that DOES exist still satisfies its effective rule in full — quantity, caption and minimum photographs are unchanged.
+
+### Optional, and genuinely optional
+
+`SiteVisits.AdditionalSiteNote`, `SiteVisits.SiteNoteCategory`, `SiteVisits.SafetyObservation`, `SiteVisits.OverallDescriptionEN`, `SiteVisits.OverallDescriptionAR`, `Photos.CaptionEN`, `Photos.CaptionAR`, `Photos.EvidenceStage`.
+
+## 3c. Classification — a proposal is not a fact
+
+**AI-generated free text never becomes the trusted structured activity. A proposal and a confirmation are different columns, and only the confirmation is read by anything.**
+
+| Column | Standing |
+|---|---|
+| `Photos.AIProposedActivityText` | **Advisory.** Untrusted. Read by the confirmation screen and nothing else |
+| `Photos.AIProposedActivityTypeID` | **Advisory.** Untrusted. Read by the confirmation screen and nothing else |
+| `Photos.ConfirmedActivityTypeID` | **Trusted.** The structured activity a report may use |
+| `Photos.ClassificationStatus` | How far the classification has got |
+| `Photos.AIProposalDisposition` | What the supervisor did with the proposal |
+
+**The rule.** Only ClassificationStatus = Confirmed makes ConfirmedActivityTypeID readable by a report, a rule, a calculation or a filter. Pending is the normal state immediately after a Quick Share and blocks nothing.
+
+**In Quick Share.** Classification stays Pending and is reviewed later. The share has already happened; the record catches up.
+
+**Barred from reading the candidate:** reports, business rules, calculations, filters, joins, approvals.
+
+| Classification state | Meaning |
+|---|---|
+| `Pending` | Captured, not yet classified. The normal state immediately after a Quick Share. |
+| `AIProposed` | An advisory proposal exists. **Still untrusted.** No report or business rule may use it. |
+| `Confirmed` | A supervisor or reviewer set ConfirmedActivityTypeID. The only trusted state. |
+| `NotApplicable` | The photograph carries no activity to classify — a safety observation, a material delivery. |
+| `Excluded` | Deliberately left out: a duplicate, an unusable image, or evidence excluded from this report. |
+
+## 3d. When analysis runs, and when it does not
+
+**Not every captured photograph needs an immediate model call. Filtering happens before the call, never after it, and reports still use every relevant approved photograph.**
+
+| | **AIReviewedShare** | **QuickShare** |
+|---|---|---|
+| Timing | immediate, before the share | deferred, after the share |
+| Unit | one request per capture batch | one request per capture batch, batched again across visits where the queue allows |
+| Filtered | local duplicate and quality checks run first; the rest of the batch is analysed | duplicates, unusable images, deleted and explicitly excluded images are removed first; only then is a request made |
+| Why | the supervisor is waiting, so the proposal has to exist now | nothing is waiting, so the cheapest correct moment is after the supervisor has finished and the obvious waste has been removed |
+
+### Never analysed
+
+- a near-duplicate of a photograph already analysed in the same batch
+- an image below the project's quality threshold
+- an image deleted or explicitly excluded before analysis ran
+- an image already analysed — analysis never runs twice on the same file
+- any image in a project where analysis is switched off, or after the monthly cap
+
+**Still analysed:** every photograph a reviewer may approve for a report. Skipping is about waste, never about coverage: an excluded image is one nobody will report on.
+
+**Perceptual hashing and the blur measure run locally, without a model call.**
+
+### Estimated eligibility
+
+> **Every eligibility proportion below is an ESTIMATE from the stated assumptions. None has been measured. The pilot's first month replaces them with counts.**
+
+| Class | Estimated share | Basis |
+|---|---|---|
+| near-duplicate | 8% | supervisors take two or three of the same subject to be sure |
+| below quality threshold | 5% | movement, low light, an obstructed lens |
+| deleted or excluded before analysis | 4% | wrong subject, accidental capture |
+| **Eligible** | **83%** | the remainder |
+
+At the pilot's **360** photographs a month, that is about
+**299** analysed under Quick Share and
+**331** under AI Reviewed Share.
+
+Immediate mode filters duplicates and unusable images locally but cannot know what the supervisor will later exclude, so its eligible count is higher.
 
 ## 4. The written description is optional
 
@@ -142,7 +260,7 @@ confirm:
 - `VisitActivities.ActivityTypeID`
 - `Photos.LocationID`
 
-### The 16 columns closed to AI by declaration
+### The 18 columns closed to AI by declaration
 
 Checked by `CAP-14`. If any of these is ever changed to an AI source, the validation suite
 fails:
@@ -163,6 +281,8 @@ fails:
 | `Photos.CaptionAR` | The supervisor's own words. |
 | `Photos.ReviewerDecision` | A human review decision. |
 | `Photos.ApprovedForReport` | Derived from a human decision. |
+| `Photos.ConfirmedActivityTypeID` | Trusted structured data. |
+| `Photos.ClassificationStatus` | Trusted structured data. |
 | `Snags.Severity` | A judgement with commercial consequence. |
 | `Approvals.Decision` | An approval. Only a named person approves. |
 

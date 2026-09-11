@@ -8,16 +8,62 @@
 
 | | |
 |---|---|
-| **Commit tested** | `4b19fc19fb926a0bf8a426e88150751b904426d9` |
-| **Commit subject** | Remove a stale commit reference from the manifest note |
+| **Commit tested** | `cc752599173d6ae3b9bae5eda6f915c6e6351665` |
+| **Commit subject** | Stamp the final validated commit |
 | **Command executed** | `python3 tools/run_validation.py` |
-| **Executed at** | 2026-09-11 13:33:26 UTC |
+| **Executed at** | 2026-09-11 15:30:40 UTC |
 | **Python** | 3.11.15 (CPython, GCC 13.3.0) |
 | **Operating system** | Linux 6.18.44-fc-v24 (x86_64) |
 | **Environment** | Ephemeral Linux container. This run made no network call, used no credential and contacted no external service |
 | **Third-party dependencies** | **None.** Python standard library only |
 | **Model version** | 1.0.0 |
-| **Working tree before the run** | clean |
+| **Working tree before the run** | MODIFIED — see below |
+
+```
+M CHANGELOG.md
+ M CURRENT-STATUS-AND-NEXT-PROMPT.md
+ M DECISIONS-AND-ASSUMPTIONS.md
+ M MASTER-SPEC-CONSOLIDATED.md
+ M README.md
+ M START-HERE-NEW-CLAUDE.md
+ M docs/00-discovery/05-risk-and-controls-register.md
+ M docs/00-discovery/10-owner-decisions.md
+ M docs/00-discovery/adr/ADR-0009-capture-once-native-share.md
+ M docs/00-discovery/adr/README.md
+ M docs/01-data-foundation/00-PHASE-1-SUMMARY.md
+ M docs/01-data-foundation/01-data-dictionary.md
+ M docs/01-data-foundation/05-evidence-rules.md
+ M docs/01-data-foundation/15-claude-prompt-and-schema-spec.md
+ M docs/01-data-foundation/17-validation-evidence.md
+ M docs/02a-plan/01-appsheet-workbook.md
+ M docs/02a-plan/03-views-and-slices.md
+ M docs/02a-plan/04-actions-and-workflow.md
+ M docs/02a-plan/09-cost-and-licensing-matrix.md
+ M docs/02a-plan/13-field-workflow-and-taps.md
+ M docs/02a-plan/17-lean-table-scope-matrix.md
+ M docs/02a-plan/21-release-1-twelve-tables.md
+ M docs/02a-plan/22-image-derivative-architecture.md
+ M docs/02a-plan/23-operations-budget.md
+ M docs/02a-plan/24-capture-once-workflow.md
+ M docs/OWNER-REVIEW-PACK.md
+ M docs/STATUS-DEFINITIONS.md
+ M docs/VERSION-MANIFEST.md
+ M model/model.json
+ M schemas/tables/Photos.schema.json
+ M schemas/tables/SiteVisits.schema.json
+ M tools/build_handoff.py
+ M tools/build_model.py
+ M tools/evidence.py
+ M tools/gen_capture_once.py
+ M tools/gen_release1_scope.py
+ M tools/run_validation.py
+ M tools/test_capture_once.py
+ M tools/test_evidence_rules.py
+?? tools/render_review_pack.py
+```
+
+> The run was executed against a working tree containing uncommitted changes. The commit recorded above is the parent commit, not the exact state tested. Re-run after committing to obtain a clean reproduction record.
+
 
 ### Byte-identical regeneration
 
@@ -27,36 +73,36 @@ Every generated artifact was hashed (SHA-256) before regeneration, regenerated f
 
 ## 2. Summary
 
-**219 of 219 checks passed.**
+**240 of 240 checks passed.**
 
 | # | Suite | Kind | Checks | Passed | Failed |
 |---|---|---|---|---|---|
 | 1 | Seed conformance | structural | 3 | 3 | 0 |
-| 2 | Capture once, use twice | structural | 28 | 28 | 0 |
+| 2 | Capture once, use twice | structural | 48 | 48 | 0 |
 | 3 | Lean operational MVP | structural | 19 | 19 | 0 |
 | 4 | Configurability and unbounded width | structural | 12 | 12 | 0 |
 | 5 | Project segregation | logic | 12 | 12 | 0 |
 | 6 | Role separation, time-bound access and recoverability | logic | 31 | 31 | 0 |
-| 7 | Evidence rules | logic | 14 | 14 | 0 |
+| 7 | Evidence rules | logic | 15 | 15 | 0 |
 | 8 | Status transitions, approvals and delegation | structural | 20 | 20 | 0 |
 | 9 | Content hashing and approval binding | logic | 14 | 14 | 0 |
 | 10 | Document numbering | simulation | 13 | 13 | 0 |
 | 11 | Deterministic calculation | logic | 22 | 22 | 0 |
 | 12 | Bilingual and right-to-left readiness | structural | 13 | 13 | 0 |
 | 13 | Governance and safety rules | structural | 18 | 18 | 0 |
-| | **Total** | | **219** | **219** | **0** |
+| | **Total** | | **240** | **240** | **0** |
 
 ### Console output
 
 ```
 ========================================================================
   Seed conformance                                       3 passed   0 failed
-  Capture once, use twice                               28 passed   0 failed
+  Capture once, use twice                               48 passed   0 failed
   Lean operational MVP                                  19 passed   0 failed
   Configurability and unbounded width                   12 passed   0 failed
   Project segregation                                   12 passed   0 failed
   Role separation, time-bound access and recoverability  31 passed   0 failed
-  Evidence rules                                        14 passed   0 failed
+  Evidence rules                                        15 passed   0 failed
   Status transitions, approvals and delegation          20 passed   0 failed
   Content hashing and approval binding                  14 passed   0 failed
   Document numbering                                    13 passed   0 failed
@@ -64,7 +110,7 @@ Every generated artifact was hashed (SHA-256) before regeneration, regenerated f
   Bilingual and right-to-left readiness                 13 passed   0 failed
   Governance and safety rules                           18 passed   0 failed
 ========================================================================
-  TOTAL 219/219 checks passed
+  TOTAL 240/240 checks passed
 ```
 
 ### Artifact regeneration output
@@ -73,17 +119,18 @@ Every generated artifact was hashed (SHA-256) before regeneration, regenerated f
 $ python3 tools/build_model.py
 wrote /home/user/Report.Data/model/model.json
   tables      : 46
-  columns     : 849
-  enums       : 30
+  columns     : 857
+  enums       : 32
   transitions : 82 allowed, 36 explicitly forbidden
   security    : 10 roles x 46 tables = 460 grants, 20 exceptions
   lean MVP    : 17 tables, 29 deferred but designed
-  capture once: 9 workflow steps, 2 modes, 16 columns closed to AI
+  interaction : 0 mandatory manual inputs on the normal path, 10 fields populated automatically
+  capture once: 9 workflow steps, 2 modes, 18 columns closed to AI
   release 1   : 12 tables (capture and review; no document generation)
 $ python3 tools/gen_schemas.py
 wrote 46 table schemas to schemas/tables/
 $ python3 tools/gen_data_dictionary.py
-wrote /home/user/Report.Data/docs/01-data-foundation/01-data-dictionary.md (1877 lines)
+wrote /home/user/Report.Data/docs/01-data-foundation/01-data-dictionary.md (1910 lines)
 $ python3 tools/gen_matrices.py
 wrote docs/01-data-foundation/03-status-transition-matrix.md
 wrote docs/01-data-foundation/04-security-model.md
@@ -93,7 +140,7 @@ wrote docs/02a-plan/02-security-filter-specification.md
 $ python3 tools/gen_scope_matrix.py
 wrote docs/02a-plan/17-lean-table-scope-matrix.md
 $ python3 tools/gen_release1_scope.py
-wrote docs/02a-plan/21-release-1-twelve-tables.md: 282 fields, 17 on the field form, 5 mandatory
+wrote docs/02a-plan/21-release-1-twelve-tables.md: 290 fields, 15 on the field form, 0 mandatory
 $ python3 tools/gen_capture_once.py
 wrote docs/02a-plan/24-capture-once-workflow.md: 9 steps, 15 device test conditions
 ```
@@ -172,7 +219,7 @@ Every seed file conforms to the canonical model: columns, types, formats, vocabu
 | `SEED-02` | PASS | Every foreign key resolves within the seeded data | 0 unresolvable-by-design references (tables not built until a later phase) |
 | `SEED-03` | PASS | At least three materially different projects are present | 3 projects with 3 clients, 3 reporting frequencies, 3 billing methods, 2 document languages |
 
-### Capture once, use twice  ·  `structural`  ·  28/28 passed
+### Capture once, use twice  ·  `structural`  ·  48/48 passed
 
 The evidence is captured exactly once; the description is optional; AI proposes and a human decides; trusted context never comes from a photograph; no public link is required.
 
@@ -192,7 +239,7 @@ The evidence is captured exactly once; the description is optional; AI proposes 
 | `CAP-11` | PASS | The proposal is separate from the confirmed value: proposed stage and confirmed stage are different columns | AIProposedEvidenceStage proposes; EvidenceStage is set by the supervisor |
 | `CAP-12` | PASS | A human disposition is recorded for every proposal | Photos.AIProposalDisposition is user-sourced |
 | `CAP-13` | PASS | No quantitative or contractual field is sourced from image analysis | 10 fields checked |
-| `CAP-14` | PASS | Every column declared closed to AI is genuinely not AI-sourced | 16 columns closed |
+| `CAP-14` | PASS | Every column declared closed to AI is genuinely not AI-sourced | 18 columns closed |
 | `CAP-15` | PASS | All nine forbidden inferences are declared in the model | 9 declared |
 | `CAP-16` | PASS | No public image link is required, and none is permitted | native share sheet carries the files themselves |
 | `CAP-17` | PASS | Unofficial messaging automation and group scraping are forbidden by the model, not only by prose | WhatsApp Web automation |
@@ -204,6 +251,26 @@ The evidence is captured exactly once; the description is optional; AI proposes 
 | `CAP-22` | PASS | The share destination is a label, never a telephone number or invitation link | ShareTargetLabel is project configuration |
 | `CAP-23` | PASS | The AppSheet native-share requirement is recorded as UNVERIFIED, with a test matrix | 15 test conditions |
 | `CAP-24` | PASS | A capture-platform fallback exists, and the backend is declared re-usable if the interface changes | A lightweight custom PWA or mobile field application using supported native file sharing |
+| `CAP-27` | PASS | The normal path declares NO mandatory manual supervisor input | the supervisor supplies the photographs and nothing else |
+| `CAP-28` | PASS | The normal path is four steps and none of them is typing | open the app -> confirm project and location only if necessary -> capture the photographs -> save and share |
+| `CAP-29` | PASS | No field-path table has a required, user-typed column without an automatic source — the guard against reintroducing a mandatory supervisor input | none |
+| `CAP-30` | PASS | Every field required in storage has an automatic source, so 'required' never means 'the supervisor is asked' | 9 fields checked |
+| `CAP-30b` | PASS | Declaring an activity is not the price of submitting evidence | Declaring an activity is not the price of submitting evidence (D-22). A visit carrying photographs and no activity is a valid photographic submission; the classification catches up afterwards. An activity that DOES exist still satisfies its effective rule in full — quantity, caption and minimum photographs are uncha... |
+| `CAP-31` | PASS | Identity, date and time are never supplied by hand | authenticated identity and device clock |
+| `CAP-32` | PASS | Capture mode defaults to Quick Share and is never a routine question | Quick Share is the default mode |
+| `CAP-33` | PASS | Evidence stage is NOT a mandatory manual field before capture | proposed, pre-tagged, or left pending |
+| `CAP-34` | PASS | The proposal and the confirmation are separate columns | AIProposedActivityText + AIProposedActivityTypeID propose; ConfirmedActivityTypeID is trusted |
+| `CAP-35` | PASS | The AI candidate activity is marked advisory and candidate-only | nothing reads it except the confirmation screen |
+| `CAP-36` | PASS | The trusted activity is human-sourced and never AI-sourced | set only by a supervisor or reviewer |
+| `CAP-37` | PASS | A pending classification is a normal, non-blocking state | Classification stays Pending and is reviewed later. The share has already happened; the record catches up. |
+| `CAP-38` | PASS | The trusted activity binds an approval; the candidate does not | changing a confirmed activity voids the approval; a proposal never does |
+| `CAP-39` | PASS | Reports, rules, calculations, filters, joins and approvals are all barred from reading the candidate | 6 readers barred |
+| `CAP-40` | PASS | Two analysis policies are declared, one immediate and one deferred | Quick Share defers; AI Reviewed Share does not |
+| `CAP-41` | PASS | Duplicates, unusable, deleted, excluded and already-analysed images are excluded from analysis BEFORE the call | 5 exclusion classes |
+| `CAP-42` | PASS | The filters themselves cost no model call | perceptual hash and blur measure run on the device or in the store |
+| `CAP-43` | PASS | Skipping is about waste, not coverage: a report still uses every relevant approved photograph | every photograph a reviewer may approve for a report. Skipping is abou… |
+| `CAP-44` | PASS | Every eligibility proportion is labelled an estimate until measured | replaced by counts in the pilot's first month |
+| `CAP-45` | PASS | The eligible share is arithmetic on the stated assumptions, not a guess | 1 - (0.08 + 0.05 + 0.04) = 0.83; 360 x 0.83 = 299 |
 | `CAP-25` | PASS | The CAP-01 acceptance requirement appears in the documentation the owner reads, not only in the model | 13 documents cite CAP-01 |
 | `CAP-26` | PASS | No surviving document still makes the work description mandatory | 69 documents scanned |
 
@@ -309,7 +376,7 @@ A technical administrator gets no business content; business administration is a
 | `ACC-30` | PASS | The recovery plan stores no credential and no route to obtaining one | the plan records whether a route exists and whether it was tested, nothing more |
 | `ACC-31` | PASS | No real person is assigned to any role | non-synthetic addresses: none — identities remain pending until the owner supplies them |
 
-### Evidence rules  ·  `logic`  ·  14/14 passed
+### Evidence rules  ·  `logic`  ·  15/15 passed
 
 Evidence requirements are configuration, resolved per project, and a blocked submission always says exactly what to fix (C-07).
 
@@ -325,7 +392,8 @@ Evidence requirements are configuration, resolved per project, and a blocked sub
 | `EVD-08` | PASS | A missing required quantity blocks submission | VAC-0001: A quantity is required for this activity |
 | `EVD-09` | PASS | A negative quantity is rejected | VAC-0001: Quantity must not be negative |
 | `EVD-10` | PASS | A quantity entered where the rule takes none is rejected | VAC-0007: A 'Before' photograph is required; VAC-0007: An 'After' photograph is required; VAC-0007: At least 2 photographs are required, 0 attached; VAC-0007: A quantity was entered for an activity that does not take one |
-| `EVD-11` | PASS | A visit with no activity cannot be submitted | A visit must contain at least one activity |
+| `EVD-11` | PASS | A visit carrying photographs but no declared activity is a valid photographic submission (D-22) | accepted; classification catches up afterwards |
+| `EVD-11b` | PASS | A visit with neither a photograph nor an activity carries no evidence and is refused | A visit must carry at least one photograph or one activity |
 | `EVD-12` | PASS | Every blocking message names what to fix, never a generic rejection | VAC-0001: A quantity is required for this activity |
 | `EVD-13` | PASS | A suspected duplicate is flagged and retained, never deleted or merged | 1 suspected duplicate(s), each pointing at the original and still present |
 | `EVD-14` | PASS | Missing GPS never blocks a submission and is recorded as missing, not zero | 6 photographs without GPS, none blocked, none defaulted to 0 |
@@ -363,7 +431,7 @@ An approval is valid only for the exact content it approved, and 'material' has 
 
 | Check | Result | Description | Evidence produced |
 |---|---|---|---|
-| `HASH-01` | PASS | A hash is a 64-character SHA-256 hex digest | ba097cc630f0edb43f8ea063ac164a44709994776caff1582a6cf41ecdc84a74 |
+| `HASH-01` | PASS | A hash is a 64-character SHA-256 hex digest | a4f39d8e935be779f146deb33536b6327fff2c08e6b9e2a225aa2a0b0569a837 |
 | `HASH-02` | PASS | The same content always hashes to the same value | recomputed, identical |
 | `HASH-03` | PASS | A material change produces a different hash, voiding the approval | description edited -> hash changed |
 | `HASH-04` | PASS | An immaterial change does not void an approval | UpdatedAt and UpdatedBy changed -> hash unchanged |
@@ -442,7 +510,7 @@ English and Arabic are supported from Phase 1, with no redesign required to add 
 | `LNG-07` | PASS | Arabic text passes through canonical serialisation unchanged | Arabic description preserved verbatim in the canonical string |
 | `LNG-08` | PASS | Arabic text is NFC-normalised without alteration | text is already NFC and is unchanged by normalisation |
 | `LNG-09` | PASS | Arabic-Indic digits in names are preserved as written | غرفة ١٢ مبنى أ retains Arabic-Indic digits |
-| `LNG-10` | PASS | Every controlled vocabulary carries an Arabic label for every value | 30 vocabularies, every value labelled in both languages |
+| `LNG-10` | PASS | Every controlled vocabulary carries an Arabic label for every value | 32 vocabularies, every value labelled in both languages |
 | `LNG-11` | PASS | Seeded reference data is populated in Arabic, not merely capable of it | roles, units, disciplines, activities, document types and classifications all carry Arabic |
 | `LNG-12` | PASS | Supervisors can record descriptions and captions in Arabic | 6 visits and 9 photo captions carry Arabic |
 | `LNG-13` | PASS | Arabic is never written into an English column to satisfy a requirement | English columns contain no Arabic text |
@@ -461,7 +529,7 @@ The operating rules the owner approved, expressed as assertions so that weakenin
 | `GOV-06` | PASS | No role may delete any row: history is evidence | 460 grants, every delete denied |
 | `GOV-07` | PASS | The audit log is append-only for every role, administrators and break-glass included | roles able to alter the audit log: none |
 | `GOV-08` | PASS | An administrator cannot create or alter an approval | neither administrator role nor break-glass can create or alter an approval |
-| `GOV-09` | PASS | No advisory AI field is part of any content hash (D-06, C-06) | 13 AI fields, 0 in a hash |
+| `GOV-09` | PASS | No advisory AI field is part of any content hash (D-06, C-06) | 14 AI fields, 0 in a hash |
 | `GOV-10` | PASS | No decision or completion field is sourced from AI | AI-sourced decision fields: none |
 | `GOV-11` | PASS | No monetary or measured-quantity field is sourced from AI (invariant I-4) | AI-sourced monetary or quantity fields: none (AIConfidence is advisory metadata, not a measurement) |
 | `GOV-12` | PASS | The approved write-once evidence contract is fully represented (D-13) | missing: none |
@@ -477,7 +545,7 @@ The operating rules the owner approved, expressed as assertions so that weakenin
 ## 6. Reproducing this run
 
 ```
-git checkout 4b19fc19fb926a0bf8a426e88150751b904426d9
+git checkout cc752599173d6ae3b9bae5eda6f915c6e6351665
 python3 tools/run_validation.py
 ```
 

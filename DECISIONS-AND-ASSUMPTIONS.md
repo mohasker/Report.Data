@@ -1,6 +1,6 @@
 # Decisions, Withdrawals, Assumptions and Open Questions
 
-**Document ID:** AH-SYS-HAND-004 · **Version:** 1.0 · **Date:** 2026-09-11
+**Document ID:** AH-SYS-HAND-004 · **Version:** 1.1 · **Date:** 2026-09-11
 
 **Read this before proposing any change to the design.** Most things that look wrong in this
 repository are decisions taken deliberately, with the reasoning recorded. This file is the
@@ -61,6 +61,14 @@ Source documents, if you want the full reasoning: `docs/00-discovery/10-owner-de
 | **D-20** | **No quantitative or contractual field may originate from an image** | The AI's activity assessment is free text, deliberately **not** a reference to `ActivityTypes` |
 | **D-21** | **The capture platform is an interface decision, and it is gated** | `CAP-GATE`, fifteen conditions on real devices. **No duplicate-upload workaround.** The backend is re-usable if the interface changes |
 
+### The correction pass, 2026-09-11 — D-22 to D-24
+
+| # | Decision | Consequence |
+|---|---|---|
+| **D-22** | **Minimum interaction.** The normal path asks the supervisor for nothing but the photographs | **Zero mandatory manual inputs.** Identity from the session; date and time from the device; project from the assignment, the last used today or the default; location from the default or the last used; capture mode defaults to Quick Share; evidence stage proposed or left `Pending`. **Declaring an activity is not the price of submitting evidence.** Guarded by `CAP-29` |
+| **D-23** | **A confirmed structured activity, separate from the proposal** | `AIProposedActivityText` and `AIProposedActivityTypeID` are advisory and read by the confirmation screen alone; `ConfirmedActivityTypeID` is trusted, human-set, and what every report and rule reads; `ClassificationStatus` carries the state and `Pending` blocks nothing |
+| **D-24** | **Analysis is filtered before it is paid for** | Immediate for AI Reviewed Share, deferred and filtered for Quick Share. Near-duplicates, unusable, deleted, excluded and already-analysed images never reach a call; the filters run locally at no cost. **Skipping is about waste, never coverage** |
+
 ---
 
 ## 2. Withdrawn and superseded — do not reintroduce
@@ -82,6 +90,10 @@ Source documents, if you want the full reasoning: `docs/00-discovery/10-owner-de
 | W-13 | "WhatsApp is not in scope", unqualified | **Clarified by D-16** — not an input channel; an output channel by native share only |
 | W-14 | AI analysis runs only on approved photographs | **Superseded by D-17** — every captured photograph |
 | W-15 | "A capture-and-review release is 12 tables" arrived at as 17 - 3 | **Corrected** — an arithmetic error of mine; the twelve are named explicitly |
+| W-16 | "The supervisor must supply five fields" — project, location, date, capture mode, evidence stage | **Withdrawn by D-22.** Zero fields are mandatory manual inputs on the normal path |
+| W-17 | "Every captured photograph is analysed" | **Superseded by D-24.** Only eligible photographs are analysed; duplicates, unusable, deleted and excluded ones never reach a call |
+| W-18 | Leaving the AI activity assessment as untrusted free text with nothing controlled in its place | **Superseded by D-23.** A trusted, human-confirmed `ConfirmedActivityTypeID` sits beside the advisory candidate |
+| W-19 | "Analysis costs ~$7.56 a month at pilot volume" and "~1,440 Make operations" | **Superseded by D-24.** ~$6.28 and ~1,167 under Quick Share; ~$6.95 and ~1,353 under AI Reviewed Share. Estimates, not measurements — and the conclusion is unchanged: neither fits the free tier |
 
 ### Corrections made to my own work, recorded because they matter
 
@@ -112,6 +124,9 @@ load-bearing without being written down.
 | **A-10** | The nine representative user and device profiles are broadly right | They stand in for real people until the owner supplies identities and an inventory |
 | **A-11** | The company will accept that neither administrator can read evidence or documents | This is the exception most likely to provoke disagreement, and it is flagged as such in the review pack |
 | **A-12** | Quick Share sending evidence before review is acceptable because it matches what already happens | If the owner disagrees, AI Reviewed Share becomes mandatory and Quick Share is removed. **The capture-once guarantee is unaffected either way** |
+| **A-13** | **The project and location prefill will usually be right** — one active assignment, or a project already used that day | This is the direct cost of asking nothing (D-22). If the prefill is often wrong, visits are filed against the wrong project and nobody is prompted to catch it. Both fields stay visible and one-tap changeable, GPS disagreement is flagged, and Phase 2B counts later corrections (R-40) |
+| **A-14** | **~8% of captured photographs are near-duplicates, ~5% unusable, ~4% deleted or excluded** | The eligibility, cost and operations figures all move with these. They are estimates from reasoning about how supervisors photograph, not measurements. The pilot's first month replaces them with counts (R-43) |
+| **A-15** | **A pending classification will be caught up** by a reviewer within a useful time | If it is not, evidence is captured but unusable for grouped reporting. Pending counts appear in the weekly digest and the reviewer's queue; a report that would draw on unclassified evidence says so (R-41) |
 
 ---
 
@@ -132,7 +147,11 @@ load-bearing without being written down.
 | **OQ-18** | Whether a supervisor may share a visit **still in draft**. Quick Share implies yes; evidence control argues no | Phase 2A |
 | **OQ-19** | Whether voice capture stores the **audio** as evidence, or only the transcript | Post-MVP |
 
-**OQ-15 to OQ-19 need no external access.** They are the natural next work for a new account.
+| **OQ-20** | What the **quality threshold** and the **near-duplicate similarity threshold** should be. Both are project configuration, and both trade a saved model call against a missed observation | Phase 2B |
+| **OQ-21** | Whether a **pending classification** should expire into a reviewer task after some number of days, or simply accumulate in a queue | Phase 2A |
+| **OQ-22** | Whether the location prompt, when it does appear, should offer the nearest location by GPS rather than the last used | Phase 2A |
+
+**OQ-15 to OQ-22 need no external access.** They are the natural next work for a new account.
 
 ---
 

@@ -91,9 +91,21 @@ def evaluate_activity(data, activity, photos):
 
 
 def evaluate_visit(data, visit):
+    """A visit is complete when it carries evidence.
+
+    Owner decision D-22 removed the requirement to declare an activity before capturing.
+    The normal path is: open the app, confirm project and location if necessary, capture
+    the photographs, save and share. So a visit carrying photographs and no activity is a
+    valid photographic submission, and its classification catches up afterwards.
+
+    An activity that DOES exist still has to satisfy its effective rule in full: nothing
+    about the quantity, caption or minimum-photograph rules is relaxed. What changed is
+    that declaring an activity is no longer the price of submitting evidence.
+    """
     acts = [a for a in data["VisitActivities"] if a["VisitID"] == visit["VisitID"]]
-    if not acts:
-        return False, ["A visit must contain at least one activity"]
+    visit_photos = [p for p in data["Photos"] if p.get("VisitID") == visit["VisitID"]]
+    if not acts and not visit_photos:
+        return False, ["A visit must carry at least one photograph or one activity"]
     fails = []
     for a in acts:
         photos = [p for p in data["Photos"] if p.get("VisitActivityID") == a["VisitActivityID"]]

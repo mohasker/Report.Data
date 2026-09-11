@@ -391,6 +391,82 @@
         }
       ]
     },
+    "ClassificationStatus": {
+      "description": "How far a photograph's activity classification has got (D-23). Pending is a normal, non-blocking state.",
+      "values": [
+        {
+          "code": "Pending",
+          "label_en": "Pending",
+          "label_ar": "قيد الانتظار",
+          "description": "Captured, not yet classified. The normal state immediately after a Quick Share."
+        },
+        {
+          "code": "AIProposed",
+          "label_en": "AI proposed",
+          "label_ar": "اقتراح من الذكاء الاصطناعي",
+          "description": "An advisory proposal exists. **Still untrusted.** No report or business rule may use it."
+        },
+        {
+          "code": "Confirmed",
+          "label_en": "Confirmed",
+          "label_ar": "مؤكد",
+          "description": "A supervisor or reviewer set ConfirmedActivityTypeID. The only trusted state."
+        },
+        {
+          "code": "NotApplicable",
+          "label_en": "Not applicable",
+          "label_ar": "لا ينطبق",
+          "description": "The photograph carries no activity to classify — a safety observation, a material delivery."
+        },
+        {
+          "code": "Excluded",
+          "label_en": "Excluded",
+          "label_ar": "مستبعد",
+          "description": "Deliberately left out: a duplicate, an unusable image, or evidence excluded from this report."
+        }
+      ]
+    },
+    "AnalysisEligibility": {
+      "description": "Whether a photograph is worth sending to analysis (D-24). Filtering happens before the call, never after it.",
+      "values": [
+        {
+          "code": "Eligible",
+          "label_en": "Eligible",
+          "label_ar": "مؤهل",
+          "description": "Analysis has value and has not run."
+        },
+        {
+          "code": "Analysed",
+          "label_en": "Analysed",
+          "label_ar": "تم التحليل",
+          "description": "Already analysed. Never analysed twice."
+        },
+        {
+          "code": "SkippedDuplicate",
+          "label_en": "Skipped — duplicate",
+          "label_ar": "تم التخطي - مكرر",
+          "description": "A near-identical photograph in the same batch was analysed instead."
+        },
+        {
+          "code": "SkippedQuality",
+          "label_en": "Skipped — unusable",
+          "label_ar": "تم التخطي - جودة غير كافية",
+          "description": "Blurred, dark or obstructed beyond usefulness. Retained as evidence, not analysed."
+        },
+        {
+          "code": "SkippedExcluded",
+          "label_en": "Skipped — excluded",
+          "label_ar": "تم التخطي - مستبعد",
+          "description": "Deleted or explicitly excluded by the supervisor before analysis ran."
+        },
+        {
+          "code": "SkippedDisabled",
+          "label_en": "Skipped — analysis off",
+          "label_ar": "تم التخطي - التحليل متوقف",
+          "description": "Analysis is switched off for this project, or the monthly cap is reached."
+        }
+      ]
+    },
     "SiteNoteCategory": {
       "description": "Why an optional site note was written (D-18). Facts a photograph cannot establish.",
       "values": [
@@ -4170,17 +4246,23 @@
           "type": "ref",
           "required": true,
           "ref": "Projects.ProjectID",
-          "src": "user",
-          "hash": true
+          "src": "system",
+          "hash": true,
+          "auto": "Prefilled from the supervisor's single active assignment, or from the last project used today, or from the project default.",
+          "prompts_user": "only when the supervisor holds more than one active assignment and no default resolves — a genuine choice, not a routine question",
+          "note": "Required in storage, never a routine question (D-22). Trusted system data; never inferred from a photograph (D-19)."
         },
         {
           "name": "LocationID",
           "type": "ref",
           "required": true,
           "ref": "Locations.LocationID",
-          "src": "user",
+          "src": "system",
           "hash": true,
-          "validation": "Location must belong to ProjectID"
+          "validation": "Location must belong to ProjectID",
+          "auto": "Prefilled from the project's default location, or the last location used today.",
+          "prompts_user": "only when the project has several active locations and none resolves",
+          "note": "Required in storage, confirmed rather than typed (D-22)."
         },
         {
           "name": "WorkOrderID",
@@ -4194,24 +4276,27 @@
           "name": "VisitDate",
           "type": "date",
           "required": true,
-          "src": "user",
+          "src": "device",
           "hash": true,
-          "note": "Defaults to the device date; correctable by an authorised user (spec 7.3)."
+          "auto": "The device date, captured automatically.",
+          "note": "Never typed on the normal path. Correctable by an authorised user (spec 7.3)."
         },
         {
           "name": "StartTime",
           "type": "time",
           "required": false,
-          "src": "user",
-          "hash": true
+          "src": "device",
+          "hash": true,
+          "auto": "The device time at the first capture in the batch."
         },
         {
           "name": "EndTime",
           "type": "time",
           "required": false,
-          "src": "user",
+          "src": "device",
           "hash": true,
-          "validation": "Must be after StartTime"
+          "validation": "Must be after StartTime",
+          "auto": "The device time at the last capture in the batch."
         },
         {
           "name": "Weather",
@@ -4227,7 +4312,8 @@
           "ref": "Users.UserID",
           "src": "system",
           "hash": true,
-          "note": "Defaults from USEREMAIL(); must hold an active assignment to ProjectID."
+          "auto": "The signed-in user. Never selected, never typed.",
+          "note": "Resolved from the authenticated identity; must hold an active assignment to ProjectID."
         },
         {
           "name": "GPSLatitude",
@@ -4288,10 +4374,12 @@
           "name": "CaptureMode",
           "type": "enum",
           "required": true,
-          "default": "AIReviewedShare",
+          "default": "QuickShare",
           "enum": "CaptureMode",
-          "src": "user",
-          "note": "Quick Share or AI Reviewed Share (D-16). Both capture the images exactly once."
+          "src": "system",
+          "auto": "Defaults to Quick Share on every visit.",
+          "prompts_user": "never on the normal path — AI Reviewed Share is chosen deliberately, by an explicit action, when a reviewed caption is wanted before sharing",
+          "note": "Quick Share is the default so the contractor group is served first and nothing is waited for (D-22). Both modes capture the images exactly once (D-16)."
         },
         {
           "name": "ShareStatus",
@@ -4667,8 +4755,9 @@
           "type": "ref",
           "required": false,
           "ref": "VisitActivities.VisitActivityID",
-          "src": "user",
-          "hash": true
+          "src": "system",
+          "hash": true,
+          "note": "Optional. A photograph belongs to a visit; it is attached to an activity only once one has been confirmed. A photographic submission with no activity at all is valid (D-22)."
         },
         {
           "name": "ProjectID",
@@ -4772,10 +4861,14 @@
         {
           "name": "EvidenceStage",
           "type": "enum",
-          "required": true,
+          "required": false,
           "enum": "EvidenceStage",
           "src": "user",
-          "hash": true
+          "hash": true,
+          "optional_by_design": true,
+          "validation": "Optional at capture (D-22). Never a mandatory manual field before the photograph is taken",
+          "auto": "Proposed by analysis into AIProposedEvidenceStage, or pre-tagged from the activity rule's default stages, or left Pending for review.",
+          "note": "A supervisor may set it, and often will not. An unclassified photograph is valid evidence and blocks no submission; ClassificationStatus carries how far it has got."
         },
         {
           "name": "CaptionEN",
@@ -4847,6 +4940,31 @@
           "src": "system"
         },
         {
+          "name": "AnalysisEligibility",
+          "type": "enum",
+          "required": true,
+          "default": "Eligible",
+          "enum": "AnalysisEligibility",
+          "src": "system",
+          "note": "Decided BEFORE any call is made (D-24). A duplicate, an unusable image, a deleted or excluded one, and an already-analysed one all cost nothing."
+        },
+        {
+          "name": "PerceptualHash",
+          "type": "text",
+          "required": false,
+          "src": "system",
+          "note": "Computed at registration for near-duplicate detection. A flag only: a suspected duplicate is never deleted or merged (S-09)."
+        },
+        {
+          "name": "QualityScore",
+          "type": "decimal",
+          "required": false,
+          "src": "system",
+          "scale": 2,
+          "validation": "0.00-1.00",
+          "note": "Local blur/exposure measure computed without a model call. Below the project threshold the photograph is retained as evidence and skipped for analysis."
+        },
+        {
           "name": "AIObservation",
           "type": "json",
           "required": false,
@@ -4869,7 +4987,53 @@
           "required": false,
           "src": "ai",
           "advisory": true,
-          "note": "Free text describing the visible activity. Deliberately NOT a reference to ActivityTypes: a contractual activity is a trusted structured field and may not originate from an image (D-20)."
+          "note": "Free text describing the visible activity. Untrusted. Never becomes the structured activity by itself (D-20, D-23)."
+        },
+        {
+          "name": "AIProposedActivityTypeID",
+          "type": "ref",
+          "required": false,
+          "ref": "ActivityTypes.ActivityTypeID",
+          "src": "ai",
+          "advisory": true,
+          "candidate_only": true,
+          "validation": "Advisory candidate only. No report, rule, calculation, filter or join may read this column",
+          "note": "A CANDIDATE code the analysis suggests, held in a typed column so it can be shown beside the catalogue entry it points at. It is not the activity: nothing reads it except the confirmation screen, and confirming copies the value into ConfirmedActivityTypeID by an explicit human action (D-23)."
+        },
+        {
+          "name": "ConfirmedActivityTypeID",
+          "type": "ref",
+          "required": false,
+          "ref": "ActivityTypes.ActivityTypeID",
+          "src": "user",
+          "hash": true,
+          "trusted": true,
+          "validation": "Must be permitted for the project by the effective activity rule",
+          "note": "**The trusted structured activity.** Set only by a supervisor or reviewer, and only when ClassificationStatus becomes Confirmed. Reports and business rules read this column and no other (D-23)."
+        },
+        {
+          "name": "ClassificationStatus",
+          "type": "enum",
+          "required": true,
+          "default": "Pending",
+          "enum": "ClassificationStatus",
+          "src": "system",
+          "hash": true,
+          "note": "Pending is normal after a Quick Share and blocks nothing. Only Confirmed makes the activity trusted (D-23)."
+        },
+        {
+          "name": "ConfirmedByUserID",
+          "type": "ref",
+          "required": false,
+          "ref": "Users.UserID",
+          "src": "system",
+          "note": "Who confirmed the classification. Attribution is the point."
+        },
+        {
+          "name": "ConfirmedAt",
+          "type": "datetime",
+          "required": false,
+          "src": "system"
         },
         {
           "name": "AIProposedCaptionEN",
@@ -5073,6 +5237,7 @@
         "VisitActivityID",
         "LocationID",
         "EvidenceStage",
+        "ConfirmedActivityTypeID",
         "CaptionEN",
         "CaptionAR",
         "ApprovedForReport",
@@ -12580,14 +12745,14 @@
       {
         "step": 2,
         "actor": "system",
-        "action": "The assigned project is prefilled where a single active assignment exists.",
-        "source": "ProjectAssignments — trusted system data, never the photograph."
+        "action": "Project, location, date, time, supervisor and capture mode are populated automatically. The supervisor is asked nothing unless a genuine choice exists.",
+        "source": "ProjectAssignments, the device clock and the authenticated identity — trusted system data, never the photograph (D-22)."
       },
       {
         "step": 3,
         "actor": "supervisor",
-        "action": "Selects or confirms the location.",
-        "source": "Locations — trusted structured reference, never inferred from the photograph."
+        "action": "Confirms the location — and only when it does not resolve automatically.",
+        "source": "Locations — prefilled from the project default or the last location used today. A trusted structured reference, never inferred from the photograph."
       },
       {
         "step": 4,
@@ -12603,13 +12768,13 @@
       {
         "step": 6,
         "actor": "ai",
-        "action": "Analyses the photographs and PROPOSES the advisory fields below.",
+        "action": "Analyses the ELIGIBLE photographs and PROPOSES the advisory fields below — immediately in AI Reviewed Share, after the share in Quick Share (D-24).",
         "binding": "advisory"
       },
       {
         "step": 7,
         "actor": "supervisor",
-        "action": "Confirms or corrects the proposal with minimum interaction.",
+        "action": "Confirms or corrects the proposal with minimum interaction. In Quick Share this happens later; classification stays Pending and blocks nothing (D-23).",
         "binding": "authoritative"
       },
       {
@@ -12631,8 +12796,9 @@
           "store",
           "native share"
         ],
-        "ai": "asynchronous, after the share; prepares internal report metadata",
-        "use_when": "The contractor group must receive the site evidence immediately.",
+        "default": true,
+        "ai": "deferred and filtered: after the share, once duplicates, unusable images and exclusions have been removed (D-24)",
+        "use_when": "The default. The contractor group is served first and nothing is waited for.",
         "capture_count": 1
       },
       "AIReviewedShare": {
@@ -12643,7 +12809,9 @@
           "supervisor confirmation",
           "native share"
         ],
-        "ai": "synchronous, before the share",
+        "default": false,
+        "chosen_by": "an explicit action, never a routine question",
+        "ai": "immediate, before the share, on the batch's eligible photographs",
         "use_when": "A reviewed professional caption is wanted before group submission.",
         "capture_count": 1
       }
@@ -12763,9 +12931,174 @@
       "Photos.CaptionAR",
       "Photos.ReviewerDecision",
       "Photos.ApprovedForReport",
+      "Photos.ConfirmedActivityTypeID",
+      "Photos.ClassificationStatus",
       "Snags.Severity",
       "Approvals.Decision"
     ],
+    "minimum_interaction": {
+      "principle": "Minimum interaction. On the normal path the supervisor supplies the photographs and nothing else. Every other value is populated automatically, and a question is asked only when a genuine choice exists.",
+      "normal_path": [
+        "open the app",
+        "confirm project and location only if necessary",
+        "capture the photographs",
+        "save and share"
+      ],
+      "mandatory_manual_inputs": [],
+      "tables_on_the_normal_path": [
+        "SiteVisits",
+        "Photos"
+      ],
+      "not_required_on_the_normal_path": {
+        "VisitActivities": "Declaring an activity is not the price of submitting evidence (D-22). A visit carrying photographs and no activity is a valid photographic submission; the classification catches up afterwards. An activity that DOES exist still satisfies its effective rule in full — quantity, caption and minimum photographs are unchanged."
+      },
+      "auto_populated": [
+        {
+          "field": "SiteVisits.SupervisorUserID",
+          "source": "the authenticated identity",
+          "asks_user": "never"
+        },
+        {
+          "field": "SiteVisits.VisitDate",
+          "source": "the device date",
+          "asks_user": "never"
+        },
+        {
+          "field": "SiteVisits.StartTime",
+          "source": "the device time at first capture",
+          "asks_user": "never"
+        },
+        {
+          "field": "SiteVisits.EndTime",
+          "source": "the device time at last capture",
+          "asks_user": "never"
+        },
+        {
+          "field": "SiteVisits.ProjectID",
+          "source": "the single active assignment, else the last project used today, else the project default",
+          "asks_user": "only when several assignments are active and none resolves"
+        },
+        {
+          "field": "SiteVisits.LocationID",
+          "source": "the project's default location, else the last location used today",
+          "asks_user": "only when several active locations exist and none resolves"
+        },
+        {
+          "field": "SiteVisits.CaptureMode",
+          "source": "defaults to QuickShare",
+          "asks_user": "never on the normal path"
+        },
+        {
+          "field": "Photos.EvidenceStage",
+          "source": "proposed by analysis, or pre-tagged from the activity rule, or left pending",
+          "asks_user": "never before capture"
+        },
+        {
+          "field": "Photos.CaptureBatchID",
+          "source": "generated at capture",
+          "asks_user": "never"
+        },
+        {
+          "field": "Photos.CaptureSequence",
+          "source": "the order the device captured them",
+          "asks_user": "never"
+        }
+      ],
+      "optional_inputs": [
+        "SiteVisits.AdditionalSiteNote",
+        "SiteVisits.SiteNoteCategory",
+        "SiteVisits.SafetyObservation",
+        "SiteVisits.OverallDescriptionEN",
+        "SiteVisits.OverallDescriptionAR",
+        "Photos.CaptionEN",
+        "Photos.CaptionAR",
+        "Photos.EvidenceStage"
+      ],
+      "required_but_never_typed": [
+        "SiteVisits.ProjectID",
+        "SiteVisits.LocationID",
+        "SiteVisits.VisitDate",
+        "SiteVisits.SupervisorUserID",
+        "SiteVisits.CaptureMode",
+        "SiteVisits.ShareStatus",
+        "SiteVisits.ShareAttemptCount",
+        "Photos.ClassificationStatus",
+        "Photos.AnalysisEligibility"
+      ],
+      "note": "Required in storage and required of the supervisor are different things. Every field above is required for the record to be meaningful, and none of them is a question on the normal path."
+    },
+    "classification": {
+      "principle": "AI-generated free text never becomes the trusted structured activity. A proposal and a confirmation are different columns, and only the confirmation is read by anything.",
+      "advisory": [
+        "Photos.AIProposedActivityText",
+        "Photos.AIProposedActivityTypeID"
+      ],
+      "trusted": "Photos.ConfirmedActivityTypeID",
+      "state": "Photos.ClassificationStatus",
+      "disposition": "Photos.AIProposalDisposition",
+      "pending_is_normal": true,
+      "rule": "Only ClassificationStatus = Confirmed makes ConfirmedActivityTypeID readable by a report, a rule, a calculation or a filter. Pending is the normal state immediately after a Quick Share and blocks nothing.",
+      "quick_share_behaviour": "Classification stays Pending and is reviewed later. The share has already happened; the record catches up.",
+      "may_not_read_candidate": [
+        "reports",
+        "business rules",
+        "calculations",
+        "filters",
+        "joins",
+        "approvals"
+      ]
+    },
+    "ai_analysis_policy": {
+      "principle": "Not every captured photograph needs an immediate model call. Filtering happens before the call, never after it, and reports still use every relevant approved photograph.",
+      "policies": {
+        "AIReviewedShare": {
+          "timing": "immediate, before the share",
+          "unit": "one request per capture batch",
+          "filtered": "local duplicate and quality checks run first; the rest of the batch is analysed",
+          "why": "the supervisor is waiting, so the proposal has to exist now"
+        },
+        "QuickShare": {
+          "timing": "deferred, after the share",
+          "unit": "one request per capture batch, batched again across visits where the queue allows",
+          "filtered": "duplicates, unusable images, deleted and explicitly excluded images are removed first; only then is a request made",
+          "why": "nothing is waiting, so the cheapest correct moment is after the supervisor has finished and the obvious waste has been removed"
+        }
+      },
+      "never_analysed": [
+        "a near-duplicate of a photograph already analysed in the same batch",
+        "an image below the project's quality threshold",
+        "an image deleted or explicitly excluded before analysis ran",
+        "an image already analysed — analysis never runs twice on the same file",
+        "any image in a project where analysis is switched off, or after the monthly cap"
+      ],
+      "still_analysed": "every photograph a reviewer may approve for a report. Skipping is about waste, never about coverage: an excluded image is one nobody will report on.",
+      "filters_cost_nothing": "Perceptual hashing and the blur measure run locally, without a model call.",
+      "estimates_only": "Every eligibility proportion below is an ESTIMATE from the stated assumptions. None has been measured. The pilot's first month replaces them with counts.",
+      "estimated_eligibility": {
+        "captured_per_month_pilot": 360,
+        "assumptions": [
+          {
+            "class": "near-duplicate",
+            "share": 0.08,
+            "basis": "supervisors take two or three of the same subject to be sure"
+          },
+          {
+            "class": "below quality threshold",
+            "share": 0.05,
+            "basis": "movement, low light, an obstructed lens"
+          },
+          {
+            "class": "deleted or excluded before analysis",
+            "share": 0.04,
+            "basis": "wrong subject, accidental capture"
+          }
+        ],
+        "eligible_share": 0.83,
+        "eligible_per_month_quick_share": 299,
+        "eligible_per_month_ai_reviewed": 331,
+        "ai_reviewed_note": "Immediate mode filters duplicates and unusable images locally but cannot know what the supervisor will later exclude, so its eligible count is higher."
+      }
+    },
     "sharing": {
       "method": "native operating-system share sheet",
       "payload": "the stored image files themselves, plus a formatted text summary",

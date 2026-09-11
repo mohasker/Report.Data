@@ -88,12 +88,21 @@ def run(model, data):
     c.check("EVD-10", "A quantity entered where the rule takes none is rejected",
             not ok and any("does not take one" in f for f in fails), "; ".join(fails))
 
-    # 11. a visit with no activity cannot be submitted
+    # 11. a photographic submission with no activity IS valid (D-22), but an empty one is not
     d = copy.deepcopy(data)
     d["VisitActivities"] = [a_ for a_ in d["VisitActivities"] if a_["VisitID"] != "VIS-0001"]
     ok, fails = evidence.evaluate_visit(d, v1)
-    c.check("EVD-11", "A visit with no activity cannot be submitted",
-            not ok and any("at least one activity" in f for f in fails), "; ".join(fails))
+    c.check("EVD-11", "A visit carrying photographs but no declared activity is a valid "
+                      "photographic submission (D-22)",
+            ok, "accepted; classification catches up afterwards"
+            if ok else "; ".join(fails))
+
+    d2 = copy.deepcopy(d)
+    d2["Photos"] = [p_ for p_ in d2["Photos"] if p_.get("VisitID") != "VIS-0001"]
+    ok2, fails2 = evidence.evaluate_visit(d2, v1)
+    c.check("EVD-11b", "A visit with neither a photograph nor an activity carries no evidence and "
+                       "is refused",
+            not ok2 and any("at least one photograph" in f for f in fails2), "; ".join(fails2))
 
     # 12. every failure message is actionable
     d = copy.deepcopy(data)

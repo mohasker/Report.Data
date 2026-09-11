@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
 """Regenerate Phase 1 artifacts, run every check, and write reproducible test evidence.
 
-    python3 tools/run_validation.py
+    python3 tools/run_validation.py                 # evidence into the tracked document
+    python3 tools/run_validation.py --out DIR/FILE  # evidence outside the repository
 
 Standard library only. No network, no credential, no external service.
+
+`--out` (or the AH_VALIDATION_OUT environment variable) writes the evidence document
+somewhere else, so a run can validate an exact commit **without modifying a single
+tracked file**. That is how the handoff package is built: clone the commit, validate it
+with the evidence written outside the clone, and `git status --porcelain` stays empty
+before and after.
 
 The evidence document records the commit tested, the exact command, the interpreter and
 operating environment, the full output, every individual check, a mapping to the
@@ -29,7 +36,23 @@ import test_capture_once                                            # noqa: E402
 SUITES = [test_capture_once, test_lean_mvp, test_configurability, test_segregation, test_access_control,
           test_evidence_rules, test_transitions, test_contenthash, test_numbering,
           test_calculations, test_bilingual, test_governance]
-OUT = os.path.join(ROOT, "docs", "01-data-foundation", "17-validation-evidence.md")
+TRACKED_OUT = os.path.join(ROOT, "docs", "01-data-foundation", "17-validation-evidence.md")
+
+
+def evidence_path():
+    """Where to write the evidence document. --out or AH_VALIDATION_OUT move it off-tree."""
+    argv = sys.argv[1:]
+    if "--out" in argv:
+        i = argv.index("--out")
+        if i + 1 >= len(argv):
+            print("--out needs a path", file=sys.stderr)
+            sys.exit(2)
+        return os.path.abspath(argv[i + 1])
+    env = os.environ.get("AH_VALIDATION_OUT")
+    return os.path.abspath(env) if env else TRACKED_OUT
+
+
+OUT = evidence_path()
 GENERATORS = ("build_model.py", "gen_schemas.py", "gen_data_dictionary.py",
               "gen_matrices.py", "gen_appsheet_workbook.py", "gen_scope_matrix.py",
               "gen_release1_scope.py", "gen_capture_once.py")
@@ -253,6 +276,7 @@ def main():
       "regenerates every artifact and rewrites this document; the only file it modifies is this "
       "one, which a reviewer can confirm with `git status` immediately afterwards.\n")
 
+    os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", encoding="utf-8") as fh:
         fh.write(o.getvalue())
 
@@ -262,7 +286,10 @@ def main():
     print(f"  commit tested               : {commit[:12] if in_git else commit}")
     print(f"  working tree after the run  : "
           f"{tree_after.replace(chr(10), ' | ') if tree_after else 'clean'}")
-    print(f"  evidence written to         : {os.path.relpath(OUT, ROOT)}")
+    off_tree = os.path.commonpath([OUT, ROOT]) != ROOT
+    where = OUT if off_tree else os.path.relpath(OUT, ROOT)
+    print(f"  evidence written to         : {where}"
+          + ("   (outside the repository — no tracked file was modified)" if off_tree else ""))
     return 1 if failed else 0
 
 

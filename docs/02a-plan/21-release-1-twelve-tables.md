@@ -18,14 +18,14 @@ document, numbering or legal-entity table.
 | 3 | `ProjectAssignments` | 14 | 4 | 10 |
 | 4 | `Locations` | 16 | 4 | 12 |
 | 5 | `ActivityTypes` | 18 | 4 | 14 |
-| 6 | `SiteVisits` | 37 | 16 | 21 |
+| 6 | `SiteVisits` | 37 | 19 | 18 |
 | 7 | `VisitActivities` | 19 | 10 | 9 |
-| 8 | `Photos` | 56 | 44 | 12 |
+| 8 | `Photos` | 64 | 52 | 12 |
 | 9 | `Snags` | 24 | 11 | 13 |
 | 10 | `Approvals` | 23 | 19 | 4 |
 | 11 | `AuditLog` | 13 | 12 | 1 |
 | 12 | `IntegrationJobs` | 18 | 17 | 1 |
-| | **Total** | **282** | **151** | **131** |
+| | **Total** | **290** | **162** | **128** |
 
 ## 2. Consolidations, and what each costs
 
@@ -43,17 +43,18 @@ report generation is switched on.
 
 | Measure | Fields | What it means |
 |---|---|---|
-| **Total in the release-1 storage model** | **282** | Every column across twelve tables, including audit columns |
-| Of which **generated, never typed** | **151** | System, integration or AI sourced. A person never sees a keyboard for these |
-| **Synchronised to a field device** | **228** | Only from the nine tables a supervisor's phone holds at all |
+| **Total in the release-1 storage model** | **290** | Every column across twelve tables, including audit columns |
+| Of which **generated, never typed** | **162** | System, integration or AI sourced. A person never sees a keyboard for these |
+| **Synchronised to a field device** | **236** | Only from the nine tables a supervisor's phone holds at all |
 | **Administrative only** | **54** | Approvals, audit log and integration log. **Absent from the field data set entirely** |
-| **On the normal field form** | **17** | What a supervisor can touch, most of it optional |
-| **Mandatory to submit a normal photographic visit** | **5** | Project, location, date, capture mode, evidence stage. **No written description among them (D-18)** |
-| **Visible to a reviewer** | **32** | The supervisor's fields plus the review controls |
+| **On the normal field form** | **15** | What a supervisor can touch, most of it optional |
+| **Mandatory to submit a normal photographic visit** | **0** | **None (D-22).** The supervisor supplies the photographs and nothing else |
+| Confirmed only when ambiguous | 2 | Project and location, prefilled from the assignment, the default or the last used today. A question only when a genuine choice exists |
+| **Visible to a reviewer** | **30** | The supervisor's fields plus the review controls |
 
 **An honest caveat on the sync number.** A row synchronises whole: if a table is in a
-user's data set, all its columns travel, which is why 228 is larger than the
-17 on the form. Views and slices control what is *shown*, not what is
+user's data set, all its columns travel, which is why 236 is larger than the
+15 on the form. Views and slices control what is *shown*, not what is
 *delivered*. The two levers that genuinely reduce the sync payload are keeping a table out
 of the field role's data set altogether — which is what puts Approvals, the audit log and
 the integration log at zero — and keeping row counts down through security filters. The
@@ -61,25 +62,26 @@ form size and the sync size are different problems with different fixes.
 
 ### The normal field form, in full
 
-Bold is mandatory. Everything else is pre-filled, conditional, optional, or a one-tap
-confirmation of an AI proposal.
+**Nothing on this form is mandatory (D-22).** Fields marked * are confirmed only when they
+do not resolve automatically; the rest are optional, or a one-tap confirmation of an AI
+proposal.
 
 | Screen | Fields the supervisor can touch |
 |---|---|
-| SiteVisits | **`ProjectID`**, **`LocationID`**, **`VisitDate`**, **`CaptureMode`**, `AdditionalSiteNote`, `SiteNoteCategory`, `SafetyObservation`, `OverallDescriptionEN`, `OverallDescriptionAR` |
-| VisitActivities | `ActivityTypeID`, `DescriptionEN`, `Quantity`, `PercentComplete` |
-| Photos | **`EvidenceStage`**, `CaptionEN`, `CaptionAR`, `AIProposalDisposition` |
+| SiteVisits | **`ProjectID`** \*, **`LocationID`** \*, `AdditionalSiteNote`, `SiteNoteCategory`, `SafetyObservation`, `OverallDescriptionEN`, `OverallDescriptionAR` |
+| VisitActivities | `ConfirmedActivityTypeID`, `DescriptionEN`, `Quantity`, `PercentComplete` |
+| Photos | `EvidenceStage`, `CaptionEN`, `CaptionAR`, `AIProposalDisposition` |
 
-**17 fields across three screens, of which 5 are mandatory.** The
-project defaults from the supervisor's assignment, the date defaults from the device, the
-Arabic description is an alternative to the English one rather than an addition, the
-quantity appears only when the activity rule requires it, percent complete is optional, and
-**the work description is optional in every normal case (D-18)** — the photographs are the
-submission.
+**15 fields across three screens, of which 0 are mandatory.** The
+project comes from the supervisor's assignment, the date and time from the device, the
+identity from the session, the capture mode from a default; the Arabic description is an
+alternative to the English one rather than an addition; the quantity appears only when an
+activity rule requires it; percent complete is optional; the evidence stage is proposed or
+left pending; and **the work description is optional in every normal case (D-18)**.
 
-So of **282** fields in storage, a supervisor meets **17** — about
-**6%** — and must supply only **5**
-(**2%**) on a normal visit.
+So of **290** fields in storage, a supervisor may touch **15** and **must**
+supply **0**. The normal path is: open the app, confirm project and location if
+necessary, capture the photographs, save and share.
 
 ### Capture once, use twice
 
@@ -102,20 +104,20 @@ select the images again. See [`24-capture-once-workflow.md`](24-capture-once-wor
 
 ## 4. Per-table exposure
 
-| Table | Fields | Syncs to device | Field form | Of which mandatory | Reviewer view | Admin only |
-|---|---|---|---|---|---|---|
-| `Users` | 15 | Yes | — | — | — | No |
-| `Projects` | 29 | Yes | — | — | — | No |
-| `ProjectAssignments` | 14 | Yes | — | — | — | No |
-| `Locations` | 16 | Yes | — | — | — | No |
-| `ActivityTypes` | 18 | Yes | — | — | — | No |
-| `SiteVisits` | 37 | Yes | 9 | 4 | 10 | No |
-| `VisitActivities` | 19 | Yes | 4 | — | 6 | No |
-| `Photos` | 56 | Yes | 4 | 1 | 10 | No |
-| `Snags` | 24 | Yes | — | — | 6 | No |
-| `Approvals` | 23 | No | — | — | — | **Yes** |
-| `AuditLog` | 13 | No | — | — | — | **Yes** |
-| `IntegrationJobs` | 18 | No | — | — | — | **Yes** |
+| Table | Fields | Syncs to device | Field form | Mandatory | Confirmed if ambiguous | Reviewer view | Admin only |
+|---|---|---|---|---|---|---|---|
+| `Users` | 15 | Yes | — | — | — | — | No |
+| `Projects` | 29 | Yes | — | — | — | — | No |
+| `ProjectAssignments` | 14 | Yes | — | — | — | — | No |
+| `Locations` | 16 | Yes | — | — | — | — | No |
+| `ActivityTypes` | 18 | Yes | — | — | — | — | No |
+| `SiteVisits` | 37 | Yes | 7 | — | 2 | 8 | No |
+| `VisitActivities` | 19 | Yes | 4 | — | — | 6 | No |
+| `Photos` | 64 | Yes | 4 | — | — | 10 | No |
+| `Snags` | 24 | Yes | — | — | — | 6 | No |
+| `Approvals` | 23 | No | — | — | — | — | **Yes** |
+| `AuditLog` | 13 | No | — | — | — | — | **Yes** |
+| `IntegrationJobs` | 18 | No | — | — | — | — | **Yes** |
 
 ## 5. What release 1 deliberately cannot do
 

@@ -1,10 +1,12 @@
 # Actions and Workflow
 
-**Document ID:** AH-SYS-P2A-004 · **Revision:** 2 · **Date:** 2026-09-11
+**Document ID:** AH-SYS-P2A-004 · **Revision:** 3 · **Date:** 2026-09-11
 **Status:** Completed · Submitted for Owner Review · **Not built, not tested**
 **Derived from:** `../01-data-foundation/03-status-transition-matrix.md` and
 [`24-capture-once-workflow.md`](24-capture-once-workflow.md)
 **Revision 2** adds the capture-once actions (D-16 to D-21).
+**Revision 3** applies minimum interaction, confirmed classification and filtered analysis
+(D-22 to D-24).
 
 > Every action below implements a transition that the matrix already declares. If an action is not
 > in the matrix, it does not exist. The matrix is the specification; this is its user interface.
@@ -28,8 +30,10 @@
 | **Verify Closure** | Snags | `PendingVerification`, verifier is not the raiser | Sets `Closed` | Closure date and verifier recorded |
 | **Request Document** | Projects | Role holds `MayRequestDocuments` | Creates a `DocumentJobs` row | Phase 5 |
 | **Capture Photographs** | SiteVisits | Always while `Draft` | Opens the camera once and writes one `Photos` row per shot under a single `CaptureBatchID` | **The only file selection in the workflow (CAP-01)** |
-| **Confirm AI Proposal** | Photos | `AIAnalysisStatus` = `Completed` and `AIProposalDisposition` = `NotOffered` | Copies the proposed stage and caption into the confirmed columns and sets the disposition to `Accepted` | A human action. One tap. The proposal is never auto-applied |
-| **Correct AI Proposal** | Photos | Same | The supervisor edits the stage or caption; disposition becomes `Corrected` | The supervisor's words always win |
+| **Confirm AI Proposal** | Photos | `AIAnalysisStatus` = `Completed` and `AIProposalDisposition` = `NotOffered` | Copies the proposed stage, caption **and candidate activity** into the confirmed columns, sets `ClassificationStatus` = `Confirmed`, stamps `ConfirmedByUserID` and `ConfirmedAt` | A human action. One tap. **The only route by which `AIProposedActivityTypeID` ever reaches `ConfirmedActivityTypeID`** (D-23) |
+| **Correct AI Proposal** | Photos | Same | The supervisor edits the stage, caption or activity; disposition becomes `Corrected` | The supervisor's words always win |
+| **Classify Later** | Photos | Any `Pending` classification | Leaves the photograph unclassified | **The normal outcome of a Quick Share.** Pending blocks nothing (D-23) |
+| **Mark Not Applicable** | Photos | `Pending` or `AIProposed` | `ClassificationStatus` = `NotApplicable` | A safety observation or a material delivery carries no activity to classify |
 | **Share to Contractor Group** | SiteVisits | Photographs exist, and `ShareStatus` is `NotShared`, `ShareCancelled` or `ShareFailed` | Opens the **native share sheet** with the stored files already attached and a formatted summary; sets `ShareInitiated`, increments `ShareAttemptCount` | **Must not re-select, re-upload or re-encode the files.** No public link. Unverified: `CAP-GATE` |
 | **Confirm Share Completed** | SiteVisits | `ShareInitiated` | Sets `ShareConfirmed`, stamps `SharedAt` and `SharedByUserID` | A human claim. The app cannot observe delivery inside the messaging application |
 | **Report Share Failed** | SiteVisits | `ShareInitiated` | Sets `ShareFailed` | Recoverable. Re-sharing re-uses the stored files |
@@ -39,11 +43,14 @@
 ## 2. Submit: what happens, in order
 
 ```
-1  client-side completeness         at least one activity; required photographs; minimum count;
+1  client-side completeness         at least one PHOTOGRAPH or one activity; and for every
+                                    activity that exists: required photographs; minimum count;
                                     quantity present, numeric, non-negative; unit with quantity;
                                     mandatory captions on Observation, Snag, Material and Safety
-                                    NOT checked: a written work description. It is optional for a
-                                    normal photographic submission (D-18)
+                                    NOT checked: a written work description (D-18); a declared
+                                    activity (D-22); an evidence stage (D-22); a capture mode,
+                                    project, location, date or identity — all populated
+                                    automatically and never asked for on the normal path (D-22)
         fails ->  a specific list, in the user's language, WHILE THEY ARE STILL ON SITE
 2  set Submitted, stamp SubmittedAt, increment EntityVersion, compute ContentHash
 3  protected fields become read-only to the submitter
@@ -85,3 +92,6 @@ webhook is an external action, and external actions are off by default (operatin
 9. **Create a public link to evidence.** Not to share it, not to analyse it, not as a fallback.
 10. **Automate a messaging client.** No WhatsApp Web automation, no group scraping, no unofficial messaging API.
 11. **Require a typed description of work the photographs already show.**
+12. **Ask the supervisor for anything the system can resolve itself (D-22).** Not the project, not the location, not the date, not the time, not their own identity, not the capture mode, not the evidence stage. A question is asked only when a genuine choice exists, and the answer is remembered for the rest of the day.
+13. **Let a proposal become a fact.** `AIProposedActivityTypeID` is read by the confirmation screen and by nothing else — no report, rule, calculation, filter, join or approval (D-23).
+14. **Analyse a photograph that is a duplicate, unusable, deleted, excluded or already analysed (D-24).** The filter runs before the call, never after it.

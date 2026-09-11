@@ -216,8 +216,8 @@ One reporting event at a location on a date. The unit of submission and review.
 | Column | AppSheet type | Required | Editable | Expression / rule |
 |---|---|---|---|---|
 | `VisitID` | Text | Yes | Yes | `UNIQUEID()` — initial value, key, not editable |
-| `ProjectID` | Ref → Projects | Yes | Yes | `IN([_THIS], SELECT(ProjectAssignments[ProjectID],    AND([UserID] = LOOKUP(USEREMAIL(), Users, Email, UserID),        [IsActive] = TRUE,        [MaySubmitEvidence] = TRUE,        [AssignedFrom] <= TODAY(),        OR(ISBLANK([AssignedTo]), [AssignedTo] >= TODAY()))))` — Valid_If. The dropdown offers only projects the signer is actively assigned to, and the same expression re-validates on save |
-| `LocationID` | Ref → Locations | Yes | Yes | `FILTER("Locations", AND([ProjectID] = [_THISROW].[ProjectID], [IsActive] = TRUE))` — Valid_If. Locations depend on the chosen project (spec 7.3) |
+| `ProjectID` | Ref → Projects | Yes | No | `IN([_THIS], SELECT(ProjectAssignments[ProjectID],    AND([UserID] = LOOKUP(USEREMAIL(), Users, Email, UserID),        [IsActive] = TRUE,        [MaySubmitEvidence] = TRUE,        [AssignedFrom] <= TODAY(),        OR(ISBLANK([AssignedTo]), [AssignedTo] >= TODAY()))))` — Valid_If. The dropdown offers only projects the signer is actively assigned to, and the same expression re-validates on save |
+| `LocationID` | Ref → Locations | Yes | No | `FILTER("Locations", AND([ProjectID] = [_THISROW].[ProjectID], [IsActive] = TRUE))` — Valid_If. Locations depend on the chosen project (spec 7.3) |
 | `WorkOrderID` | Ref → WorkOrders |  | Yes |  |
 | `VisitDate` | Date | Yes | Yes | `TODAY()` — initial value; editable by an authorised user |
 | `StartTime` | Time |  | Yes |  |
@@ -230,7 +230,7 @@ One reporting event at a location on a date. The unit of submission and review.
 | `OverallDescriptionAR` | LongText |  | Yes | Optional for a normal photographic submission (D-18) |
 | `AdditionalSiteNote` | LongText |  | Yes | Optional. Mandatory only in the exceptional workflows listed in capture_once.optional_note.mandatory_exceptions |
 | `SiteNoteCategory` | Enum (ClientInstruction, AccessRestriction, PermitIssue, HiddenDefect…) |  | Yes |  |
-| `CaptureMode` | Enum (QuickShare, AIReviewedShare) | Yes | Yes | Initial value `AIReviewedShare` |
+| `CaptureMode` | Enum (QuickShare, AIReviewedShare) | Yes | No | Initial value `QuickShare` |
 | `ShareStatus` | Enum (NotShared, ShareInitiated, ShareConfirmed, ShareCancelled…) | Yes | Yes | Initial value `NotShared` |
 | `SharedAt` | DateTime |  | No |  |
 | `SharedByUserID` | Ref → Users |  | No |  |
@@ -291,7 +291,7 @@ One photograph per row. The received file is write-once and is never altered (D-
 |---|---|---|---|---|
 | `PhotoID` | Text | Yes | Yes | `UNIQUEID()` initial value; key; not editable |
 | `VisitID` | Ref → SiteVisits | Yes | No |  |
-| `VisitActivityID` | Ref → VisitActivities |  | Yes |  |
+| `VisitActivityID` | Ref → VisitActivities |  | No |  |
 | `ProjectID` | Ref → Projects | Yes | No |  |
 | `LocationID` | Ref → Locations | Yes | No |  |
 | `CapturedAt` | DateTime |  | Yes |  |
@@ -306,7 +306,7 @@ One photograph per row. The received file is write-once and is never altered (D-
 | `OriginalHeight` | Number |  | No |  |
 | `OriginalSizeBytes` | Number |  | No |  |
 | `IsOriginalDeviceImageVerified` | Yes/No | Yes | No | Initial value `FALSE` |
-| `EvidenceStage` | Enum (Before, During, After, Observation…) | Yes | Yes |  |
+| `EvidenceStage` | Enum (Before, During, After, Observation…) |  | Yes | Optional at capture (D-22). Never a mandatory manual field before the photograph is taken |
 | `CaptionEN` | Text |  | Yes | `OR(IN([_THISROW].[EvidenceStage], LIST("Before","During","After","Equipment","Other")),    NOT(ISBLANK([_THIS])), NOT(ISBLANK([_THISROW].[CaptionAR])))` — Valid_If. A caption is mandatory for Snag, Observation, Material and Safety evidence, in either language |
 | `CaptionAR` | Text |  | Yes |  |
 | `GPSLatitude` | Decimal |  | Yes |  |
@@ -316,9 +316,17 @@ One photograph per row. The received file is write-once and is never altered (D-
 | `IsDuplicateSuspected` | Yes/No | Yes | No | Initial value `FALSE` |
 | `DuplicateOfPhotoID` | Ref → Photos |  | No |  |
 | `AIAnalysisStatus` | Enum (NotRequested, Queued, Completed, Failed…) | Yes | No | Initial value `NotRequested` |
+| `AnalysisEligibility` | Enum (Eligible, Analysed, SkippedDuplicate, SkippedQuality…) | Yes | No | Initial value `Eligible` |
+| `PerceptualHash` | Text |  | No |  |
+| `QualityScore` | Decimal |  | No | 0.00-1.00 |
 | `AIObservation` | LongText |  | No |  |
 | `AIProposedEvidenceStage` | Enum (Before, During, After, Observation…) |  | No |  |
 | `AIProposedActivityText` | Text |  | No |  |
+| `AIProposedActivityTypeID` | Ref → ActivityTypes |  | No | Advisory candidate only. No report, rule, calculation, filter or join may read this column |
+| `ConfirmedActivityTypeID` | Ref → ActivityTypes |  | Yes | Must be permitted for the project by the effective activity rule |
+| `ClassificationStatus` | Enum (Pending, AIProposed, Confirmed, NotApplicable…) | Yes | No | Initial value `Pending` |
+| `ConfirmedByUserID` | Ref → Users |  | No |  |
+| `ConfirmedAt` | DateTime |  | No |  |
 | `AIProposedCaptionEN` | Text |  | No |  |
 | `AIProposedCaptionAR` | Text |  | No |  |
 | `AIVisibleCondition` | Text |  | No |  |

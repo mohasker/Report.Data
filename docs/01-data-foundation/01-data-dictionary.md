@@ -44,7 +44,7 @@
 | [`ResidencyAssignments`](#residencyassignments) | master | project | internal | Phase 1–2 (MVP core) | 14 | Binds a residency requirement to a client, contract or project (D-12). |
 | [`SiteVisits`](#sitevisits) | operational | project | confidential | Phase 1–2 (MVP core) | 37 | One reporting event at a location on a date. The unit of submission and review. |
 | [`VisitActivities`](#visitactivities) | operational | project | confidential | Phase 1–2 (MVP core) | 19 | What was actually done during a visit. One row per activity. |
-| [`Photos`](#photos) | operational | project | confidential | Phase 1–2 (MVP core) | 56 | One photograph per row. The received file is write-once and is never altered (D-13). |
+| [`Photos`](#photos) | operational | project | confidential | Phase 1–2 (MVP core) | 64 | One photograph per row. The received file is write-once and is never altered (D-13). |
 | [`Snags`](#snags) | operational | project | confidential | Phase 1–2 (MVP core) | 24 | Defects and observations tracked to closure with evidence. |
 | [`DocumentJobs`](#documentjobs) | document | project | internal | Phase 5 | 27 | A request to produce a document from a frozen snapshot of approved records. |
 | [`Documents`](#documents) | document | project | confidential | Phase 5 | 25 | A produced document revision. Approval binds to ContentHash (ADR-0006). |
@@ -67,7 +67,7 @@
 | [`Employees`](#employees) | master | global | personal | Phase 5 | 12 | Crew register for resource reporting. Payroll data is deliberately excluded (spec 5.13). |
 | [`VisitManpower`](#visitmanpower) | operational | project | internal | Phase 5 | 12 | Manpower present during a visit, for resource summaries only. |
 
-**46 tables · 849 columns · 30 controlled vocabularies.**
+**46 tables · 857 columns · 32 controlled vocabularies.**
 
 ---
 
@@ -705,21 +705,21 @@ One reporting event at a location on a date. The unit of submission and review.
 | Column | Type | Req | Source | Sens | Hash | Validation / notes |
 |---|---|---|---|---|---|---|
 | `VisitID` | id | ✔ |  |  |  | **PK.** Example: `VIS-Q8C4K1` |
-| `ProjectID` | ref → `Projects.ProjectID` | ✔ | user |  | ✔ |  |
-| `LocationID` | ref → `Locations.LocationID` | ✔ | user |  | ✔ | Location must belong to ProjectID. |
+| `ProjectID` | ref → `Projects.ProjectID` | ✔ | system |  | ✔ | Required in storage, never a routine question (D-22). Trusted system data; never inferred from a photograph (D-19). |
+| `LocationID` | ref → `Locations.LocationID` | ✔ | system |  | ✔ | Location must belong to ProjectID. Required in storage, confirmed rather than typed (D-22). |
 | `WorkOrderID` | ref → `WorkOrders.WorkOrderID` |  | user |  | ✔ |  |
-| `VisitDate` | date | ✔ | user |  | ✔ | Defaults to the device date; correctable by an authorised user (spec 7.3). |
-| `StartTime` | time |  | user |  | ✔ |  |
-| `EndTime` | time |  | user |  | ✔ | Must be after StartTime. |
+| `VisitDate` | date | ✔ | device |  | ✔ | Never typed on the normal path. Correctable by an authorised user (spec 7.3). |
+| `StartTime` | time |  | device |  | ✔ |  |
+| `EndTime` | time |  | device |  | ✔ | Must be after StartTime. |
 | `Weather` | text |  | user |  | ✔ |  |
-| `SupervisorUserID` | ref → `Users.UserID` | ✔ | system |  | ✔ | Defaults from USEREMAIL(); must hold an active assignment to ProjectID. |
+| `SupervisorUserID` | ref → `Users.UserID` | ✔ | system |  | ✔ | Resolved from the authenticated identity; must hold an active assignment to ProjectID. |
 | `GPSLatitude` | decimal(7) |  | device |  |  |  |
 | `GPSLongitude` | decimal(7) |  | device |  |  |  |
 | `OverallDescriptionEN` | longtext |  | user |  | ✔ | Optional for a normal photographic submission (D-18). NOT mandatory. A normal submission is established by photographs. A written description is required only in the declared exceptional workflows. |
 | `OverallDescriptionAR` | longtext |  | user |  | ✔ | Optional for a normal photographic submission (D-18). A supervisor may write in either language; both are carried to the report (D-11). |
 | `AdditionalSiteNote` | longtext |  | user |  |  | Optional. Mandatory only in the exceptional workflows listed in capture_once.optional_note.mandatory_exceptions. For facts a photograph cannot establish (D-18). Speech-to-text is a future input method for this field, not a new field. |
 | `SiteNoteCategory` | enum `SiteNoteCategory` |  | user |  |  | Classifies the optional note so it can be routed and reported. Never inferred by AI. |
-| `CaptureMode` | enum `CaptureMode` | ✔ | user |  |  | Default `AIReviewedShare`. Quick Share or AI Reviewed Share (D-16). Both capture the images exactly once. |
+| `CaptureMode` | enum `CaptureMode` | ✔ | system |  |  | Default `QuickShare`. Quick Share is the default so the contractor group is served first and nothing is waited for (D-22). Both modes capture the images exactly once (D-16). |
 | `ShareStatus` | enum `ShareStatus` | ✔ | user |  |  | Default `NotShared`. Recorded from the supervisor's confirmation. The app cannot observe delivery inside the messaging application. |
 | `SharedAt` | datetime |  | system |  |  |  |
 | `SharedByUserID` | ref → `Users.UserID` |  | system |  |  |  |
@@ -782,13 +782,13 @@ One photograph per row. The received file is write-once and is never altered (D-
 
 **Primary key:** `PhotoID` · **Category:** operational · **Scope:** project · **Sensitivity:** confidential · **Built in:** Phase 1–2 (MVP core)
 
-**ContentHash covers:** `VisitID`, `VisitActivityID`, `LocationID`, `EvidenceStage`, `CaptionEN`, `CaptionAR`, `ApprovedForReport`, `ReportSequence`
+**ContentHash covers:** `VisitID`, `VisitActivityID`, `LocationID`, `EvidenceStage`, `ConfirmedActivityTypeID`, `CaptionEN`, `CaptionAR`, `ApprovedForReport`, `ReportSequence`
 
 | Column | Type | Req | Source | Sens | Hash | Validation / notes |
 |---|---|---|---|---|---|---|
 | `PhotoID` | id | ✔ |  |  |  | **PK.** Example: `PHO-M9F2X5` |
 | `VisitID` | ref → `SiteVisits.VisitID` | ✔ | system |  | ✔ |  |
-| `VisitActivityID` | ref → `VisitActivities.VisitActivityID` |  | user |  | ✔ |  |
+| `VisitActivityID` | ref → `VisitActivities.VisitActivityID` |  | system |  | ✔ | Optional. A photograph belongs to a visit; it is attached to an activity only once one has been confirmed. A photographic submission with no activity at all is valid (D-22). |
 | `ProjectID` | ref → `Projects.ProjectID` | ✔ | system |  |  | Denormalised for row-level security and for folder routing. |
 | `LocationID` | ref → `Locations.LocationID` | ✔ | system |  | ✔ |  |
 | `CapturedAt` | datetime |  | device |  |  | Device capture time where available. Drives the old-photo warning, never a rejection. |
@@ -803,7 +803,7 @@ One photograph per row. The received file is write-once and is never altered (D-
 | `OriginalHeight` | int |  | integration |  |  |  |
 | `OriginalSizeBytes` | int |  | integration |  |  |  |
 | `IsOriginalDeviceImageVerified` | bool | ✔ | system |  |  | Default `FALSE`. Stays FALSE until real-device testing proves no upstream re-encoding. No file may be described as the original device image while this is FALSE (D-13). |
-| `EvidenceStage` | enum `EvidenceStage` | ✔ | user |  | ✔ |  |
+| `EvidenceStage` | enum `EvidenceStage` |  | user |  | ✔ | Optional at capture (D-22). Never a mandatory manual field before the photograph is taken. A supervisor may set it, and often will not. An unclassified photograph is valid evidence and blocks no submission; ClassificationStatus carries how far it has got. |
 | `CaptionEN` | text |  | user |  | ✔ | Mandatory for Snag, Observation, Material and Safety stages. The supervisor's own words. Never overwritten by AI (D-06). |
 | `CaptionAR` | text |  | user |  | ✔ |  |
 | `GPSLatitude` | decimal(7) |  | device |  |  |  |
@@ -813,9 +813,17 @@ One photograph per row. The received file is write-once and is never altered (D-
 | `IsDuplicateSuspected` | bool | ✔ | system |  |  | Default `FALSE`. Flag only. A suspected duplicate is never deleted or merged (S-09). |
 | `DuplicateOfPhotoID` | ref → `Photos.PhotoID` |  | system |  |  |  |
 | `AIAnalysisStatus` | enum `AIAnalysisStatus` | ✔ | system |  |  | Default `NotRequested`. |
+| `AnalysisEligibility` | enum `AnalysisEligibility` | ✔ | system |  |  | Default `Eligible`. Decided BEFORE any call is made (D-24). A duplicate, an unusable image, a deleted or excluded one, and an already-analysed one all cost nothing. |
+| `PerceptualHash` | text |  | system |  |  | Computed at registration for near-duplicate detection. A flag only: a suspected duplicate is never deleted or merged (S-09). |
+| `QualityScore` | decimal(2) |  | system |  |  | 0.00-1.00. Local blur/exposure measure computed without a model call. Below the project threshold the photograph is retained as evidence and skipped for analysis. |
 | `AIObservation` | json |  | ai |  |  | ADVISORY ONLY. Schema-validated output, displayed as an AI observation, visually distinct from the caption and the reviewer decision (D-06). |
 | `AIProposedEvidenceStage` | enum `EvidenceStage` |  | ai |  |  | A PROPOSAL. Never written to EvidenceStage. The supervisor confirms or corrects it (D-17). |
-| `AIProposedActivityText` | text |  | ai |  |  | Free text describing the visible activity. Deliberately NOT a reference to ActivityTypes: a contractual activity is a trusted structured field and may not originate from an image (D-20). |
+| `AIProposedActivityText` | text |  | ai |  |  | Free text describing the visible activity. Untrusted. Never becomes the structured activity by itself (D-20, D-23). |
+| `AIProposedActivityTypeID` | ref → `ActivityTypes.ActivityTypeID` |  | ai |  |  | Advisory candidate only. No report, rule, calculation, filter or join may read this column. A CANDIDATE code the analysis suggests, held in a typed column so it can be shown beside the catalogue entry it points at. It is not the activity: nothing reads it except the confirmation screen, and confirming copies the value into ConfirmedActivityTypeID by an explicit human action (D-23). |
+| `ConfirmedActivityTypeID` | ref → `ActivityTypes.ActivityTypeID` |  | user |  | ✔ | Must be permitted for the project by the effective activity rule. **The trusted structured activity.** Set only by a supervisor or reviewer, and only when ClassificationStatus becomes Confirmed. Reports and business rules read this column and no other (D-23). |
+| `ClassificationStatus` | enum `ClassificationStatus` | ✔ | system |  |  | Default `Pending`. Pending is normal after a Quick Share and blocks nothing. Only Confirmed makes the activity trusted (D-23). |
+| `ConfirmedByUserID` | ref → `Users.UserID` |  | system |  |  | Who confirmed the classification. Attribution is the point. |
+| `ConfirmedAt` | datetime |  | system |  |  |  |
 | `AIProposedCaptionEN` | text |  | ai |  |  | Proposed professional caption. Copied into CaptionEN only by a human action. |
 | `AIProposedCaptionAR` | text |  | ai |  |  |  |
 | `AIVisibleCondition` | text |  | ai |  |  | Visible condition only. Never a cause, never a compliance judgement (D-20). |
@@ -1616,6 +1624,31 @@ What the supervisor did with the AI proposal (D-17).
 | `Accepted` | Accepted | مقبول | Confirmed unchanged. Still a human decision. |
 | `Corrected` | Corrected | مُصحح | The supervisor changed one or more proposed values. |
 | `Rejected` | Rejected | مرفوض | The proposal was discarded entirely. |
+
+### ClassificationStatus
+
+How far a photograph's activity classification has got (D-23). Pending is a normal, non-blocking state.
+
+| Code | English | العربية | Meaning |
+|---|---|---|---|
+| `Pending` | Pending | قيد الانتظار | Captured, not yet classified. The normal state immediately after a Quick Share. |
+| `AIProposed` | AI proposed | اقتراح من الذكاء الاصطناعي | An advisory proposal exists. **Still untrusted.** No report or business rule may use it. |
+| `Confirmed` | Confirmed | مؤكد | A supervisor or reviewer set ConfirmedActivityTypeID. The only trusted state. |
+| `NotApplicable` | Not applicable | لا ينطبق | The photograph carries no activity to classify — a safety observation, a material delivery. |
+| `Excluded` | Excluded | مستبعد | Deliberately left out: a duplicate, an unusable image, or evidence excluded from this report. |
+
+### AnalysisEligibility
+
+Whether a photograph is worth sending to analysis (D-24). Filtering happens before the call, never after it.
+
+| Code | English | العربية | Meaning |
+|---|---|---|---|
+| `Eligible` | Eligible | مؤهل | Analysis has value and has not run. |
+| `Analysed` | Analysed | تم التحليل | Already analysed. Never analysed twice. |
+| `SkippedDuplicate` | Skipped — duplicate | تم التخطي - مكرر | A near-identical photograph in the same batch was analysed instead. |
+| `SkippedQuality` | Skipped — unusable | تم التخطي - جودة غير كافية | Blurred, dark or obstructed beyond usefulness. Retained as evidence, not analysed. |
+| `SkippedExcluded` | Skipped — excluded | تم التخطي - مستبعد | Deleted or explicitly excluded by the supervisor before analysis ran. |
+| `SkippedDisabled` | Skipped — analysis off | تم التخطي - التحليل متوقف | Analysis is switched off for this project, or the monthly cap is reached. |
 
 ### SiteNoteCategory
 

@@ -1,6 +1,6 @@
 # Current Status and the Next Prompt
 
-**Document ID:** AH-SYS-HAND-003 · **Version:** 1.0 · **Date:** 2026-09-11
+**Document ID:** AH-SYS-HAND-003 · **Version:** 1.1 · **Date:** 2026-09-11
 **Branch:** `claude/alharam-field-reporting-spec-afq1fr`
 **Validated commit:** `4b19fc19fb926a0bf8a426e88150751b904426d9`
 **Package commit:** see `HANDOFF-MANIFEST.json` → `package_commit`
@@ -9,31 +9,38 @@
 
 ## 1. Last completed task
 
-**The owner's operational correction of 2026-09-11 — "capture once, use twice" — applied to the
-canonical model and to every affected document, with automated checks.**
+**The owner's correction pass of 2026-09-11 — minimum interaction, a confirmed structured activity,
+and filtered analysis (D-22 to D-24)** — applied to the canonical model and to every affected
+document, with automated checks; followed by a rebuild of the handoff package with the validation
+run performed against the exact packaged commit, off-tree.
 
 What that involved:
 
-- `model/model.json` gained a `capture_once` block: nine workflow steps, two operating modes, the
-  optional-note rule, what AI proposes, the nine forbidden inferences, sixteen columns closed to AI,
-  the sharing rules, and a fifteen-condition platform gate.
-- Twenty new columns across `SiteVisits` and `Photos`, and four new enums. **No new table** —
-  release 1 is still twelve, the lean MVP still seventeen.
-- A new check suite, `tools/test_capture_once.py`, with **28 checks** (`CAP-01` … `CAP-26`),
-  including a regression guard that fails if any document reintroduces a mandatory work description.
-- A new generator, `tools/gen_capture_once.py` → `docs/02a-plan/24-capture-once-workflow.md`.
-- `schemas/ai/evidence-analysis-batch.v1.json` — advisory analysis of one capture batch.
-- `ADR-0009`, risks R-33 … R-39, external facts EF-24 … EF-26, open questions OQ-15 … OQ-19.
-- Two costs corrected **upward** rather than absorbed: AI analysis from ~$4.50 to ~$7.56 a month
-  (every captured photograph is analysed, not only the 60% later approved), and the finding that
-  **the AI proposal step does not fit the free orchestration tier** — roughly 1,440 operations a
-  month against a 1,000 limit.
-- The portable handoff package: this file, `START-HERE-NEW-CLAUDE.md`,
-  `MASTER-SPEC-CONSOLIDATED.md`, `DECISIONS-AND-ASSUMPTIONS.md` and the manifests.
+- **D-22 Minimum interaction.** The earlier claim that the supervisor "must supply five fields" is
+  withdrawn. **Zero fields are mandatory manual inputs on the normal path.** Identity comes from the
+  session, date and time from the device, project from the assignment, location from the default,
+  capture mode from a default, and the evidence stage is proposed or left `Pending`. Declaring an
+  activity is no longer the price of submitting evidence — the completeness rule now requires
+  *evidence*, not an activity. The tap count fell from 16–21 to **11–14**.
+- **D-23 A confirmed structured activity.** `ConfirmedActivityTypeID` is trusted and human-set;
+  `AIProposedActivityText` and `AIProposedActivityTypeID` are advisory and read by the confirmation
+  screen alone; `ClassificationStatus` carries the state, and `Pending` — the normal Quick Share
+  outcome — blocks nothing.
+- **D-24 Filtered analysis.** Immediate for AI Reviewed Share, deferred and filtered for Quick
+  Share. Near-duplicates, unusable images, deletions, exclusions and already-analysed files never
+  reach a model call; `PerceptualHash` and `QualityScore` detect them locally at no cost.
+- Two new regression guards: **`CAP-29`** fails the suite if any required, user-typed field with no
+  automatic source reappears on a field-path table; **`CAP-26`** already guards the mandatory
+  description.
+- Recalculated, and labelled as **estimates**: eligibility ~83% / ~92%; Claude **~$6.28** /
+  **~$6.95** a month; Make **~1,167** / **~1,353** operations a month. The conclusion is unchanged —
+  neither policy fits the free orchestration tier, because three operations per photograph is
+  irreducible once bytes pass through an orchestrator.
+- **`tools/run_validation.py --out PATH`** now writes the evidence document outside the repository,
+  so an exact commit can be validated without modifying a single tracked file.
 
-**Result: 219 of 219 checks passing across 13 suites, byte-identical regeneration confirmed.**
-
----
+**Result: 240 of 240 checks passing across 13 suites, byte-identical regeneration confirmed, and the
+exact packaged source commit validated without modifying tracked files.**
 
 ## 2. Current phase
 
@@ -71,13 +78,15 @@ Phase 1 data foundation. **Phase 2B — the first external connection — is not
 
 **In this order:**
 
-1. **Verify the package**, then run `python3 tools/run_validation.py` and confirm **219/219** and
+1. **Verify the package**, then run `python3 tools/run_validation.py` and confirm **240/240** and
    **byte-identical regeneration: yes**. Report whether the reproduction matches.
 2. **Read** in the order given in `START-HERE-NEW-CLAUDE.md` §23.
 3. **Report the current status and blockers back to the owner**, using the seven-value vocabulary,
    making clear that the Admin Console check and `CAP-GATE` are what is waiting on a human.
 4. **Then continue Phase 2A on synthetic data only**, which means any of:
-   - drafting recommendations for **OQ-15 to OQ-19** for the owner to decide;
+   - drafting recommendations for **OQ-15 to OQ-22** for the owner to decide, including the
+     quality and near-duplicate thresholds and whether a pending classification should expire into
+     a reviewer task;
    - writing the **Phase 2B test scripts** — the segregation, evidence-rule and configurability
      tests to be executed once a platform exists;
    - writing the **disabled Make blueprints** for the capture-once actions, following the existing
@@ -137,8 +146,8 @@ Before doing any work:
        python3 tools/run_validation.py
    It is standard library only: no network, no credential, no installation, no external service.
 
-4. REPORT whether your reproduction matches what the manifest and the evidence document record.
-   I expect 219 of 219 checks passing across 13 suites, and byte-identical regeneration. If your
+4. REPORT whether your reproduction matches what the manifest and the delivery receipt
+   record. I expect 240 of 240 checks passing across 13 suites, and byte-identical regeneration. If your
    result differs in any way, stop and tell me exactly how. Do not "fix" a mismatch by editing
    files — a mismatch means something happened in transfer.
 
@@ -165,6 +174,11 @@ Standing rules that apply to everything you do on this project:
 - Never invent a credential, account ID, folder ID, API key, email address, company ID,
   webhook URL, tax setting, contract value, invoice number, quantity, client contact or
   approval decision. Record an unknown as an outstanding external fact and ask me.
+- Never ask a field user for something the system can resolve itself. The normal path is:
+  open the app, confirm project and location if necessary, capture the photographs, save
+  and share. Zero mandatory manual inputs.
+- AI-generated text never becomes a trusted structured value. A proposal and a
+  confirmation are different columns, and only a human moves a value between them.
 - Preserve original photographs unchanged.
 - The supervisor must never be asked to select or upload the same photographs twice. That is
   acceptance requirement CAP-01, and no duplicate-upload workaround is acceptable.

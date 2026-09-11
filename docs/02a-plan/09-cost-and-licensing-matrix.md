@@ -1,11 +1,12 @@
 # Cost and Licensing Statement
 
-**Document ID:** AH-SYS-P2A-009 · **Revision:** 5 · **Date:** 2026-09-11
+**Document ID:** AH-SYS-P2A-009 · **Revision:** 6 · **Date:** 2026-09-11
 **Status:** Completed · Submitted for Owner Review
 **Supersedes:** revision 1 (USD 2,600–5,000 annual — withdrawn) and revision 2 ("expected pilot cost is USD 0" — withdrawn as an overstatement)
-**Revision 5** re-costs AI analysis for the capture-once workflow (D-16, D-17): analysis now runs on
-every captured photograph rather than on the ~60% later approved, which raises the pilot figure from
-~$4.50 to **~$7.56 a month**.
+**Revision 6** applies D-24: analysis is filtered before it is paid for. Duplicates, unusable images
+and anything deleted or excluded never reach a model call, which brings the pilot figure from
+revision 5's ~$7.56 down to **~$6.28 a month** under Quick Share and **~$6.95** under AI Reviewed
+Share. **Estimates, not measurements.**
 
 ---
 
@@ -55,6 +56,7 @@ established the following **from the live account**:
 **Therefore:**
 
 - **Potentially USD 0 during limited testing.** The rebuilt operations budget lands at **703 operations, 70% of the verified limit**, using **2 active scenarios** — inside the plan, with retries, corrections, duplicates and administrative tests all funded ([`23-operations-budget.md`](23-operations-budget.md)).
+- **Analysis through Make does not fit, under either policy.** Deferred and filtered Quick Share costs ~1,167 operations a month; immediate AI Reviewed Share ~1,353. Filtering saves ~190 operations and does not change the conclusion, because three operations per photograph is irreducible once bytes pass through an orchestrator. Release 1 therefore ships without the proposal, or takes it outside Make entirely ([`23-operations-budget.md`](23-operations-budget.md) §6b).
 - **Not confirmed as permanently free.** That budget only fits because release 1 removes per-photograph orchestration. Restoring it needs **≥3,000 operations/month and ≥3 active scenarios** — the exact paid-plan requirement, stated without a price because the price is unverified.
 - **A paid tier is a probable cost at scale**, with a measurable trigger rather than a date. make.com is unreachable from this environment; the owner can read the price on their own billing page.
 
@@ -65,9 +67,10 @@ established the following **from the live account**:
 | **For the field-capture MVP** | **Optional, with one nuance.** Capture, review, snags, the audit trail and **Quick Share** all work with no AI at all. **AI Reviewed Share does not exist without it** — that mode is the AI |
 | **When automated AI analysis and report drafting are enabled** | **Mandatory incremental usage cost.** There is no free path to automated analysis |
 | Cost shape | Usage-based, per image analysed and per report drafted, **bounded by a hard monthly cap the owner sets** (EF-04) |
-| **Costed** | ~**$0.021 per analysed photograph** on the default model at a 1024 px derivative — about **$7.56/month** at pilot volume (**360 analysed images**, every captured photograph), ~$50/month at 20 projects. On Haiku 4.5 instead: ~$1.50 and ~$10. Arithmetic and the cheaper-model option: [`22-image-derivative-architecture.md`](22-image-derivative-architecture.md) §5 |
-| **What changed, and why** | D-17 analyses **every captured photograph**, not only the ~60% a reviewer later approves: the proposal is what the supervisor confirms, so an analysis arriving after the review decision proposes nothing to anybody. The pilot figure rises from ~$4.50 to ~$7.56. A real cost of the correction, stated rather than absorbed |
-| Cost controls in the design | Downscaled derivatives, never originals; **one request per capture batch, not per photograph**; output token caps; per-project on/off switch; Quick Share as the zero-AI mode; per-project usage recorded; a hard monthly cap the owner sets |
+| **Costed** | ~**$0.021 per analysed photograph** on the default model at a 1024 px derivative. At pilot volume: **~$6.28/month** under Quick Share (299 eligible of 360 captured) and **~$6.95** under AI Reviewed Share (331). ~$42/month at 20 projects. On Haiku 4.5 instead: ~$1.20 and ~$8. Arithmetic: [`22-image-derivative-architecture.md`](22-image-derivative-architecture.md) §5 |
+| **What changed, and why** | Three revisions, each correcting the one before. Rev 4 analysed only reviewer-approved photographs — wrong, because a proposal arriving after the review proposes nothing. Rev 5 analysed every captured photograph — wrong in the other direction, because a blurred shot, a near-duplicate and a deleted image are worth nothing to analyse. **Rev 6 analyses the eligible ones (D-24).** All three figures are estimates; the pilot's first month replaces them with counts |
+| Cost controls in the design | **Eligibility filtering before any call** — near-duplicates, unusable images, deletions and exclusions, all detected locally at no cost; downscaled derivatives, never originals; **one request per capture batch, not per photograph**; deferred analysis in Quick Share so the queue can be paused or capped; output token caps; per-project on/off switch; per-project usage recorded; a hard monthly cap the owner sets |
+| **Not a cost control** | Reducing coverage. Every photograph a reviewer may approve for a report is analysed. Skipping is about waste, never about what a report can draw on |
 | Still to measure | Real cost per 100 photographs, at the Phase 4 gate |
 
 ## 5. Additional Drive storage — future conditional

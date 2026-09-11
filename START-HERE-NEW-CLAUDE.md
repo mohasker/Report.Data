@@ -2,7 +2,7 @@
 
 **This file is the entry point for a new Claude account taking this project over.**
 
-**Package version:** 1.0 · **Date:** 2026-09-11
+**Package version:** 1.1 · **Date:** 2026-09-11
 **Repository:** `mohasker/Report.Data` · **Branch:** `claude/alharam-field-reporting-spec-afq1fr`
 **Validated commit:** `4b19fc19fb926a0bf8a426e88150751b904426d9`
 **Package commit:** recorded in `HANDOFF-MANIFEST.json` → `package_commit`
@@ -16,9 +16,9 @@
 
 ## 0. The two instructions that matter most
 
-**1. Do not restart, redesign, or reconnect anything.** This project is roughly 219 automated checks
+**1. Do not restart, redesign, or reconnect anything.** This project is roughly 240 automated checks
 and 70-odd documents into a deliberate, phased build. The design has been reviewed and corrected by
-the owner six times. If something looks wrong, it is far more likely to be a decision you have not
+the owner seven times, and twenty-four decisions are on the record. If something looks wrong, it is far more likely to be a decision you have not
 read yet than a mistake. Read `DECISIONS-AND-ASSUMPTIONS.md` before proposing any change.
 
 **2. You have no external access and no authorisation to obtain any.** No Google account, no
@@ -152,11 +152,16 @@ with an optional ProjectID; `Roles` becomes a RoleCode enum; `Clients` becomes t
 `Projects`; and `LegalEntities` + the three document tables are simply absent, because release 1
 generates nothing.
 
-**Field exposure — the answer to "do not deploy hundreds of fields to a phone":** 282 fields in the
-release-1 storage model, 151 of them generated and never typed, 228 synchronised to a device, 54
-administrative and absent from the field data set entirely, **17 on the normal field form, of which
-only 5 are mandatory** — project, location, date, capture mode, evidence stage. **None of the five is
-a description.**
+**Field exposure — the answer to "do not deploy hundreds of fields to a phone":** 290 fields in the
+release-1 storage model, 162 of them generated and never typed, 236 synchronised to a device, 54
+administrative and absent from the field data set entirely, **15 on the normal field form, of which
+zero are mandatory (D-22)**. Project and location are confirmed only when they do not resolve
+automatically; everything else is populated, optional, or a one-tap confirmation.
+
+**The supervisor supplies the photographs and nothing else.** Identity comes from the session, date
+and time from the device, project from the assignment, location from the default, capture mode from
+a default, and the evidence stage is proposed or left pending. Declaring an activity is not the
+price of submitting evidence: a visit with photographs and no activity is a valid submission.
 
 An honest caveat that must not be lost: a row synchronises whole. Views and slices control what is
 *shown*, not what is *delivered*. The two levers that genuinely reduce sync payload are keeping a
@@ -169,7 +174,7 @@ Detail: `docs/02a-plan/21-release-1-twelve-tables.md` (generated) and
 
 ## 6. The 46-table reference architecture
 
-46 tables, 849 columns, 30 enums, 82 declared transitions and 36 explicitly forbidden ones, 10 roles
+46 tables, 857 columns, 32 enums, 82 declared transitions and 36 explicitly forbidden ones, 10 roles
 × 46 tables = 460 access grants with 20 documented exceptions.
 
 | Domain | Tables |
@@ -195,7 +200,7 @@ Full detail: `docs/01-data-foundation/01-data-dictionary.md` (generated, every c
 
 ## 7. Capture once, use twice — the operating principle
 
-**This is the most recent owner correction (D-16 … D-21) and the one most likely to be violated by
+**This is the most recent owner correction (D-16 … D-24) and the one most likely to be violated by
 an assistant who has not read it.** Canonical form: `model/model.json` → `capture_once`. Rendered:
 `docs/02a-plan/24-capture-once-workflow.md`. Tested: `tools/test_capture_once.py`, 28 checks.
 
@@ -220,13 +225,41 @@ an assistant who has not read it.** Canonical form: `model/model.json` → `capt
 > select or upload the images a second time.** It binds the first share, a retry after a failed or
 > cancelled share, AI analysis, reviewer correction, and every report that re-uses the evidence.
 
+**And the second half of the same idea — minimum interaction (D-22).** On the normal path the
+supervisor is asked for **nothing but the photographs**:
+
+| Value | Source | Asked? |
+|---|---|---|
+| Identity | The authenticated session | Never |
+| Date and time | The device clock | Never |
+| Project | Single active assignment → last used today → project default | Only when several assignments are active and none resolves |
+| Location | Project default → last used today | Only when several active locations exist and none resolves |
+| Capture mode | **Quick Share by default** | Never on the normal path |
+| Evidence stage | Proposed by analysis, pre-tagged, or left `Pending` | **Never before capture** |
+| Activity | Confirmed later, if at all | Never at capture |
+
+**The normal path:** open the app → confirm project and location if necessary → capture the
+photographs → save and share. `CAP-29` is a regression guard: a required, user-typed field with no
+automatic source on a field-path table fails the validation suite.
+
+**Classification (D-23).** `AIProposedActivityText` and `AIProposedActivityTypeID` are advisory and
+read by the confirmation screen and nothing else. `ConfirmedActivityTypeID` is the trusted
+structured activity, set only by a human, and it is what every report and rule reads. In Quick Share
+the classification stays `Pending` — a normal state that blocks nothing.
+
+**Analysis policy (D-24).** AI Reviewed Share analyses immediately; Quick Share defers and filters
+first. Near-duplicates, unusable images, and anything deleted or excluded never reach a model call,
+and the filters that find them run locally at no cost. **Skipping is about waste, never coverage:** a
+skipped photograph is retained as evidence in full and can still appear in any report.
+
 **Two operating modes, both capturing exactly once:**
 
-| | Quick Share | AI Reviewed Share |
+| | Quick Share *(the default)* | AI Reviewed Share |
 |---|---|---|
 | Sequence | capture → store → **native share immediately** | capture → AI proposal → confirm → native share |
-| AI | asynchronous, afterwards; prepares internal report metadata | synchronous, before the share |
-| Use when | the contractor group must receive the evidence immediately | a reviewed professional caption is wanted first |
+| AI | deferred and filtered, afterwards | immediate, before the share |
+| Classification | stays `Pending`, caught up later | confirmed before the share |
+| Use when | **the normal case** | a reviewed professional caption is wanted first |
 
 **Forbidden, permanently:** a duplicate-upload workaround; a publicly accessible Drive link;
 WhatsApp Web automation; group scraping; any flow that asks the supervisor to select the files again.
@@ -385,13 +418,16 @@ That sentence is the whole position and it has been carefully worded. Three earl
 | QuickBooks Online | Already in use. **No incremental cost** |
 | AppSheet | **Assumed USD 0 incremental, pending verification.** If not included, a specific costed option goes to the owner. **No purchase without written approval** |
 | Make | Free plan fits release 1 at **703 operations, 70% of the verified limit, 2 active scenarios**. Not permanently free: restoring per-photograph processing needs **≥ 3,000 operations/month and ≥ 3 active scenarios**, price unverified |
-| Claude API | **~$0.021 per analysed photograph** → **~$7.56/month** at pilot volume (360 photographs), ~$50/month at 20 projects. On Haiku 4.5 instead: ~$1.50 and ~$10. Bounded by a hard monthly cap the owner sets |
-| Drive storage | ~380 MB live per project-month; ~682 MB with one backup. A backup copy nearly doubles it, which makes backup policy the largest storage decision in the system |
+| Claude API | **~$0.021 per analysed photograph.** At pilot volume **~$6.28/month** under Quick Share (299 eligible of 360 captured) and ~$6.95 under AI Reviewed Share; ~$42/month at 20 projects. On Haiku 4.5 instead: ~$1.20 and ~$8. Duplicates, unusable, deleted and excluded images never reach a call (D-24). **Estimates, not measurements.** Bounded by a hard monthly cap the owner sets |
+| Drive storage | ~377 MB live per project-month; ~679 MB with one backup. A backup copy nearly doubles it, which makes backup policy the largest storage decision in the system |
 
-**A finding you must not soften:** the AI proposal step **does not fit the Make free tier** —
-roughly 1,440 operations a month against a 1,000 limit, and a third scenario against a ceiling of
-two. Four costed responses are in `docs/02a-plan/23-operations-budget.md` §6b. Release 1 ships Quick
-Share; the capture-once guarantee holds either way.
+**A finding you must not soften:** the AI proposal step **does not fit the Make free tier under
+either policy** — roughly **1,167** operations a month deferred and filtered, **1,353** immediate,
+against a 1,000 limit, and a third scenario against a ceiling of two. Filtering saves about 190
+operations and does not change the answer, because carrying an image through an orchestrator costs
+three operations per photograph whatever else you do. Four costed responses are in
+`docs/02a-plan/23-operations-budget.md` §6b. Release 1 ships Quick Share; **the capture-once
+guarantee and the zero-input normal path hold under all four.**
 
 ---
 
@@ -429,6 +465,7 @@ and no others; in particular, never say "working", "done", "tested" or "ready" w
 | Phase 1 — Data foundation | **Completed · Validated Locally · Submitted for Owner Review** |
 | Phase 2A — Plan and synthetic prototype design | **Completed · Submitted for Owner Review** |
 | Capture-once correction (D-16 … D-21) | **Completed · Validated Locally · Submitted for Owner Review** |
+| Correction pass (D-22 … D-24) — minimum interaction, confirmed classification, filtered analysis | **Completed · Validated Locally · Submitted for Owner Review** |
 | Every external integration | **Not started.** Nothing is Verified in Integration, Production Ready or Live |
 
 ---
@@ -439,7 +476,7 @@ and no others; in particular, never say "working", "done", "tested" or "ready" w
 |---|---|
 | Repository | `mohasker/Report.Data` |
 | **Branch — develop and push here, and nowhere else** | **`claude/alharam-field-reporting-spec-afq1fr`** |
-| **Validated commit** | **`4b19fc19fb926a0bf8a426e88150751b904426d9`** — the commit the 219-check run in §17 was executed against |
+| **Validated commit** | **`4b19fc19fb926a0bf8a426e88150751b904426d9`** — the commit the 240-check run in §17 was executed against |
 | **Package commit** | See `HANDOFF-MANIFEST.json` → `package_commit`. It adds only this handoff package to the validated commit |
 | Default branch | Do **not** push to it |
 
@@ -477,7 +514,7 @@ every check, compares the regenerated files against what is on disk, and rewrite
   Deterministic calculation                             22 passed   0 failed
   Bilingual and right-to-left readiness                 13 passed   0 failed
   Governance and safety rules                           18 passed   0 failed
-  TOTAL 219/219 checks passed
+  TOTAL 240/240 checks passed
   byte-identical regeneration : yes
 ```
 
@@ -491,14 +528,14 @@ tested and the working-tree state; running it against uncommitted changes correc
 
 | Suite | What it genuinely establishes |
 |---|---|
-| **Capture once, use twice** (28) | The description is optional in the model; project and location are trusted structured refs; every AI column is advisory and outside every content hash; no quantitative or contractual field is AI-sourced; no public link is required; `CAP-01` is present in the model and the documentation; a regression guard fires if a mandatory description reappears |
+| **Capture once, use twice** (48) | The description is optional; **zero mandatory manual inputs on the normal path**; project and location are trusted structured refs; every AI column is advisory and outside every content hash; the trusted activity is human-set and the candidate is read by nothing; no quantitative or contractual field is AI-sourced; analysis is filtered before it is paid for; no public link is required; `CAP-01` is present in the model and the documentation; two regression guards fire if a mandatory description or a mandatory supervisor input reappears |
 | **Project segregation** (12) | The access rule is correct across 6 user profiles × 7 tables, including deep links and API-shaped access |
 | **Role separation and recoverability** (31) | Time-bound grants require all four fields; break-glass restores administration without opening content; recoverability is a computable go-live blocker |
 | **Content hashing** (14) | The canonical serialisation and hashing algorithm. **This one is genuinely complete — the algorithm here is the algorithm** |
 | **Document numbering** (13) | A reference numbering service under concurrency: 200 threads produced 200 distinct numbers with no gap and no reuse |
 | **Deterministic calculation** (22) | The arithmetic, the rounding policy, and that an unconfirmed tax treatment **blocks** rather than yielding zero |
 | **Configurability** (12) | No identifier is hard-coded in any logic file, and a fourth project added as data works |
-| **Evidence rules** (14) | The effective-rule resolver and completeness evaluator against synthetic visits |
+| **Evidence rules** (15) | The effective-rule resolver and completeness evaluator against synthetic visits |
 | **Transitions** (20) | The declared matrix forbids the dangerous paths; every status is reachable |
 | **Bilingual** (13) | Bilingual structure and Unicode integrity through hashing |
 | **Governance** (18) | No secret, no non-synthetic identity, no AI field in a hash, no delete grant, no missing attribution |
@@ -582,7 +619,7 @@ specifications, schemas, generators and checks; use synthetic data; commit and p
 **Do not start by building anything.**
 
 1. **Verify the package.** Confirm the checksums in `HANDOFF-MANIFEST.json`, then run
-   `python3 tools/run_validation.py` and confirm you get **219/219 passed** and **byte-identical
+   `python3 tools/run_validation.py` and confirm you get **240/240 passed** and **byte-identical
    regeneration: yes**. Report whether your reproduction matches. If it does not, stop and say so —
    a mismatch means something in transfer, not something to fix by editing.
 2. **Read, in the order given in §23.** Roughly 90 minutes. Do not skip
@@ -605,7 +642,7 @@ specifications, schemas, generators and checks; use synthetic data; commit and p
 |---|---|---|---|
 | 1 | **This file** | Orientation | 15 |
 | 2 | `MASTER-SPEC-CONSOLIDATED.md` | The current authoritative requirements | 25 |
-| 3 | `DECISIONS-AND-ASSUMPTIONS.md` | D-01 … D-21, what was withdrawn, what is assumed, what is unknown. **Read before proposing any change** | 20 |
+| 3 | `DECISIONS-AND-ASSUMPTIONS.md` | D-01 … D-24, what was withdrawn, what is assumed, what is unknown. **Read before proposing any change** | 20 |
 | 4 | `CURRENT-STATUS-AND-NEXT-PROMPT.md` | Where work stopped and what is allowed next | 5 |
 | 5 | `docs/OWNER-REVIEW-PACK.md` | The whole design as the owner sees it, with diagrams | 35 |
 | 6 | `docs/02a-plan/24-capture-once-workflow.md` | The operating principle, generated from the model | 10 |
@@ -627,7 +664,7 @@ If you have the ZIP but not the repository:
 ```bash
 unzip AlHaram-Field-Reporting-System-Handoff.zip -d alharam
 cd alharam
-python3 tools/run_validation.py          # expect 219/219
+python3 tools/run_validation.py          # expect 240/240
 ```
 
 If you have the Git bundle and want the history:
@@ -642,7 +679,7 @@ git checkout claude/alharam-field-reporting-spec-afq1fr
 
 ## 24. Do not restart, redesign, or reconnect
 
-**Do not rebuild the model from the specification.** It exists, it is canonical, and 219 checks
+**Do not rebuild the model from the specification.** It exists, it is canonical, and 240 checks
 depend on its exact shape. Change it by editing `tools/build_model.py` and re-running
 `python3 tools/run_validation.py` — never by editing `model/model.json` or any generated document
 directly.

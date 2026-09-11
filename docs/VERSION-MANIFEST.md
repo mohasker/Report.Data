@@ -4,43 +4,43 @@
 ID, a revision, a date and an approval status. A document that has not been approved is marked as
 such and may not be treated as a decision.
 
-**Repository version:** 0.6.0 (capture once, use twice — the operational correction of 2026-09-11, plus the portable handoff package) · **Date:** 2026-09-11
+**Repository version:** 0.7.0 (minimum interaction, confirmed classification, filtered analysis — the correction pass of 2026-09-11) · **Date:** 2026-09-11
 
 | Document ID | Document | Rev | Date | Status |
 |---|---|---|---|---|
-| — | `MASTER-SPEC-CONSOLIDATED.md` | 1.0 | 2026-09-11 | **Current authoritative specification** — supersedes `MASTER_SPEC.md` |
+| — | `MASTER-SPEC-CONSOLIDATED.md` | 1.1 | 2026-09-11 | **Current authoritative specification** — supersedes `MASTER_SPEC.md` |
 | — | `MASTER_SPEC.md` | 1.1 | 2026-09-11 | Received baseline, retained for audit; §3a carries the capture-once correction |
-| — | `START-HERE-NEW-CLAUDE.md` | 1.0 | 2026-09-11 | **Portable handoff entry point** — self-contained |
-| — | `CURRENT-STATUS-AND-NEXT-PROMPT.md` | 1.0 | 2026-09-11 | Handoff status and the next prompt |
-| — | `DECISIONS-AND-ASSUMPTIONS.md` | 1.0 | 2026-09-11 | Consolidated decisions, withdrawals, assumptions, open questions, external facts |
+| — | `START-HERE-NEW-CLAUDE.md` | 1.1 | 2026-09-11 | **Portable handoff entry point** — self-contained |
+| — | `CURRENT-STATUS-AND-NEXT-PROMPT.md` | 1.1 | 2026-09-11 | Handoff status and the next prompt |
+| — | `DECISIONS-AND-ASSUMPTIONS.md` | 1.1 | 2026-09-11 | Consolidated decisions D-01…D-24, withdrawals, assumptions, open questions, external facts |
 | AH-SYS-P0-000 | `00-DISCOVERY-SUMMARY.md` | 1 | 2026-09-11 | **Approved** 2026-09-11 (D-01 … D-15) |
 | AH-SYS-P0-001 | `01-mvp-boundary.md` | 1 | 2026-09-11 | Approved — scope corrected per D-01 |
 | AH-SYS-P0-002 | `02-architecture.md` | 0 | 2026-09-10 | Approved unchanged |
 | AH-SYS-P0-003 | `03-assumptions-register.md` | 1 | 2026-09-11 | Approved — A-06/A-07 superseded, A-10 amended |
 | AH-SYS-P0-004 | `04-open-questions.md` | 2 | 2026-09-11 | All ten dispositioned; OQ-15 … OQ-19 added |
-| AH-SYS-P0-005 | `05-risk-and-controls-register.md` | 2 | 2026-09-11 | Approved — R-33 … R-39 added for capture once |
+| AH-SYS-P0-005 | `05-risk-and-controls-register.md` | 3 | 2026-09-11 | Approved — R-33 … R-43 added for capture once and the correction pass |
 | AH-SYS-P0-006 | `06-spec-conflicts-and-platform-limits.md` | 1 | 2026-09-11 | Approved — C-01, C-02, C-05, C-09, S-03, P-09 updated |
 | AH-SYS-P0-007 | `07-phase-plan.md` | 1 | 2026-09-11 | Approved — Phase 0 closed, Phase 1 authorised |
 | AH-SYS-P0-008 | `08-phase-1-artifact-manifest.md` | 1 | 2026-09-11 | Approved — incorporates the D-15 additions |
 | AH-SYS-P0-009 | `09-configuration-register.md` | 1 | 2026-09-11 | Live register |
-| AH-SYS-P0-010 | `10-owner-decisions.md` | 1 | 2026-09-11 | **Authoritative decision record** — D-01 … D-21 |
+| AH-SYS-P0-010 | `10-owner-decisions.md` | 2 | 2026-09-11 | **Authoritative decision record** — D-01 … D-24 |
 | AH-SYS-GOV-001 | `STATUS-DEFINITIONS.md` | 1 | 2026-09-11 | **Approved** — the acceptance vocabulary |
-| AH-SYS-REV-001 | `OWNER-REVIEW-PACK.md` | 3 | 2026-09-11 | **Submitted for Owner Review** — §11b carries capture once |
+| AH-SYS-REV-001 | `OWNER-REVIEW-PACK.md` | 4 | 2026-09-11 | **Submitted for Owner Review** — §11b carries capture once and minimum interaction |
 | AH-SYS-P1-019 | `19-user-and-device-profiles.md` | 1 | 2026-09-11 | Completed — awaiting real devices (EF-05) |
 | AH-SYS-P2A-000 | `02a-plan/00-PHASE-2A-PLAN.md` | 2 | 2026-09-11 | Completed · Submitted for Owner Review · gate 0 is `CAP-GATE` |
 | AH-SYS-P2A-001 | `02a-plan/01-appsheet-workbook.md` | 2 | 2026-09-11 | **Generated** from the model, lean 17-table set |
 | AH-SYS-P2A-002 | `02a-plan/02-security-filter-specification.md` | 1 | 2026-09-11 | **Generated** from the model |
-| AH-SYS-P2A-003 | `02a-plan/03-views-and-slices.md` | 2 | 2026-09-11 | Completed · Not built · share and proposal views added |
-| AH-SYS-P2A-004 | `02a-plan/04-actions-and-workflow.md` | 2 | 2026-09-11 | Completed · Not built · six capture-once actions added |
+| AH-SYS-P2A-003 | `02a-plan/03-views-and-slices.md` | 3 | 2026-09-11 | Completed · Not built · share, proposal and classification views |
+| AH-SYS-P2A-004 | `02a-plan/04-actions-and-workflow.md` | 3 | 2026-09-11 | Completed · Not built · capture-once and classification actions |
 | AH-SYS-P2A-005 | `02a-plan/05-offline-test-plan.md` | 2 | 2026-09-11 | Completed · **Not executed** · §5b offline share |
 | AH-SYS-P2A-006 | `02a-plan/06-drive-folder-provisioning.md` | 1 | 2026-09-11 | Completed · Nothing provisioned |
 | AH-SYS-P2A-007 | `02a-plan/07-make-scenario-specifications.md` | 1 | 2026-09-11 | Completed · Blueprints disabled |
 | AH-SYS-P2A-008 | `02a-plan/08-deployment-and-rollback.md` | 1 | 2026-09-11 | Completed |
-| AH-SYS-P2A-009 | `02a-plan/09-cost-and-licensing-matrix.md` | 5 | 2026-09-11 | Completed · **No new mandatory subscription identified before entitlement verification** · AI re-costed to ~$7.56/month |
+| AH-SYS-P2A-009 | `02a-plan/09-cost-and-licensing-matrix.md` | 6 | 2026-09-11 | Completed · **No new mandatory subscription identified before entitlement verification** · AI re-costed and filtered to ~$6.28/month (estimate) |
 | AH-SYS-P2A-010 | `02a-plan/10-synthetic-data-loading.md` | 1 | 2026-09-11 | Completed |
 | AH-SYS-P2A-011 | `02a-plan/11-lean-mvp-scope.md` | 2 | 2026-09-11 | Completed · Submitted for Owner Review · §7 capture once added no table |
 | AH-SYS-P2A-012 | `02a-plan/12-appsheet-entitlement-checklist.md` | 1 | 2026-09-11 | Completed · **Awaiting the owner's console check** |
-| AH-SYS-P2A-013 | `02a-plan/13-field-workflow-and-taps.md` | 3 | 2026-09-11 | Completed · Target ≤75s including the share, **not yet measured** |
+| AH-SYS-P2A-013 | `02a-plan/13-field-workflow-and-taps.md` | 4 | 2026-09-11 | Completed · Rebuilt for minimum interaction: **11–14 taps**, target ≤75s, **not yet measured** |
 | AH-SYS-P2A-014 | `02a-plan/14-storage-and-image-volume.md` | 4 | 2026-09-11 | Completed · Derivative volume re-costed for capture once |
 | AH-SYS-P2A-015 | `02a-plan/15-make-inspection-record.md` | 2 | 2026-09-11 | **Verified from the live account**; scenario counts stated separately |
 | AH-SYS-P2A-016 | `02a-plan/16-admin-console-checklist-owner.md` | 3 | 2026-09-11 | Completed · **Awaiting the owner's check** |
@@ -48,16 +48,16 @@ such and may not be treated as a decision.
 | AH-SYS-P2A-018 | `02a-plan/18-migration-threshold-strategy.md` | 1 | 2026-09-11 | Completed · Withdraws the fixed migration date |
 | AH-SYS-P2A-019 | `02a-plan/19-real-device-test-protocol.md` | 2 | 2026-09-11 | Completed · **Not executed** · §4b `CAP-GATE`, fifteen conditions |
 | AH-SYS-P2A-020 | `02a-plan/20-administrator-role-placeholders.md` | 1 | 2026-09-11 | Completed · No identity assigned |
-| AH-SYS-P2A-021 | `02a-plan/21-release-1-twelve-tables.md` | 2 | 2026-09-11 | **Generated** — 12 tables, 282 fields, 17 on the field form, **5 mandatory** |
-| AH-SYS-P2A-022 | `02a-plan/22-image-derivative-architecture.md` | 2 | 2026-09-11 | Completed · Re-costed: every captured photograph is analysed |
-| AH-SYS-P2A-023 | `02a-plan/23-operations-budget.md` | 2 | 2026-09-11 | Completed · 703 ops · §6b: the AI proposal does not fit the free tier through Make |
-| AH-SYS-P2A-024 | `02a-plan/24-capture-once-workflow.md` | 1 | 2026-09-11 | **Generated** from the model — the capture-once specification |
+| AH-SYS-P2A-021 | `02a-plan/21-release-1-twelve-tables.md` | 3 | 2026-09-11 | **Generated** — 12 tables, 290 fields, 15 on the field form, **0 mandatory** |
+| AH-SYS-P2A-022 | `02a-plan/22-image-derivative-architecture.md` | 3 | 2026-09-11 | Completed · Re-costed: only eligible photographs are analysed |
+| AH-SYS-P2A-023 | `02a-plan/23-operations-budget.md` | 3 | 2026-09-11 | Completed · 703 ops · §6b: both analysis policies priced; neither fits the free tier through Make |
+| AH-SYS-P2A-024 | `02a-plan/24-capture-once-workflow.md` | 2 | 2026-09-11 | **Generated** — capture once, minimum interaction, classification, analysis policy |
 | AH-SYS-P1-000 | `01-data-foundation/00-PHASE-1-SUMMARY.md` | 1 | 2026-09-11 | Awaiting owner review |
 | AH-SYS-P1-001 | `01-data-dictionary.md` | 1 | 2026-09-11 | **Generated** from `model/model.json` |
 | AH-SYS-P1-002 | `02-key-id-and-hash-strategy.md` | 1 | 2026-09-11 | Awaiting owner review — closes C-06 |
 | AH-SYS-P1-003 | `03-status-transition-matrix.md` | 1 | 2026-09-11 | **Generated** — awaiting owner review |
 | AH-SYS-P1-004 | `04-security-model.md` | 1 | 2026-09-11 | **Generated** — awaiting owner review |
-| AH-SYS-P1-005 | `05-evidence-rules.md` | 1 | 2026-09-11 | Complete — closes C-07, C-08 |
+| AH-SYS-P1-005 | `05-evidence-rules.md` | 2 | 2026-09-11 | Complete — closes C-07, C-08; completeness requires evidence, not an activity (D-22) |
 | AH-SYS-P1-006 | `06-naming-and-numbering.md` | 1 | 2026-09-11 | Complete — closes C-04 |
 | AH-SYS-P1-007 | `07-migration-and-versioning.md` | 1 | 2026-09-11 | Complete — migration threshold defined |
 | AH-SYS-P1-008 | `08-legal-entity-and-bilingual-model.md` | 1 | 2026-09-11 | Complete — closes C-01 |
@@ -67,9 +67,9 @@ such and may not be treated as a decision.
 | AH-SYS-P1-012 | `12-appsheet-feature-to-plan-matrix.md` | 2 | 2026-09-11 | Matrix complete; **verification attempted and blocked by network egress — outstanding** |
 | AH-SYS-P1-013 | `13-quickbooks-mapping-and-inspection.md` | 1 | 2026-09-11 | Mapping defined; **inspection outstanding** |
 | AH-SYS-P1-014 | `14-orchestration-contract-and-runbook.md` | 1 | 2026-09-11 | Contract defined; runbook completed in Phase 3 |
-| AH-SYS-P1-015 | `15-claude-prompt-and-schema-spec.md` | 2 | 2026-09-11 | Complete; no credential exists · batch analysis and the nine forbidden inferences |
+| AH-SYS-P1-015 | `15-claude-prompt-and-schema-spec.md` | 3 | 2026-09-11 | Complete; no credential exists · batch analysis, forbidden inferences, eligibility filter |
 | AH-SYS-P1-016 | `16-external-facts-register.md` | 2 | 2026-09-11 | Live register — **26** outstanding facts |
-| AH-SYS-P1-017 | `17-validation-evidence.md` | 3 | 2026-09-11 | **Generated from an executed run** — 219/219 checks passed |
+| AH-SYS-P1-017 | `17-validation-evidence.md` | 4 | 2026-09-11 | **Generated from an executed run** — 240/240 checks passed |
 | AH-SYS-CFG-000 | `config/config.reference.md` | 1 | 2026-09-11 | Live — names only, no values |
 | AH-SYS-CFG-001 | `config/rounding-policy.md` | 1 | 2026-09-11 | Complete |
 | — | `model/model.json` | 1.0.0 | 2026-09-11 | **Canonical model** — single source of truth; now carries `capture_once` |

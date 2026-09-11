@@ -1,7 +1,7 @@
 # ADR-0009 — Capture once, use twice, and share through the native share sheet
 
-**Status:** Accepted · **Date:** 2026-09-11
-**Relates to:** operating rules 9, 12, 13 · owner decisions D-16 to D-21 · R-06 · `CAP-01`, `CAP-GATE`
+**Status:** Accepted, rev 1 (amended by D-22, D-23, D-24) · **Date:** 2026-09-11
+**Relates to:** operating rules 9, 12, 13 · owner decisions D-16 to D-24 · R-06 · `CAP-01`, `CAP-GATE`
 **Amends:** ADR-0004 (advisory AI) by naming what AI proposes and what it may never touch
 
 ## Context
@@ -85,6 +85,39 @@ orchestration, Claude controls, approval rules and audit requirements are define
 the capture interface. If the interface changes, they are re-used unchanged. That is why the capture
 platform is an *interface* decision and this ADR does not reopen ADR-0001, 0002, 0003 or 0006.
 
+## Amendment, same day — D-22, D-23, D-24
+
+The first version of this decision was right about the capture and wrong about three things around
+it. All three were corrected by the owner on review, and the corrections belong inside this ADR
+rather than in a note beside it.
+
+**It still asked the supervisor for too much.** The original workflow left project, location, date,
+capture mode and evidence stage as things a supervisor supplied. Under **D-22** they are populated
+automatically — from the assignment, the device clock, the authenticated session and a default — and
+a question is asked only when a genuine choice exists. **Zero mandatory manual inputs on the normal
+path.** Declaring an activity is no longer the price of submitting evidence either: a visit carrying
+photographs and no activity is a valid photographic submission. A regression guard (`CAP-29`) fails
+the validation suite if any required, user-typed field with no automatic source reappears on a
+field-path table.
+
+**It threw out the structured classification with the untrusted one.** Holding the AI's activity
+assessment as free text was correct; leaving nothing controlled in its place was not, because a
+report cannot group by free text and a business rule cannot branch on it. **D-23** restores a
+trusted `Photos.ConfirmedActivityTypeID`, set only by a human, alongside an advisory candidate
+column that nothing reads but the confirmation screen. `ClassificationStatus` carries the state, and
+`Pending` — the normal state after a Quick Share — blocks nothing.
+
+**It assumed every photograph must be analysed immediately.** **D-24** splits the policy: immediate
+for AI Reviewed Share, because the supervisor is waiting; deferred and filtered for Quick Share,
+because nothing is. Near-duplicates, unusable images and anything deleted or excluded never reach a
+model call, and the filters that detect them run locally at no cost. Skipping is about waste, never
+about coverage — a skipped photograph is retained as evidence and a report still draws on every
+approved one.
+
+**What the amendment did not change:** the capture-once guarantee itself. `CAP-01` holds under every
+analysis policy, every orchestration option and every platform outcome. That is what made the
+correction cheap to apply — the guarantee was never entangled with when the proposal arrives.
+
 ## Revisit when
 
 - `CAP-GATE` is executed on real devices and returns a result, whichever way it goes.
@@ -92,4 +125,9 @@ platform is an *interface* decision and this ADR does not reopen ADR-0001, 0002,
   existing group from a field application, at which point option 1 could keep its guarantees with
   fewer platform assumptions.
 - Measured AI proposal acceptance is low. A supervisor who corrects most proposals is being slowed
-  down by the feature, and AI Reviewed Share would then become the exception rather than the default.
+  down by the feature, and AI Reviewed Share — already the exception rather than the default under
+  D-22 — would stop earning its place at all.
+- The measured eligibility proportions differ materially from the estimates in D-24. If far fewer
+  photographs are duplicates or unusable than assumed, filtering stops paying for its own
+  complexity; if far more are, the case for deferring analysis gets stronger and the case for ever
+  running it through an orchestrator gets weaker.

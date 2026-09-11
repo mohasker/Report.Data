@@ -21,19 +21,18 @@ ADMIN_ONLY_TABLES = {"AuditLog", "IntegrationJobs", "Approvals"}
 # correction (D-16..D-20). Anything not in MANDATORY is optional or pre-filled, and a
 # normal photographic submission can be completed without touching it.
 FIELD_FORM = {
-    "SiteVisits": ["ProjectID", "LocationID", "VisitDate", "CaptureMode",
-                   "AdditionalSiteNote", "SiteNoteCategory", "SafetyObservation",
-                   "OverallDescriptionEN", "OverallDescriptionAR"],
-    "VisitActivities": ["ActivityTypeID", "DescriptionEN", "Quantity", "PercentComplete"],
+    "SiteVisits": ["ProjectID", "LocationID", "AdditionalSiteNote", "SiteNoteCategory",
+                   "SafetyObservation", "OverallDescriptionEN", "OverallDescriptionAR"],
+    "VisitActivities": ["ConfirmedActivityTypeID", "DescriptionEN", "Quantity", "PercentComplete"],
     "Photos": ["EvidenceStage", "CaptionEN", "CaptionAR", "AIProposalDisposition"],
 }
-# What a supervisor must supply to submit a normal photographic visit. Everything else
-# on the form is optional, pre-filled, or a confirmation of an AI proposal.
-MANDATORY = {
-    "SiteVisits": ["ProjectID", "LocationID", "VisitDate", "CaptureMode"],
-    "VisitActivities": [],
-    "Photos": ["EvidenceStage"],
-}
+# What a supervisor MUST supply to submit a normal photographic visit (D-22).
+# The answer is nothing but the photographs: project and location are prefilled and
+# confirmed only when a genuine choice exists, identity and date and time come from the
+# session and the device, capture mode defaults, and evidence stage is proposed or left
+# pending. Fields that are merely *confirmed* are not counted as supplied.
+MANDATORY = {"SiteVisits": [], "VisitActivities": [], "Photos": []}
+CONFIRMED_IF_AMBIGUOUS = {"SiteVisits": ["ProjectID", "LocationID"]}
 REVIEWER_EXTRA = {
     "SiteVisits": ["RejectionReason"],
     "VisitActivities": ["TechnicalReviewerComment", "Status"],
@@ -56,10 +55,12 @@ def classify(model, tables):
         admin = total if t in ADMIN_ONLY_TABLES else 0
         field_form = len(FIELD_FORM.get(t, []))
         mandatory = len(MANDATORY.get(t, []))
+        confirm = len(CONFIRMED_IF_AMBIGUOUS.get(t, []))
         reviewer = field_form + len(REVIEWER_EXTRA.get(t, []))
         rows.append({"table": t, "total": total, "auto": auto, "typed": total - auto,
                      "sensitive": sensitive, "syncs": syncs, "admin": admin,
-                     "field_form": field_form, "mandatory": mandatory, "reviewer": reviewer})
+                     "field_form": field_form, "mandatory": mandatory,
+                     "confirm": confirm, "reviewer": reviewer})
     return rows
 
 
@@ -74,6 +75,7 @@ def main():
     admin = sum(r["admin"] for r in rows)
     field_form = sum(r["field_form"] for r in rows)
     mandatory = sum(r["mandatory"] for r in rows)
+    confirm = sum(r["confirm"] for r in rows)
     reviewer = sum(r["reviewer"] for r in rows)
 
     o, w = [], None
@@ -116,7 +118,8 @@ def main():
     w(f"| **Synchronised to a field device** | **{syncs}** | Only from the nine tables a supervisor's phone holds at all |")
     w(f"| **Administrative only** | **{admin}** | Approvals, audit log and integration log. **Absent from the field data set entirely** |")
     w(f"| **On the normal field form** | **{field_form}** | What a supervisor can touch, most of it optional |")
-    w(f"| **Mandatory to submit a normal photographic visit** | **{mandatory}** | Project, location, date, capture mode, evidence stage. **No written description among them (D-18)** |")
+    w(f"| **Mandatory to submit a normal photographic visit** | **{mandatory}** | **None (D-22).** The supervisor supplies the photographs and nothing else |")
+    w(f"| Confirmed only when ambiguous | {confirm} | Project and location, prefilled from the assignment, the default or the last used today. A question only when a genuine choice exists |")
     w(f"| **Visible to a reviewer** | **{reviewer}** | The supervisor's fields plus the review controls |")
     w("")
     w("**An honest caveat on the sync number.** A row synchronises whole: if a table is in a")
@@ -129,26 +132,27 @@ def main():
     w("")
     w("### The normal field form, in full")
     w("")
-    w("Bold is mandatory. Everything else is pre-filled, conditional, optional, or a one-tap")
-    w("confirmation of an AI proposal.")
+    w("**Nothing on this form is mandatory (D-22).** Fields marked * are confirmed only when they")
+    w("do not resolve automatically; the rest are optional, or a one-tap confirmation of an AI")
+    w("proposal.")
     w("")
     w("| Screen | Fields the supervisor can touch |")
     w("|---|---|")
     for t, fields in FIELD_FORM.items():
-        mand = MANDATORY.get(t, [])
-        w(f"| {t} | " + ", ".join(("**`%s`**" % f) if f in mand else ("`%s`" % f)
+        conf = CONFIRMED_IF_AMBIGUOUS.get(t, [])
+        w(f"| {t} | " + ", ".join(("**`%s`** \\*" % f) if f in conf else ("`%s`" % f)
                                   for f in fields) + " |")
     w("")
     w(f"**{field_form} fields across three screens, of which {mandatory} are mandatory.** The")
-    w("project defaults from the supervisor's assignment, the date defaults from the device, the")
-    w("Arabic description is an alternative to the English one rather than an addition, the")
-    w("quantity appears only when the activity rule requires it, percent complete is optional, and")
-    w("**the work description is optional in every normal case (D-18)** — the photographs are the")
-    w("submission.")
+    w("project comes from the supervisor's assignment, the date and time from the device, the")
+    w("identity from the session, the capture mode from a default; the Arabic description is an")
+    w("alternative to the English one rather than an addition; the quantity appears only when an")
+    w("activity rule requires it; percent complete is optional; the evidence stage is proposed or")
+    w("left pending; and **the work description is optional in every normal case (D-18)**.")
     w("")
-    w(f"So of **{total}** fields in storage, a supervisor meets **{field_form}** — about")
-    w(f"**{field_form / total * 100:.0f}%** — and must supply only **{mandatory}**")
-    w(f"(**{mandatory / total * 100:.0f}%**) on a normal visit.")
+    w(f"So of **{total}** fields in storage, a supervisor may touch **{field_form}** and **must**")
+    w(f"supply **{mandatory}**. The normal path is: open the app, confirm project and location if")
+    w("necessary, capture the photographs, save and share.")
     w("")
     w("### Capture once, use twice")
     w("")
@@ -171,12 +175,12 @@ def main():
     w("")
     w("## 4. Per-table exposure")
     w("")
-    w("| Table | Fields | Syncs to device | Field form | Of which mandatory | Reviewer view | Admin only |")
-    w("|---|---|---|---|---|---|---|")
+    w("| Table | Fields | Syncs to device | Field form | Mandatory | Confirmed if ambiguous | Reviewer view | Admin only |")
+    w("|---|---|---|---|---|---|---|---|")
     for r in rows:
         w(f"| `{r['table']}` | {r['total']} | {'Yes' if r['syncs'] else 'No'} | "
-          f"{r['field_form'] or '—'} | {r['mandatory'] or '—'} | {r['reviewer'] or '—'} | "
-          f"{'**Yes**' if r['admin'] else 'No'} |")
+          f"{r['field_form'] or '—'} | {r['mandatory'] or '—'} | {r['confirm'] or '—'} | "
+          f"{r['reviewer'] or '—'} | {'**Yes**' if r['admin'] else 'No'} |")
     w("")
     w("## 5. What release 1 deliberately cannot do")
     w("")

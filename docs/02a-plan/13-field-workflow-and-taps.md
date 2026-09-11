@@ -1,8 +1,10 @@
 # Field Workflow, Tap Count and Multi-Photograph Capture
 
-**Document ID:** AH-SYS-P2A-013 · **Revision:** 3 · **Date:** 2026-09-11
+**Document ID:** AH-SYS-P2A-013 · **Revision:** 4 · **Date:** 2026-09-11
 **Status:** Completed · Submitted for Owner Review · **Target not yet measured**
-**Revision 3** applies the capture-once correction (D-16 to D-21). The workflow specification is
+**Revision 3** applies the capture-once correction (D-16 to D-21). **Revision 4** applies minimum
+interaction (D-22): the tap count below is rebuilt, because the earlier flow still asked the
+supervisor for things the system can resolve itself. The workflow specification is
 [`24-capture-once-workflow.md`](24-capture-once-workflow.md); this document is the tap arithmetic
 that follows from it.
 **Measurement protocol:** [`19-real-device-test-protocol.md`](19-real-device-test-protocol.md)
@@ -39,40 +41,45 @@ week.
 
 ## 2. The flow, tap by tap
 
+**Rebuilt for D-22.** The earlier revision counted taps for choosing an activity, tagging a stage and
+picking a capture mode. None of those is asked on the normal path any more.
+
 | Step | Screen | Taps | Why it is that number |
 |---|---|---|---|
 | 1 | Open app → **New Visit** | **1** | The home screen is one large button plus three status tiles |
-| 2 | Project | **0** | Pre-filled: the only assigned project, or the last one used today. A tap only if they are multi-project and switching |
-| 3 | Location | **2** | Open the dropdown, tap the location. Sorted by `DisplayOrder`, and the last location used today is first |
-| 4 | Date and supervisor | **0** | Today's date, signed-in identity. Editable only if wrong |
-| 5 | Activity | **2** | Open, tap. The list is already filtered to what this project permits |
-| 6 | Quantity | **0–2** | Shown **only** when the effective rule requires it; numeric keypad, no unit tap (the unit comes from the rule) |
-| 7 | **Camera** | **1** | One tap opens the camera and keeps it open |
-| 8 | Capture 6 photographs | **6** | One shutter tap each. The camera does not close between shots — see §3 |
-| 9 | Done with photographs | **1** | Returns to the visit |
-| 10 | Stage tagging | **0–2** | **AI Reviewed Share:** the proposed stage and caption are already in place; a tap only to correct one. **Quick Share:** pre-tagged from the activity's default stages (Before / During / After in order) |
-| 11 | Description | **0** | **Optional (D-18).** A normal photographic submission needs none. `0–1` only if the supervisor chooses to add a site note |
-| 12 | **Submit** | **1** | |
-| 13 | Confirm | **1** | A deliberate second tap, because submission locks the record |
-| 14 | **Share to the contractor group** | **1–2** | One action opens the native share sheet with **the same stored files already attached**. The supervisor picks the group. **No re-selection of images (CAP-01)** |
-| | **Total** | **16–21 taps**, of which **6 are shutter presses** | |
+| 2 | Project | **0** | Prefilled from the single active assignment, the last project used today, or the project default. **Always visible, never asked for** unless several assignments are active and none resolves |
+| 3 | Location | **0–2** | Prefilled from the project default or the last location used today. Two taps only when several active locations exist and none resolves |
+| 4 | Date, time, supervisor | **0** | The device clock and the signed-in identity. Never typed, never confirmed |
+| 5 | Capture mode | **0** | Defaults to Quick Share. AI Reviewed Share is a deliberate, separate action |
+| 6 | **Camera** | **1** | One tap opens the camera and keeps it open |
+| 7 | Capture 6 photographs | **6** | One shutter tap each. The camera does not close between shots — see §3 |
+| 8 | Done with photographs | **1** | Returns to the visit |
+| 9 | Evidence stage | **0** | Not asked before capture. Proposed by analysis, pre-tagged from the activity rule, or left `Pending` |
+| 10 | Activity | **0** | Not declared at capture. A visit with photographs and no activity is a valid submission (D-22) |
+| 11 | Description | **0** | Optional (D-18) |
+| 12 | **Save and share** | **1** | One action: stores the visit and opens the native share sheet with the stored files already attached |
+| 13 | Choose the group in the share sheet | **1–2** | The operating system's own UI. **No re-selection of images (CAP-01)** |
+| | **Total** | **11–14 taps**, of which **6 are shutter presses** | |
 
-**Ten to fifteen interface taps plus six shutter presses.** At roughly three seconds per interface
-tap, the interface portion is **30–45 seconds**. Adding the shutter presses themselves — but *not*
-the physical time to walk to the subject, position the phone and wait for focus — gives the **75-second
-target**, and the target now includes the group share, which today is a separate act of re-selecting
-and re-sending the same photographs in a messaging application. Positioning time varies with the
-site, not the software, which is why it sits outside the measured figure.
+**Five to eight interface taps plus six shutter presses.** At roughly three seconds per interface
+tap, the interface portion is **15–24 seconds**, against 30–45 in revision 3. The saving is entirely
+questions that are no longer asked.
+
+**What the supervisor supplies: the photographs.** Everything else on the record is populated
+automatically, and the only thing they may be asked is which location — and only when the project
+has several and none resolves.
 
 ### Quick Share and AI Reviewed Share
 
 | | Quick Share | AI Reviewed Share |
 |---|---|---|
 | Sequence | capture → store → native share | capture → store → AI proposal → confirm → native share |
-| Steps 10 and 11 | after the share, asynchronously | before the share |
+| Default | **Yes** | No — chosen by an explicit action |
+| Classification | stays `Pending`, reviewed later | confirmed before the share |
+| Analysis | deferred and filtered, after the share | immediate, on the batch's eligible photographs |
 | Extra wait for the supervisor | **none** | the analysis round trip |
-| Taps | **12–15** | **16–21** |
-| Use when | the group must receive the evidence immediately | a reviewed professional caption is wanted first |
+| Taps | **11–14** | **15–20** |
+| Use when | **the normal case** | a reviewed professional caption is wanted first |
 
 **Both capture the photographs exactly once.** The difference is only whether the AI proposal is
 waited for. Neither re-opens the camera and neither re-selects a file.
@@ -81,13 +88,14 @@ waited for. Neither re-opens the camera and neither re-selects a file.
 
 | Decision | Taps saved |
 |---|---|
-| Project pre-filled from the assignment or last use | 2 |
-| Date and identity never typed | 4+ |
-| Location sorted by display order, recent first | 1–2 |
-| Activity list pre-filtered to the project's permitted set | 2–4 |
-| Quantity field hidden unless the rule requires it | 2 |
+| Project prefilled and not asked for (D-22) | 2 |
+| Date, time and identity never typed (D-22) | 4+ |
+| Location prefilled from the default or last use (D-22) | 1–2 |
+| **Capture mode defaults, never chosen (D-22)** | **1–2** |
+| **Evidence stage not asked before capture (D-22)** | **4–6** |
+| **No activity declared at capture (D-22)** | **2–4** |
+| Quantity field hidden unless an activity rule requires it | 2 |
 | Unit derived from the rule, never chosen | 2 |
-| Evidence stage pre-tagged in capture order, or proposed by analysis | 4–6 |
 | Camera stays open between shots | 5 per visit at six photographs |
 | **Description never required (D-18)** | 1–3 |
 | **The share re-uses the stored files (CAP-01)** | **6–8** — the whole of today's second selection |
@@ -97,8 +105,10 @@ sending photographs to a messaging group, and that is how a field system dies (R
 
 ### What the supervisor never does
 
-Type a date · type their own name · choose a unit · type a project or location name · tap through a
-menu tree · wait for a round trip between photographs · fill a field the rule does not require ·
+Type a date · type or confirm a time · type their own name · choose a capture mode · choose an
+evidence stage before taking the photograph · declare an activity in order to submit evidence ·
+choose a unit · type a project or location name · tap through a menu tree · wait for a round trip
+between photographs · fill a field the rule does not require ·
 **write a description of work the photographs already show** · **select, attach or upload the same
 photographs a second time to send them to the contractor group (CAP-01)**.
 
@@ -208,6 +218,9 @@ without a reason is just an obstacle to the supervisor.
 | Measurement | Where | Pass |
 |---|---|---|
 | Median time to submit, excluding photograph positioning | Phase 2B | **≤ 75 seconds** |
+| **Times the supervisor is asked to choose a project** | Phase 2B | Rare. A routine prompt means the prefill rule is wrong (D-22) |
+| **Times the supervisor is asked to choose a location** | Phase 2B | Recorded. The D-22 claim is that it is the exception |
+| **Visits later corrected for the wrong project or location** | Phase 2B | Recorded. This is the direct cost of asking nothing (R-40) |
 | 90th percentile time | Phase 2B | ≤ 110 seconds |
 | Time to submit offline | Phase 2B | No worse than online |
 | Taps actually used, counted by observation | Phase 2B | Within the 9–13 range |

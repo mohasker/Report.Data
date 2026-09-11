@@ -14,6 +14,7 @@
     "VisitActivityID",
     "LocationID",
     "EvidenceStage",
+    "ConfirmedActivityTypeID",
     "CaptionEN",
     "CaptionAR",
     "ApprovedForReport",
@@ -39,9 +40,9 @@
     "VisitActivityID": {
       "type": "string",
       "x-references": "VisitActivities.VisitActivityID",
-      "x-source": "user",
+      "x-source": "system",
       "x-in-content-hash": true,
-      "description": "References VisitActivities.VisitActivityID"
+      "description": "Optional. A photograph belongs to a visit; it is attached to an activity only once one has been confirmed. A photographic submission with no activity at all is valid (D-22). References VisitActivities.VisitActivityID"
     },
     "ProjectID": {
       "type": "string",
@@ -127,7 +128,8 @@
       ],
       "x-enum": "EvidenceStage",
       "x-source": "user",
-      "x-in-content-hash": true
+      "x-in-content-hash": true,
+      "description": "A supervisor may set it, and often will not. An unclassified photograph is valid evidence and blocks no submission; ClassificationStatus carries how far it has got. Validation: Optional at capture (D-22). Never a mandatory manual field before the photograph is taken"
     },
     "CaptionEN": {
       "type": "string",
@@ -189,6 +191,32 @@
       "x-enum": "AIAnalysisStatus",
       "x-source": "system"
     },
+    "AnalysisEligibility": {
+      "type": "string",
+      "enum": [
+        "Eligible",
+        "Analysed",
+        "SkippedDuplicate",
+        "SkippedQuality",
+        "SkippedExcluded",
+        "SkippedDisabled"
+      ],
+      "x-enum": "AnalysisEligibility",
+      "x-source": "system",
+      "description": "Decided BEFORE any call is made (D-24). A duplicate, an unusable image, a deleted or excluded one, and an already-analysed one all cost nothing."
+    },
+    "PerceptualHash": {
+      "type": "string",
+      "x-source": "system",
+      "description": "Computed at registration for near-duplicate detection. A flag only: a suspected duplicate is never deleted or merged (S-09)."
+    },
+    "QualityScore": {
+      "type": "string",
+      "x-decimal-scale": 2,
+      "x-storage": "decimal string; never a float (spec 11)",
+      "x-source": "system",
+      "description": "Local blur/exposure measure computed without a model call. Below the project threshold the photograph is retained as evidence and skipped for analysis. Validation: 0.00-1.00"
+    },
     "AIObservation": {
       "type": [
         "object",
@@ -218,7 +246,43 @@
     "AIProposedActivityText": {
       "type": "string",
       "x-source": "ai",
-      "description": "Free text describing the visible activity. Deliberately NOT a reference to ActivityTypes: a contractual activity is a trusted structured field and may not originate from an image (D-20)."
+      "description": "Free text describing the visible activity. Untrusted. Never becomes the structured activity by itself (D-20, D-23)."
+    },
+    "AIProposedActivityTypeID": {
+      "type": "string",
+      "x-references": "ActivityTypes.ActivityTypeID",
+      "x-source": "ai",
+      "description": "A CANDIDATE code the analysis suggests, held in a typed column so it can be shown beside the catalogue entry it points at. It is not the activity: nothing reads it except the confirmation screen, and confirming copies the value into ConfirmedActivityTypeID by an explicit human action (D-23). Validation: Advisory candidate only. No report, rule, calculation, filter or join may read this column References ActivityTypes.ActivityTypeID"
+    },
+    "ConfirmedActivityTypeID": {
+      "type": "string",
+      "x-references": "ActivityTypes.ActivityTypeID",
+      "x-source": "user",
+      "x-in-content-hash": true,
+      "description": "**The trusted structured activity.** Set only by a supervisor or reviewer, and only when ClassificationStatus becomes Confirmed. Reports and business rules read this column and no other (D-23). Validation: Must be permitted for the project by the effective activity rule References ActivityTypes.ActivityTypeID"
+    },
+    "ClassificationStatus": {
+      "type": "string",
+      "enum": [
+        "Pending",
+        "AIProposed",
+        "Confirmed",
+        "NotApplicable",
+        "Excluded"
+      ],
+      "x-enum": "ClassificationStatus",
+      "x-source": "system",
+      "description": "Pending is normal after a Quick Share and blocks nothing. Only Confirmed makes the activity trusted (D-23)."
+    },
+    "ConfirmedByUserID": {
+      "type": "string",
+      "x-references": "Users.UserID",
+      "x-source": "system",
+      "description": "Who confirmed the classification. Attribution is the point. References Users.UserID"
+    },
+    "ConfirmedAt": {
+      "type": "string",
+      "x-source": "system"
     },
     "AIProposedCaptionEN": {
       "type": "string",
@@ -384,9 +448,10 @@
     "CapturedBy",
     "OriginalFileKey",
     "IsOriginalDeviceImageVerified",
-    "EvidenceStage",
     "IsDuplicateSuspected",
     "AIAnalysisStatus",
+    "AnalysisEligibility",
+    "ClassificationStatus",
     "AIProposalDisposition",
     "ReviewerDecision",
     "ApprovedForReport",

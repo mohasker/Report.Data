@@ -1,14 +1,14 @@
 # Al-Haram Integrated Field Reporting, Technical Reports and Invoicing System
 ## Consolidated Master Specification — the current authority
 
-**Document ID:** AH-SYS-SPEC-C01 · **Version:** 1.0 · **Date:** 2026-09-11
+**Document ID:** AH-SYS-SPEC-C01 · **Version:** 1.1 · **Date:** 2026-09-11
 **Prepared for:** Al-Haram for Maintenance & Agriculture — Doha, State of Qatar
 **System owner:** General Manager
 
 > ### This document supersedes every earlier specification version.
 >
 > It incorporates the original requirements baseline of 2026-09-10 **as amended by owner decisions
-> D-01 to D-21**. Where it disagrees with `MASTER_SPEC.md`, with any earlier prompt, or with any
+> D-01 to D-24**. Where it disagrees with `MASTER_SPEC.md`, with any earlier prompt, or with any
 > document dated before 2026-09-11, **this document governs**.
 >
 > `MASTER_SPEC.md` is retained unaltered in substance as the **received baseline**, so that the
@@ -28,7 +28,7 @@ appeared in this project's documents and is now **wrong**, together with what re
 | # | Withdrawn or superseded statement | Status | What is true instead |
 |---|---|---|---|
 | **W-01** | "Annual cost of USD 2,600–5,000" | **WITHDRAWN — invented figure** | No new mandatory subscription has been identified before entitlement verification. Variable automation, AI and storage costs may arise when those capabilities are enabled |
-| **W-02** | "Expected pilot cost is USD 0" | **WITHDRAWN — an overstatement** | It asserted a verified entitlement that has not been verified. AppSheet is *assumed* USD 0 incremental, pending a 15-minute Admin Console check. AI analysis is a real variable cost of roughly $7.56 a month at pilot volume |
+| **W-02** | "Expected pilot cost is USD 0" | **WITHDRAWN — an overstatement** | It asserted a verified entitlement that has not been verified. AppSheet is *assumed* USD 0 incremental, pending a 15-minute Admin Console check. AI analysis is a real variable cost, estimated at roughly $6.28 a month at pilot volume |
 | **W-03** | "Migration to a database at year 1.4" | **WITHDRAWN — false precision** | Migration is triggered by measured thresholds — row counts, sync times, concurrent writers — not by a date |
 | **W-04** | "Image bytes must never pass through Make" | **SUPERSEDED — it was wrong as stated** | Three image classes: **original evidence** never passes through, **the AI review derivative** does at pilot volume, **the report derivative** does at document-generation time only. Visual analysis requires the model to see an image |
 | **W-05** | A written work description is required on a visit | **SUPERSEDED by D-18** | **A written description of completed work must not be mandatory for a normal photographic submission.** An optional site note carries facts a photograph cannot |
@@ -40,7 +40,9 @@ appeared in this project's documents and is now **wrong**, together with what re
 | **W-11** | Any statement that local validation demonstrates that AppSheet, Drive, Make, the Claude API, QuickBooks, mobile offline sync or document rendering works | **FORBIDDEN** | Local checks prove a **rule**, not a **system**. §14 states the boundary |
 | **W-12** | "Active scenarios: 2" read as a count of running scenarios | **CLARIFIED** | The Make account has **7 scenarios, 0 active**; **2** is the plan's *ceiling* on active scenarios, not a count |
 | **W-13** | "WhatsApp is not in scope" without qualification | **CLARIFIED by D-16** | WhatsApp is **not** an input channel and never will be. It **is** an output channel, by native share only, chosen by a human, with no automation, no scraping and no public link |
-| **W-14** | AI analysis runs only on reviewer-approved photographs | **SUPERSEDED by D-17** | Analysis runs on **every captured photograph**, because a proposal arriving after the review decision proposes nothing to anybody. This raises the cost, and the cost is stated rather than absorbed |
+| **W-14** | AI analysis runs only on reviewer-approved photographs | **SUPERSEDED twice** | D-17 corrected it to every captured photograph; **D-24 corrected that in turn** to every *eligible* photograph. Duplicates, unusable images and anything deleted or excluded never reach a model call. Skipping is about waste, never coverage |
+| **W-15** | "The supervisor must supply five fields" — project, location, date, capture mode, evidence stage | **WITHDRAWN by D-22** | **Zero fields are mandatory manual inputs on the normal path.** Identity, date and time are automatic; project, location and capture mode are prefilled; the evidence stage is proposed or left pending; declaring an activity is not the price of submitting evidence |
+| **W-16** | The AI activity assessment is untrusted free text, and nothing controlled replaces it | **SUPERSEDED by D-23** | Holding the assessment as untrusted text was right; leaving no structured classification was not. `ConfirmedActivityTypeID` is the trusted activity, set only by a human; the candidate is read by the confirmation screen and nothing else |
 
 ---
 
@@ -135,7 +137,7 @@ An integrated system in which an authorised field user can:
 
 ## 4. Capture once, use twice — the operating principle
 
-*Owner decisions D-16 to D-21. Canonical form: `model/model.json` → `capture_once`. Rendered:
+*Owner decisions D-16 to D-24. Canonical form: `model/model.json` → `capture_once`. Rendered:
 `docs/02a-plan/24-capture-once-workflow.md`. Tested: `tools/test_capture_once.py`, 28 checks.*
 
 ### 4.1 The rule
@@ -169,6 +171,74 @@ correction, and every report that re-uses the evidence.
 | AI | Runs **afterwards**, asynchronously; prepares the internal report metadata | Runs **before** the share |
 | Use when | The contractor group must receive the site evidence immediately | A reviewed professional caption is wanted before group submission |
 | Captures | **once** | **once** |
+
+### 4.3a Minimum interaction — the supervisor supplies the photographs (D-22)
+
+**On the normal path the supervisor is asked for nothing but the photographs.** Zero fields are
+mandatory manual inputs.
+
+| Value | Populated from | When the supervisor is asked |
+|---|---|---|
+| User identity | The authenticated session | **Never** |
+| Date and time | The device clock, at first and last capture | **Never** |
+| Project | The single active assignment, else the last used today, else the project default | Only when several assignments are active and none resolves |
+| Location | The project default, else the last used today | Only when several active locations exist and none resolves |
+| Capture mode | **Defaults to Quick Share** | Never on the normal path |
+| Evidence stage | Proposed by analysis, pre-tagged from the activity rule, or left `Pending` | **Never before capture** |
+| Additional site note | — | Optional, always |
+| Work description | — | **Not required** (§4.4) |
+
+**The intended normal path:** open the app → confirm project and location **if necessary** → capture
+the photographs → save and share.
+
+**Declaring an activity is not the price of submitting evidence.** A visit carrying photographs and
+no activity is a valid photographic submission; the completeness rule requires *evidence*, not an
+activity. An activity that does exist still satisfies its effective rule in full.
+
+**Prefilled is not hidden.** Project and location are always visible on the capture screen and
+changeable in one tap, because the cost of asking nothing is that a silent default can be silently
+wrong (R-40).
+
+### 4.3b A confirmed structured activity (D-23)
+
+Reports and business rules need a controlled, human-confirmed activity classification. The
+proposal and the confirmation are different columns:
+
+| Column | Standing |
+|---|---|
+| `Photos.AIProposedActivityText` | **Advisory.** Free text. Untrusted |
+| `Photos.AIProposedActivityTypeID` | **Advisory candidate.** A suggested catalogue code. Read by the confirmation screen and by nothing else — no report, rule, calculation, filter, join or approval |
+| `Photos.ConfirmedActivityTypeID` | **Trusted.** Set only by a supervisor or reviewer. What every report and rule reads, and what the content hash binds |
+| `Photos.AIProposalDisposition` | What the supervisor did with the proposal |
+| `Photos.ClassificationStatus` | `Pending` · `AIProposed` · `Confirmed` · `NotApplicable` · `Excluded` |
+
+**For Quick Share, classification may remain `Pending` and be reviewed later.** Pending is a normal
+state and blocks nothing. **AI-generated free text must never directly become the trusted structured
+activity.**
+
+### 4.3c When analysis runs, and when it does not (D-24)
+
+**Do not assume every captured photograph requires a separate immediate AI call.**
+
+| | **AI Reviewed Share** | **Quick Share** *(default)* |
+|---|---|---|
+| Timing | Immediate, before the share | **Deferred**, after the share |
+| Filtering | Local duplicate and quality checks first | Duplicates, unusable images, deletions **and exclusions** first |
+| Why | The supervisor is waiting | Nothing is waiting, so the cheapest correct moment is after the waste is removed |
+
+**Never analysed:** a near-duplicate of one already analysed in the batch; an image below the
+project's quality threshold; an image deleted or explicitly excluded before analysis ran; an image
+already analysed; anything in a project where analysis is off or the monthly cap is reached.
+
+**Still analysed:** every photograph a reviewer may approve for a report. **Skipping is about waste,
+never about coverage.**
+
+**The filters cost nothing** — a perceptual hash and a blur measure, both local.
+
+**Recalculated, as estimates until the pilot measures them:** eligibility ~83% (Quick Share) and
+~92% (AI Reviewed Share); Claude ~$6.28 and ~$6.95 a month; Make ~1,167 and ~1,353 operations a
+month, so **neither policy fits the free orchestration tier** — three operations per photograph is
+irreducible once bytes pass through an orchestrator.
 
 ### 4.4 The field description
 
@@ -278,7 +348,7 @@ calculation before any accounting posting; and **capture once, use twice with a 
 
 ## 6. Data model
 
-**46 tables, 849 columns, 30 enums, 82 declared transitions, 36 explicitly forbidden, 10 roles × 46
+**46 tables, 857 columns, 32 enums, 82 declared transitions, 36 explicitly forbidden, 10 roles × 46
 tables = 460 access grants with 20 documented exceptions.**
 
 ### Build order
@@ -293,10 +363,10 @@ tables = 460 access grants with 20 documented exceptions.**
 **Release 1:** `Users`, `Projects`, `ProjectAssignments`, `Locations`, `ActivityTypes`, `SiteVisits`,
 `VisitActivities`, `Photos`, `Snags`, `Approvals`, `AuditLog`, `IntegrationJobs`.
 
-**Field exposure:** 282 fields in storage · 151 generated and never typed · 228 synchronised to a
-device · 54 administrative and absent from the field data set · **17 on the normal field form, of
-which 5 are mandatory** — project, location, date, capture mode, evidence stage. **None of the five
-is a description.**
+**Field exposure:** 290 fields in storage · 162 generated and never typed · 236 synchronised to a
+device · 54 administrative and absent from the field data set · **15 on the normal field form, of
+which 0 are mandatory (D-22)**. Project and location are confirmed only when they do not resolve
+automatically; everything else is populated, optional, or a one-tap confirmation.
 
 ### Evidence stage vocabulary
 
@@ -347,8 +417,16 @@ minimisation: the derivative, the activity name, the recorded stage, the caption
 sent; the client name, project name, location name and GPS coordinates are withheld. Prompt-injection
 attempts found in an image, caption or filename are ignored and reported.
 
-**Cost:** ~$0.021 per analysed photograph on the default model at a 1024 px derivative; **~$7.56 a
-month at pilot volume**; bounded by a hard monthly cap the owner sets.
+**Cost:** ~$0.021 per analysed photograph on the default model at a 1024 px derivative;
+**~$6.28 a month at pilot volume** under Quick Share and ~$6.95 under AI Reviewed Share — an
+estimate, not a measurement; bounded by a hard monthly cap the owner sets.
+
+**Analysis is filtered before it is paid for (D-24).** Near-duplicates, images below the quality
+threshold, anything deleted or explicitly excluded, and anything already analysed never reach a
+model call. The filters — a perceptual hash and a blur measure — run locally at no cost. Estimated
+eligibility is ~83% under Quick Share and ~92% under AI Reviewed Share. **Skipping is about waste,
+never about coverage:** a skipped photograph is kept as evidence in full and remains approvable for
+any report.
 
 ---
 
@@ -411,7 +489,7 @@ Seventeen acceptance criteria, each mapped to the checks that bear on it in
 `docs/01-data-foundation/17-validation-evidence.md`. Three are proven in logic, ten are partial, and
 four are untested because the capability does not exist yet.
 
-**219 automated checks across 13 suites, all passing, against synthetic data, locally. Byte-identical
+**240 automated checks across 13 suites, all passing, against synthetic data, locally. Byte-identical
 regeneration confirmed.**
 
 ### What that does NOT prove
@@ -443,8 +521,8 @@ platform can perform the native multi-file share at all**.
 Workspace and QuickBooks are already paid. AppSheet is **assumed** USD 0 incremental pending the
 Admin Console check; if it is not included, a specific costed option goes to the owner and **no
 purchase is made without written approval**. Make is free for release 1 and not permanently free. AI
-analysis is ~$7.56 a month at pilot volume. Storage is ~380 MB live per project-month, ~682 MB with
-one backup.
+analysis is estimated at ~$6.28 a month at pilot volume. Storage is ~377 MB live per project-month,
+~679 MB with one backup.
 
 **W-01, W-02 and W-03 in §0 are withdrawn and must not reappear.**
 

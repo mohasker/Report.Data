@@ -35,16 +35,16 @@
     "ProjectID": {
       "type": "string",
       "x-references": "Projects.ProjectID",
-      "x-source": "user",
+      "x-source": "system",
       "x-in-content-hash": true,
-      "description": "References Projects.ProjectID"
+      "description": "Required in storage, never a routine question (D-22). Trusted system data; never inferred from a photograph (D-19). References Projects.ProjectID"
     },
     "LocationID": {
       "type": "string",
       "x-references": "Locations.LocationID",
-      "x-source": "user",
+      "x-source": "system",
       "x-in-content-hash": true,
-      "description": "Validation: Location must belong to ProjectID References Locations.LocationID"
+      "description": "Required in storage, confirmed rather than typed (D-22). Validation: Location must belong to ProjectID References Locations.LocationID"
     },
     "WorkOrderID": {
       "type": "string",
@@ -55,18 +55,18 @@
     },
     "VisitDate": {
       "type": "string",
-      "x-source": "user",
+      "x-source": "device",
       "x-in-content-hash": true,
-      "description": "Defaults to the device date; correctable by an authorised user (spec 7.3)."
+      "description": "Never typed on the normal path. Correctable by an authorised user (spec 7.3)."
     },
     "StartTime": {
       "type": "string",
-      "x-source": "user",
+      "x-source": "device",
       "x-in-content-hash": true
     },
     "EndTime": {
       "type": "string",
-      "x-source": "user",
+      "x-source": "device",
       "x-in-content-hash": true,
       "description": "Validation: Must be after StartTime"
     },
@@ -80,7 +80,7 @@
       "x-references": "Users.UserID",
       "x-source": "system",
       "x-in-content-hash": true,
-      "description": "Defaults from USEREMAIL(); must hold an active assignment to ProjectID. References Users.UserID"
+      "description": "Resolved from the authenticated identity; must hold an active assignment to ProjectID. References Users.UserID"
     },
     "GPSLatitude": {
       "type": "string",
@@ -138,8 +138,8 @@
         "AIReviewedShare"
       ],
       "x-enum": "CaptureMode",
-      "x-source": "user",
-      "description": "Quick Share or AI Reviewed Share (D-16). Both capture the images exactly once."
+      "x-source": "system",
+      "description": "Quick Share is the default so the contractor group is served first and nothing is waited for (D-22). Both modes capture the images exactly once (D-16)."
     },
     "ShareStatus": {
       "type": "string",

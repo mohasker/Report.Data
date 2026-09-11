@@ -84,6 +84,15 @@ Scoring: **Likelihood** L/M/H · **Impact** L/M/H · **Rating** = combined expos
 | **R-38** | A later change quietly makes a **quantitative or contractual field AI-sourced** — a percentage, a quantity, an activity reference — and a model's guess becomes a billable fact. | L | **H** | **High** | Sixteen columns are closed to AI in the canonical model and tested by `CAP-13` and `CAP-14`; the AI's view of the activity is free text and deliberately not a reference to `ActivityTypes`. The validation suite fails if any of them is changed. | Architect |
 | **R-39** | The share status is read as **proof of delivery**. It is not: the application cannot see inside the messaging application. | M | M | Med | `ShareStatus` values are named for what they actually assert (`ShareInitiated`, `ShareConfirmed` — a human claim). The honest limit is stated in the model, in the workflow specification and in the owner review pack, in those words. | Architect |
 
+### The correction pass *(added with D-22 to D-24, 2026-09-11)*
+
+| ID | Risk | L | I | Rating | Control | Owner |
+|---|---|---|---|---|---|---|
+| **R-40** | **Automatic prefill picks the wrong project or location, and a supervisor who is never asked never notices.** The cost of asking nothing is that a silent default can be silently wrong | **H** | M | **High** | The project and location are always **visible** on the capture screen even when not asked for, and one tap changes either. GPS is recorded and a location whose coordinates disagree with the visit is flagged for the reviewer. Measured in Phase 2B: how often a submitted visit is later corrected for project or location. **This is the direct cost of D-22 and it is accepted, not eliminated** | GM |
+| **R-41** | **Classification never catches up.** Quick Share leaves `ClassificationStatus` at `Pending`; if nobody reviews, the evidence is captured but unusable for grouped reporting | **H** | M | **High** | Pending counts appear in the weekly monitoring digest and in the reviewer's queue; a report that would draw on unclassified evidence says so rather than omitting it silently. Measured in Phase 2B: the age distribution of pending classifications | GM |
+| **R-42** | **The quality or duplicate filter discards something that mattered** — two genuinely different photographs judged near-identical, or a dark but meaningful image skipped | M | M | Med | A skipped photograph is **retained as evidence in full** and remains approvable for a report; only the analysis is skipped. `AnalysisEligibility` records which filter fired, so a wrong skip is visible and reversible. Thresholds are project configuration, not code | Administrator |
+| **R-43** | **The eligibility estimates are wrong**, in either direction, and the cost and operations figures move with them | **H** | L | Med | Every proportion is labelled an estimate in the model, the workflow specification and the cost matrix. The pilot's first month replaces all of them with counts. Nothing is committed that depends on them being right | Architect |
+
 ---
 
 ## Controls that appear repeatedly (the load-bearing ones)
@@ -95,3 +104,4 @@ Scoring: **Likelihood** L/M/H · **Impact** L/M/H · **Rating** = combined expos
 5. **Deterministic calculation with a stored trace.** The difference between accounting and guessing.
 6. **Test evidence recorded at every gate.** The difference between "it works" and *knowing* it works.
 7. **One capture, re-used everywhere.** The difference between a system that absorbs the existing habit and one that competes with it — and the reason R-06 is now attacked rather than mitigated.
+8. **A proposal and a confirmation are different columns.** The difference between assistance and a record that quietly became a model's opinion.

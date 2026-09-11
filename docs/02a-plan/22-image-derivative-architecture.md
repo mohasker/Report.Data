@@ -1,12 +1,12 @@
 # Image Derivative Architecture — Three Classes and How AI Analysis Gets Its Copy
 
-**Document ID:** AH-SYS-P2A-022 · **Revision:** 2 · **Date:** 2026-09-11
+**Document ID:** AH-SYS-P2A-022 · **Revision:** 3 · **Date:** 2026-09-11
 **Status:** Completed · Submitted for Owner Review · **Nothing connected, no API call made**
 **Corrects:** the rule that image bytes must "never" pass through the orchestration layer, which conflicted with visual AI analysis
-**Revision 2** re-costs the analysis against the capture-once workflow (D-16, D-17): analysis now runs
-on **every captured photograph**, before the review decision, not only on the ~60% a reviewer later
-approves. That raises the volume by two thirds and the cost with it. Stated here rather than absorbed
-quietly.
+**Revision 3** applies D-24: not every captured photograph needs a model call. Duplicates, unusable
+images, and anything deleted or excluded are filtered out **before** the call, which brings the
+volume back down from every captured photograph to roughly 83% of them. Revision 2's figures were
+the unfiltered case and are superseded.
 
 ---
 
@@ -114,42 +114,61 @@ original untouched; they differ only in which component reads the derivative.
 Assumptions stated: expected scenario, three pilot projects, 120 photographs per project per month,
 derivative 400 KB average.
 
-**The volume assumption changed with D-17.** Revision 1 analysed only the ~60% of photographs a
-reviewer later approved. The capture-once workflow analyses **every captured photograph**, because
-the proposal is what the supervisor confirms — an analysis that arrives after the review decision
-proposes nothing to anybody. So the analysed count is now the captured count.
+**The volume assumption has moved twice, and this is where it settled.** Revision 1 analysed only
+the ~60% of photographs a reviewer later approved — wrong, because a proposal arriving after the
+review decision proposes nothing to anybody. Revision 2 therefore analysed *every* captured
+photograph — also wrong, in the other direction, because a blurred shot, a near-duplicate and an
+image the supervisor deleted are all worth nothing to analyse. **Revision 3 analyses the eligible
+ones (D-24).**
+
+**Eligibility, estimated and labelled as such** (`model/model.json` →
+`capture_once.ai_analysis_policy`): near-duplicates ~8%, below the quality threshold ~5%, deleted or
+excluded before analysis ~4%. **Eligible: ~83%.** Deferred Quick Share applies all three filters;
+immediate AI Reviewed Share applies the first two, because it cannot know what the supervisor will
+later exclude.
 
 | Quantity | Pilot (3 projects) | 10 projects | 20 projects |
 |---|---|---|---|
 | Photographs captured per month | 360 | 1,200 | 2,400 |
-| **Analysed** — rev 1, approved only (~60%) | 216 | 720 | 1,440 |
-| **Analysed** — rev 2, **every captured photograph** | **360** | **1,200** | **2,400** |
+| *Analysed — rev 1, approved only (~60%)* | *216* | *720* | *1,440* |
+| *Analysed — rev 2, every captured photograph* | *360* | *1,200* | *2,400* |
+| **Analysed — rev 3, Quick Share (~83%)** | **299** | **996** | **1,992** |
+| **Analysed — rev 3, AI Reviewed Share (~92%)** | **331** | **1,104** | **2,208** |
 | Average derivative size | 400 KB | 400 KB | 400 KB |
-| **Make transfer per month** (rev 2) | **~144 MB** | ~480 MB | **~960 MB** |
-| Against the verified 512 MB/month limit | **28%** | **94% — at the edge** | **188% — breached** |
+| **Make transfer per month** (Quick Share) | **~120 MB** | **~398 MB** | **~797 MB** |
+| Against the verified 512 MB/month limit | **23%** | **78%** | **156% — breached** |
 | 5 MB per-file compliance | ✅ 400 KB, 8% of the limit | ✅ | ✅ |
 
-**Option A now holds comfortably only at pilot scale.** Revision 1 put the break somewhere before
-twenty projects; on the corrected volume it is **at roughly ten**, where transfer reaches 94% of the
-limit with no headroom for a retry. The threshold to move to Option B — a Workspace-side component
-that never routes bytes through the orchestration layer — is therefore **ten projects, or 400 MB of
-measured monthly transfer, whichever comes first.**
+**Option A holds at pilot scale and is uncomfortable by ten projects.** Filtering buys headroom —
+78% of the transfer limit at ten projects rather than 94% — but it does not change where the ceiling
+is. The threshold to move to Option B, a Workspace-side component that never routes bytes through
+the orchestration layer, is **ten projects, or 400 MB of measured monthly transfer, whichever comes
+first.**
 
-That is a real cost of the capture-once correction, and it is the honest one: proposing to a
-supervisor is worth more than saving transfer, but it does not come free.
+**And the filters cost nothing to run.** Perceptual hashing for near-duplicates and a blur measure
+run locally, with no model call and no transfer. `Photos.PerceptualHash`, `Photos.QualityScore` and
+`Photos.AnalysisEligibility` carry the result, and a skipped photograph is **retained as evidence** —
+skipping is about waste, never about coverage.
 
 ### Claude input cost
 
 Per analysed photograph, at 1024×768 (1,036 visual tokens) plus ~600 tokens of prompt and caption,
 returning ~500 output tokens of schema-valid JSON:
 
-| Model | Input | Output | **Per image** | **360/month (pilot, rev 2)** | 2,400/month (20 projects) |
-|---|---|---|---|---|---|
-| **Claude Opus 5** (default) | ~1,636 tok @ $5/M = $0.0082 | ~500 tok @ $25/M = $0.0125 | **~$0.021** | **~$7.56** | ~$50 |
-| Claude Haiku 4.5 (owner's choice, if wanted) | @ $1/M = $0.0016 | @ $5/M = $0.0025 | ~$0.004 | ~$1.50 | ~$10 |
+| Model | Input | Output | **Per image** | **Pilot, Quick Share (299/mo)** | **Pilot, AI Reviewed (331/mo)** | 20 projects, Quick Share (1,992/mo) |
+|---|---|---|---|---|---|---|
+| **Claude Opus 5** (default) | ~1,636 tok @ $5/M = $0.0082 | ~500 tok @ $25/M = $0.0125 | **~$0.021** | **~$6.28** | **~$6.95** | ~$42 |
+| Claude Haiku 4.5 (owner's choice, if wanted) | @ $1/M = $0.0016 | @ $5/M = $0.0025 | ~$0.004 | ~$1.20 | ~$1.32 | ~$8 |
 
-*(Revision 1 quoted ~$4.50 and ~$30 on the approved-only volume of 216 and 1,440. Those figures are
-superseded, not withdrawn as wrong: they were right for the workflow as it then stood.)*
+**Estimates, not measurements.** Every figure rests on the eligibility proportions above and on
+360 photographs a month. All of them are replaced by counts in the pilot's first month.
+
+*(Revision 1 quoted ~$4.50 on the approved-only volume; revision 2 quoted ~$7.56 on the unfiltered
+volume. Both are superseded rather than wrong — each was right for the workflow as it then stood.)*
+
+**Filtering saves about 17% of the Claude bill** at pilot volume — roughly a dollar a month, which
+is not the point. The point is at twenty projects, where it is about eight dollars a month and
+growing linearly, and where the transfer ceiling arrives sooner than the money does.
 
 **Batching does not change the per-image cost**, because the images are the tokens. What it changes
 is the **orchestration** cost: one request per capture batch rather than one per photograph is the

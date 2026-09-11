@@ -1,6 +1,6 @@
 # Phase 1 — Owner Review Pack
 
-**Document ID:** AH-SYS-REV-001 · **Revision:** 3 · **Date:** 2026-09-11
+**Document ID:** AH-SYS-REV-001 · **Revision:** 4 · **Date:** 2026-09-11
 **Status:** Completed · Validated Locally · **Submitted for Owner Review**
 **Purpose:** everything needed to approve, conditionally approve, or send back the Phase 1 design — without reading the repository.
 
@@ -9,11 +9,11 @@ not need to open unless something here provokes a question.
 
 | | |
 |---|---|
-| **What was built** | A complete data foundation: 46 tables, 849 columns, 11 status lifecycles, 10 roles, 460 access grants |
+| **What was built** | A complete data foundation: 46 tables, 857 columns, 11 status lifecycles, 10 roles, 460 access grants |
 | **What gets built first** | **Release 1: twelve tables**, capture and review only, inside a lean 17-table MVP; the other 29 tables stay as the reference architecture and are added additively ([`02a-plan/21-release-1-twelve-tables.md`](02a-plan/21-release-1-twelve-tables.md)) |
-| **The operating principle** | **Capture once, use twice.** One capture serves the contractor-group share and every report. The supervisor never selects the same photographs twice, and never types a description of what the photographs already show ([`02a-plan/24-capture-once-workflow.md`](02a-plan/24-capture-once-workflow.md)) |
-| **Cost position** | **No new mandatory subscription identified before entitlement verification.** Workspace and QuickBooks are already paid; AppSheet is assumed included pending a 15-minute Admin Console check; AI analysis is a variable cost of roughly **$7.56 a month** at pilot volume |
-| **What was executed** | **219 automated checks, all passing**, against synthetic data on a local machine |
+| **The operating principle** | **Capture once, use twice — and ask for nothing else.** One capture serves the contractor-group share and every report. The supervisor never selects the same photographs twice, and on the normal path supplies **nothing but the photographs** ([`02a-plan/24-capture-once-workflow.md`](02a-plan/24-capture-once-workflow.md)) |
+| **Cost position** | **No new mandatory subscription identified before entitlement verification.** Workspace and QuickBooks are already paid; AppSheet is assumed included pending a 15-minute Admin Console check; AI analysis is a variable cost of roughly **$6.28 a month** at pilot volume — an estimate, not a measurement |
+| **What was executed** | **240 automated checks, all passing**, against synthetic data on a local machine |
 | **What was connected** | **Nothing.** No Google account, no AppSheet app, no Make scenario, no Claude API call, no QuickBooks connection, no real data, no email. One **read-only** Make inspection was performed with written authorisation |
 | **The one thing nobody knows yet** | Whether the capture platform can share several stored image files to an existing WhatsApp group without a second selection (`CAP-GATE`). It is a device test, not a question anyone can answer from documentation |
 | **Recommendation** | **Conditional approval** — see §14 |
@@ -277,13 +277,13 @@ document type is configuration rather than development.*
 `Materials`, `MaterialUsage`, `Equipment`, `VisitEquipment`, `Employees`, `VisitManpower`,
 `DocumentTypes`, `DataClassifications`, `ResidencyRequirements`, `ResidencyAssignments`.
 
-**Detail:** [`01-data-dictionary.md`](01-data-foundation/01-data-dictionary.md) — all 849 columns.
+**Detail:** [`01-data-dictionary.md`](01-data-foundation/01-data-dictionary.md) — all 857 columns.
 
 ---
 
 ## 4. The fields and relationships that actually matter
 
-Not all 849. These are the ones a decision depends on.
+Not all 857. These are the ones a decision depends on.
 
 | Where | Field | Why it matters |
 |---|---|---|
@@ -621,7 +621,7 @@ byte-identical repeatability of the trace.
 ## 11. Bilingual and right-to-left model
 
 **Delivered now:** every English text column has an Arabic counterpart, with no exceptions;
-all 30 controlled vocabularies carry an Arabic label for every value; roles, units, disciplines, all
+all 32 controlled vocabularies carry an Arabic label for every value; roles, units, disciplines, all
 34 activities, document types and classifications are populated in Arabic; users carry an individual
 language preference; text direction is stored as data; templates are keyed by type **and** language;
 a project can be configured to produce Arabic documents; Arabic survives canonical serialisation and
@@ -657,11 +657,11 @@ record, if one is written at all, is reconstructed later from memory.
 
 | Step | Who | What |
 |---|---|---|
-| 1–3 | Supervisor | Opens the app. The project is already filled in. Confirms the location |
-| 4 | Supervisor | **Captures the photographs once.** This is the only file selection in the whole workflow |
+| 1–3 | Supervisor | Opens the app. **Nothing is asked.** Project, location, date, time, identity and capture mode are already populated; the location is confirmed only if the project has several and none resolves |
+| 4 | Supervisor | **Captures the photographs once.** This is the only file selection in the whole workflow — and the only thing the supervisor supplies |
 | 5 | System | Stores them, unchanged, grouped under one capture batch |
-| 6 | AI | **Proposes** visible activity, evidence stage, a professional caption, visible condition, a possible snag, an image-quality warning, and what it could not determine |
-| 7 | Supervisor | Confirms with one tap, or corrects |
+| 6 | AI | **Proposes** visible activity, evidence stage, a professional caption, visible condition, a possible snag, an image-quality warning, and what it could not determine — on the **eligible** photographs only |
+| 7 | Supervisor | Confirms with one tap, or corrects — **or leaves it, which is the normal Quick Share outcome** |
 | 8 | Supervisor | **One share action** hands the same stored files and a formatted summary to the existing contractor group |
 | 9 | System | The same evidence is re-used in every daily, weekly, monthly, corrective-action, inspection and completion report |
 
@@ -670,24 +670,54 @@ select or upload the images a second time.*
 
 ### Two modes, because urgency and polish are different needs
 
-| | **Quick Share** | **AI Reviewed Share** |
+| | **Quick Share** *(the default)* | **AI Reviewed Share** |
 |---|---|---|
 | Sequence | capture → store → **share immediately** | capture → AI proposal → confirm → share |
-| The AI | runs afterwards, nobody waits | runs first, the supervisor waits |
-| Use it when | the contractor must see the site now | a reviewed caption is worth the wait |
+| The AI | runs afterwards, filtered, nobody waits | runs first, the supervisor waits |
+| Classification | stays pending, caught up later | confirmed before the share |
+| Use it when | **the normal case** | a reviewed caption is worth the wait |
 
-Both capture once.
+Both capture once, and neither asks the supervisor to choose between them: Quick Share is the
+default and AI Reviewed Share is a deliberate, separate action.
 
-### The written description is no longer required
+### What the supervisor actually supplies: the photographs
 
-A description of completed work is **optional** for a normal photographic submission. An optional
-site note carries what a photograph cannot: a client instruction, an access restriction, a permit
-issue, a hidden defect, a measured quantity, a material batch, an equipment failure, a reason for
-non-completion, a safety restriction, work postponed by another party. Voice input is a future way
-of filling that same field.
+**Of 290 fields in the release-1 storage model, a supervisor must supply none.**
 
-**Of 282 fields in the release-1 storage model, a supervisor must supply 5** — project, location,
-date, capture mode, evidence stage. None of them is a description.
+| Value | Where it comes from |
+|---|---|
+| Their identity | The signed-in session |
+| Date and time | The device clock |
+| Project | Their single active assignment, the last project used today, or the project default |
+| Location | The project default, or the last location used today |
+| Capture mode | Quick Share, by default |
+| Evidence stage | Proposed by the analysis, pre-tagged from the activity rule, or simply left for later |
+
+They are asked **one** question, and only sometimes: which location, when the project has several
+and none resolves. **Declaring an activity is no longer the price of submitting evidence either** —
+a visit carrying photographs and no activity is a valid submission, and the classification catches up
+afterwards.
+
+A description of completed work is **optional**. An optional site note carries what a photograph
+cannot: a client instruction, an access restriction, a permit issue, a hidden defect, a measured
+quantity, a material batch, an equipment failure, a reason for non-completion, a safety restriction,
+work postponed by another party. Voice input is a future way of filling that same field.
+
+**The normal path, end to end:** open the app → confirm project and location if necessary → capture
+the photographs → save and share.
+
+### A confirmed activity, beside the proposed one
+
+Holding the AI's view of the activity as untrusted free text was right. Leaving nothing controlled in
+its place was not — a report cannot group by free text, and a rule cannot branch on it. So there are
+three columns, not one:
+
+| | What it is |
+|---|---|
+| `AIProposedActivityText` and `AIProposedActivityTypeID` | **A suggestion.** Untrusted. Read by the confirmation screen and by nothing else — no report, rule, calculation, filter or approval |
+| `ConfirmedActivityTypeID` | **The activity.** Set only by a supervisor or reviewer. This is what reports and rules read, and changing it voids the approval bound to it |
+
+In Quick Share the classification stays **pending**, which is a normal state and blocks nothing.
 
 ### What the AI may never do
 
@@ -705,19 +735,33 @@ created by an image.
 
 ### What it costs, honestly
 
+**Every figure here is an estimate.** None has been measured. The pilot's first month replaces all
+of them with counts.
+
 | | |
 |---|---|
-| AI analysis | Rises from ~$4.50 to **~$7.56 a month** at pilot volume, because every captured photograph is now analysed rather than only the 60% later approved. The proposal has to exist *before* the review, or it proposes nothing to anybody |
-| Make operations | **The proposal does not fit in the free orchestration tier** — roughly 1,440 operations a month against a 1,000 limit. Release 1 therefore ships Quick Share, and the proposal arrives when AppSheet can call the API directly (question 4 of the Admin Console check) or through a small Workspace-side component. **The capture-once guarantee holds regardless** |
-| Storage | +19 MB per project per month of derivatives, deleted after seven days |
-| Transfer | If derivatives route through the orchestrator, the ceiling moves from twenty projects down to about ten |
+| AI analysis | **~$6.28 a month** at pilot volume under Quick Share, ~$6.95 under AI Reviewed Share. Not every photograph is analysed: near-duplicates, unusable images and anything you delete or exclude never reach a model call, which is roughly 17% of them. The filters that spot those cost nothing — they run on the device |
+| Make operations | **The proposal does not fit in the free orchestration tier under either policy** — roughly 1,167 operations a month deferred and filtered, 1,353 immediate, against a 1,000 limit. Filtering saves about 190 and does not change the answer, because carrying an image through an orchestrator costs three operations whatever else you do. Release 1 therefore ships Quick Share, and the proposal arrives when AppSheet can call the API directly (question 4 of the Admin Console check) or through a small Workspace-side component. **The capture-once guarantee holds regardless** |
+| Storage | +16 MB per project per month of derivatives, deleted after seven days |
+| Transfer | If derivatives route through the orchestrator, the ceiling is about ten projects |
 
-### The risk I want you to see clearly
+**Skipping an image is about waste, never about coverage.** A skipped photograph is kept as evidence
+in full and can still appear in any report. What is skipped is the analysis of an image nobody will
+report on.
+
+### The two risks I want you to see clearly
 
 **Quick Share sends evidence to the contractor before anyone reviews it**, and a message cannot be
 recalled from a group. That risk exists today, unchanged — the supervisor is the same human gate they
-already are. The system does not make it worse, and AI Reviewed Share is the default. But it does not
-make it better either, and I would rather say so than let the word "controlled" imply otherwise.
+already are. The system does not make it worse. But it does not make it better either, and Quick
+Share is now the **default**, so I would rather say so plainly than let the word "controlled" imply
+otherwise.
+
+**A supervisor who is never asked never notices a wrong answer.** That is the direct cost of asking
+nothing: if the prefill picks the wrong project or the wrong location, nobody is prompted to catch
+it. The mitigations are that both are always *visible* on the capture screen and changeable in one
+tap, that GPS disagreement is flagged to the reviewer, and that Phase 2B counts how often a visit is
+later corrected. **Accepted, not eliminated** (R-40).
 
 ### What is not known
 
@@ -805,7 +849,7 @@ remaining uncertainty is in the platforms, not the design.
 point 3, and because the platform verification in point 1 could still change a structural decision.
 Conditional approval lets Phase 2A proceed at no risk while both are resolved.
 
-**Why not redesign:** nothing found in 219 checks suggests a structural fault. The three defects the
+**Why not redesign:** nothing found in 240 checks suggests a structural fault. The three defects the
 checks caught — two unreachable statuses, a project manager who could write the audit log, six
 vocabularies without change attribution — were fixed as they were found, and a fourth correction
 came from a fixture that refused to accept an Arabic-only client name.
@@ -863,4 +907,4 @@ Until those two measurements exist, further specification would be writing with 
 | **Make account inspection (verified)** | [`02a-plan/15-make-inspection-record.md`](02a-plan/15-make-inspection-record.md) |
 | **Operations budget** | [`02a-plan/23-operations-budget.md`](02a-plan/23-operations-budget.md) |
 | **Image derivative architecture** | [`02a-plan/22-image-derivative-architecture.md`](02a-plan/22-image-derivative-architecture.md) |
-| **Owner decisions D-01 to D-21** | [`00-discovery/10-owner-decisions.md`](00-discovery/10-owner-decisions.md) |
+| **Owner decisions D-01 to D-24** | [`00-discovery/10-owner-decisions.md`](00-discovery/10-owner-decisions.md) |

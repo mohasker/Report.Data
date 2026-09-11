@@ -33,7 +33,8 @@ Three consequences, each tested:
 
 ## 2. What makes a submission complete
 
-A visit is complete when it has at least one activity and **every** activity satisfies its effective
+A visit is complete when it **carries evidence** — at least one photograph or at least one activity —
+and **every** activity that exists satisfies its effective
 rule:
 
 1. The activity is permitted on this project.
@@ -92,3 +93,23 @@ An evidence rule can be waived, but never quietly. A waiver is an `Approvals` ro
 `IsOverride = TRUE`, an `OverrideReason`, and the identity of whoever authorised it. It appears on
 the audit dashboard as an override. A rule that can be silently disabled is not a rule (SEC-05,
 R-30).
+
+---
+
+## Completeness after D-22
+
+**Declaring an activity is no longer the price of submitting evidence.** The normal path is: open
+the app, confirm project and location if necessary, capture the photographs, save and share. A visit
+carrying photographs and no activity is a **valid photographic submission**; its classification
+catches up afterwards through `Photos.ClassificationStatus` (D-23).
+
+What did **not** change:
+
+- An activity that exists still satisfies its effective rule in full — required stages, minimum
+  photograph count, quantity, unit and mandatory captions are all unchanged.
+- Captions remain mandatory on `Observation`, `Snag`, `Material` and `Safety` evidence, because the
+  stage itself asserts something the image alone does not name.
+- A visit with **neither** a photograph nor an activity carries no evidence and is still refused.
+
+Checked by `EVD-11` (a photographic submission with no activity is accepted) and `EVD-11b` (an empty
+visit is refused).

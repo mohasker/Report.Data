@@ -30,7 +30,7 @@ and every progress report.
 |---|---|---|
 | Phase 0 — Discovery | **Approved** | Owner decision, 2026-09-11 (`00-discovery/10-owner-decisions.md`) |
 | Phase 0 revision 1 | **Approved** | Owner acceptance, 2026-09-11 |
-| **Phase 1 — Data foundation** | **Completed, Validated Locally, Submitted for Owner Review** | `01-data-foundation/17-validation-evidence.md` — 219 checks executed |
+| **Phase 1 — Data foundation** | **Completed, Validated Locally, Submitted for Owner Review** | `01-data-foundation/17-validation-evidence.md` — 240 checks executed |
 | Phase 2A — Plan and synthetic prototype design | **Completed, Submitted for Owner Review** | `docs/02a-plan/` |
 | Everything requiring an external platform | **Not started** | No connection exists (D-14) |
 
