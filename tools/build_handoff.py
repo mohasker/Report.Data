@@ -26,7 +26,7 @@ DIST = os.path.join(ROOT, "dist")
 ZIP_NAME = "AlHaram-Field-Reporting-System-Handoff.zip"
 BUNDLE_NAME = "AlHaram-Field-Reporting-System.bundle"
 PDF_NAME = "OWNER-REVIEW-PACK.pdf"
-PACKAGE_VERSION = "1.1"
+PACKAGE_VERSION = "1.2"
 EXPECTED_CHECKS = 240
 
 PRIMARY = ["START-HERE-NEW-CLAUDE.md", "MASTER-SPEC-CONSOLIDATED.md",
