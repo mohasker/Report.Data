@@ -1,6 +1,6 @@
 # Make Account Inspection — Read-Only Record
 
-**Document ID:** AH-SYS-P2A-015 · **Revision:** 1 · **Date:** 2026-09-11
+**Document ID:** AH-SYS-P2A-015 · **Revision:** 2 · **Date:** 2026-09-11
 **Status:** Completed · **Verified from the live account** — the first verified external fact in this project
 **Authorisation:** the owner's read-only inspection authorisation of 2026-09-11
 
@@ -31,6 +31,44 @@
 **Nothing was created, changed, activated, run or deleted. No credential or secret was read or
 revealed.** Personal identifiers returned by the API are deliberately not reproduced in this
 repository.
+
+## 1b. Scenario counts — the ambiguity corrected
+
+Revision 1 put "seven scenarios exist, all inactive" in one section and "Active scenarios: 2" in
+another. Those described **different things** and reading them together was reasonable and wrong.
+Stated separately, from the same inspection:
+
+| # | Question | Answer | Source field |
+|---|---|---|---|
+| 1 | **Total scenarios present in the account** | **7** | `scenarios_list` returned 7 records |
+| 2 | **Currently active** | **0** | Every record has `isActive: false`; the organisation reports `activeScenarios: 0` |
+| 3 | **Currently inactive** | **7** | All of them |
+| 4 | **Maximum active scenarios allowed by the Free plan** | **2** | `license.scenarios: 2` |
+| 5 | **What "2" describes** | **The plan limit — a ceiling, not a count.** Nothing is running | `license.scenarios` is a licence field, not a usage field |
+
+So: **7 exist, 0 run, and at most 2 may run at once.** The design needs five, which is why the
+prototype is reduced to two ([`23-operations-budget.md`](23-operations-budget.md) §5).
+
+Nothing was activated, deactivated or changed. The account is exactly as it was found.
+
+## 1c. Boundary maintained, and the convention for anything new
+
+The existing scenarios were listed and nothing more. **They may belong to unrelated company work and
+must not be modified, renamed, activated, deleted or reused without separate authorisation.** None
+was opened, no execution history was read, and no connection, key or webhook was inspected.
+
+Any future Al-Haram Field Reporting scenario will be created under a convention that keeps it
+visibly separate from existing work:
+
+| Rule | Value |
+|---|---|
+| **Folder** | A dedicated folder, `AHFR` — nothing outside it belongs to this project |
+| **Naming** | `AHFR-S01 Submission validation`, `AHFR-S12 Monitoring digest` — the prefix, the scenario number from the design, then the purpose |
+| **Ownership** | Owned by the dedicated system account, never by an individual |
+| **Description** | Each scenario's description names this project, the design document it implements, and the date it was created |
+| **Labels** | A scenario label `al-haram-field-reporting`, so the set can be listed and audited as a group |
+| **Connections** | New connections created for this project only; existing connections are never reused |
+| **Change rule** | Nothing outside the `AHFR` folder is touched, for any reason, without separate written authorisation |
 
 ## 2. Organisation and plan — verified
 
@@ -72,16 +110,20 @@ carry identifiers rather than file content.
 |---|---|
 | Operations consumed this period | **0** of 1,000 |
 | Data transfer consumed | **0** of 512 MB |
-| **Active scenarios** | **0** |
-| Scenarios that exist | **7**, every one inactive |
+| **Scenarios that exist** | **7** |
+| **Currently active** | **0** |
+| **Currently inactive** | **7** |
+| **Plan ceiling on active scenarios** | **2** |
 | Data stores | **0** |
 
 Seven scenarios exist from earlier experiments — email monitoring, a Sheets-to-Canva-to-Drive flow,
 a Telegram-to-Drive flow, a WhatsApp gateway, a Sheets-to-Gmail flow, an image-generation test. All
 are switched off and none has consumed operations this period. The account is, in effect, dormant.
 
-**Two of those seven would have to stay off** for this project to use its two active-scenario
-allowance — or the allowance has to grow.
+Since none is running, the two-scenario allowance is entirely available to this project today.
+**If any existing scenario is ever switched back on, it consumes one of the two slots** — which is a
+reason for the dedicated folder and labelling convention in §1c, so the set in use is always
+visible.
 
 ## 5. Integration availability — verified
 
@@ -121,18 +163,32 @@ and measure. Notification can be a daily digest the reviewer opens rather than a
 email. That keeps the pilot inside the Free plan and produces the operation measurement needed to
 size any upgrade honestly.
 
-### 6.2 Image bytes must never pass through Make
+### 6.2 Which image bytes may pass through Make — corrected
 
-512 MB a month against ~900 MB of photographs at three projects. This was already the design
-(payloads carry identifiers, not content), and the verified limit turns a good habit into a hard
-rule: **derivative creation must happen on the storage side, not by downloading and re-uploading
-through the orchestration layer.**
+Revision 1 said image bytes must "never" pass through Make. That was wrong as stated, because visual
+AI analysis requires the model to see an image. The rule is now about *which* image:
 
-### 6.3 The operations ceiling is too close for comfort
+| Class | Through Make? |
+|---|---|
+| **Original evidence** | **Never.** Not downloaded, not re-encoded, not opened by any processing path |
+| **AI review derivative** (~400 KB) | **Yes, at pilot volume** — ~86 MB/month against the 512 MB limit, and 8% of the 5 MB per-file ceiling. Moves to a Workspace-side component before twenty projects, where it would breach |
+| **Report derivative** | At document-generation time only, in release 1b |
 
-~800 estimated against 1,000 available, with **no overage** — work stops rather than overspending.
-A busy month, a retry storm, or one more project breaches it. Consolidating to two scenarios and
-batching derivative work reduces the estimate; measurement in Phase 3 replaces it.
+Full design, sizes, transfer arithmetic and cost:
+[`22-image-derivative-architecture.md`](22-image-derivative-architecture.md).
+
+### 6.3 The operations ceiling — and a worse finding underneath it
+
+The earlier "~800 operations" estimate was itself too optimistic: it counted scenario *runs*, not
+*modules*. In Make each module that acts consumes an operation per bundle, so a six-module
+per-photograph scenario costs six operations per photograph — **2,160 a month at three projects**,
+twice the entire allowance for one scenario.
+
+The prototype therefore removes per-photograph orchestration, which release 1 does not need because
+release 1 produces no documents. The rebuilt budget lands at **703 operations, 70% of the limit**,
+with retries, corrections, duplicates and administrative tests all funded, and with validation,
+auditability and error handling untouched:
+[`23-operations-budget.md`](23-operations-budget.md).
 
 ### 6.4 Make is not permanently free for this design
 

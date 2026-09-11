@@ -12183,6 +12183,50 @@
         "note": "The register keeps its reserved/issued/cancelled control; only the series CONFIGURATION moves to the legal entity."
       }
     },
+    "release_1": {
+      "tables": [
+        "Users",
+        "Projects",
+        "ProjectAssignments",
+        "Locations",
+        "ActivityTypes",
+        "SiteVisits",
+        "VisitActivities",
+        "Photos",
+        "Snags",
+        "Approvals",
+        "AuditLog",
+        "IntegrationJobs"
+      ],
+      "consolidations": {
+        "ProjectActivityRules": {
+          "into": "ActivityTypes, with an optional ProjectID column",
+          "rule": "A row with no ProjectID is the global rule; a row with a ProjectID is a project override of it. Same resolution logic, one table.",
+          "cost": "The override and the rule it overrides share a table, so an administrator reading the catalogue sees both. Acceptable at 34 activities."
+        },
+        "Roles": {
+          "into": "RoleCode enum on Users and ProjectAssignments",
+          "rule": "The role vocabulary is fixed at ten for the prototype.",
+          "cost": "Role capabilities are documentation rather than data."
+        },
+        "Clients": {
+          "into": "ClientNameEN, ClientNameAR and ClientKind on Projects",
+          "rule": "Display only; no billing data exists in release 1.",
+          "cost": "A client with several projects is repeated per project."
+        },
+        "LegalEntities, DocumentJobs, Documents, NumberRegister": {
+          "into": "Not present. Release 1 produces no document",
+          "rule": "Reports are produced manually from approved evidence exported from the app.",
+          "cost": "No document numbering, no release control, no report snapshot. **This is the boundary of release 1** and the first thing release 1b adds."
+        }
+      },
+      "adds_in_release_1b": [
+        "DocumentJobs",
+        "Documents",
+        "NumberRegister",
+        "LegalEntities"
+      ]
+    },
     "deferred_phases": {
       "Materials": 5,
       "MaterialUsage": 5,

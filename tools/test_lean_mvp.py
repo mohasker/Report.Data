@@ -141,6 +141,46 @@ def run(model, data):
             or "stop" in delegation.get("cost", "").lower(),
             delegation.get("cost", "")[:160])
 
+    # --- release 1: the controlled prototype ---
+    r1 = lean.get("release_1", {})
+    r1_set = set(r1.get("tables", []))
+    c.check("LEAN-14", "Release 1 is exactly twelve tables",
+            len(r1_set) == 12, f"{len(r1_set)} tables: {', '.join(r1.get('tables', []))}")
+    c.check("LEAN-15", "Every release-1 table is part of the lean MVP",
+            r1_set <= lean_set, f"outside the lean set: {sorted(r1_set - lean_set) or 'none'}")
+
+    r1_hard = []
+    for t in sorted(r1_set):
+        for col in tables[t]["columns"]:
+            if col["type"] == "ref" and col.get("required"):
+                target = col["ref"].split(".")[0]
+                if target not in r1_set and f"{t}.{col['name']}" not in overrides:
+                    key = f"{t}.{col['name']} -> {target}"
+                    folded = any(target in k for k in r1.get("consolidations", {}))
+                    if not folded:
+                        r1_hard.append(key)
+    c.check("LEAN-16", "No release-1 table requires a table that release 1 does not have",
+            not r1_hard, "; ".join(r1_hard) or
+            f"{len(r1_set)} tables, every mandatory reference resolved or explicitly folded")
+
+    survives_r1 = {"ProjectAssignments": "segregation", "Approvals": "review decisions",
+                   "AuditLog": "audit trail", "IntegrationJobs": "integration failure visibility",
+                   "Photos": "evidence", "Snags": "corrective actions"}
+    lost_r1 = [v for k, v in survives_r1.items() if k not in r1_set]
+    c.check("LEAN-17", "Release 1 keeps segregation, review, audit and failure visibility",
+            not lost_r1, "; ".join(lost_r1) or ", ".join(sorted(survives_r1.values())))
+
+    thin_r1 = [k for k, v in r1.get("consolidations", {}).items()
+               if len(v.get("cost", "")) < 25 or len(v.get("rule", "")) < 20]
+    c.check("LEAN-18", "Every release-1 consolidation states its rule and its cost",
+            not thin_r1, "; ".join(thin_r1) or
+            f"{len(r1.get('consolidations', {}))} consolidations, each explained")
+
+    c.check("LEAN-19", "Release 1 produces no document, so it carries no document or numbering table",
+            not ({"Documents", "DocumentJobs", "NumberRegister", "LegalEntities"} & r1_set),
+            "document generation arrives in release 1b: "
+            + ", ".join(r1.get("adds_in_release_1b", [])))
+
     # nothing is both lean and deferred
     both = sorted(lean_set & accounted)
     c.check("LEAN-12", "No table is listed as both built and deferred",

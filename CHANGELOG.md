@@ -272,3 +272,68 @@ measurements decide it against Method B.
 - `20-administrator-role-placeholders.md` — the three role placeholders with responsibilities, recovery permissions and six separation-of-duties boundaries. **No name or email is invented.**
 
 **Validation:** 185 checks across 12 suites, all passing.
+
+---
+
+## [0.5.0] — 2026-09-11 — Release 1 at twelve tables, image derivative architecture, operations budget
+
+Responds to the owner's clarifications of 2026-09-11. Nothing was activated, connected, purchased or
+deployed; the Make account was not touched again beyond the read-only inspection already recorded.
+
+**Corrected — the scenario-count contradiction**
+
+Revision 1 of the inspection record put "seven scenarios exist, all inactive" and "Active scenarios:
+2" in different sections. They described different things and reading them together was reasonable.
+Stated separately now: **7 exist, 0 are active, 7 are inactive, and 2 is the plan's ceiling on
+concurrently active scenarios, not a count.** Since none is running, the allowance is entirely
+available.
+
+**Corrected — the "never through Make" rule**
+
+It conflicted with visual AI analysis, which cannot work from metadata. `22-image-derivative-architecture.md`
+replaces the absolute with three classes: **original evidence** never leaves the tenant and is never
+opened by any processing path; an **AI review derivative** (1024 px, ~400 KB) is created solely for
+analysis; a **report derivative** is created for documents. Verified from Anthropic's vision
+documentation: base64, URL and Files API sources exist, the per-image limit is 10 MB base64, cost is
+`⌈w/28⌉ × ⌈h/28⌉` visual tokens, image metadata is not read, and in-request images are ephemeral and
+deleted after processing. The URL source is rejected because it would need a public address. Through
+Make the pilot moves ~86 MB/month against the verified 512 MB limit and 8% of the 5 MB file ceiling;
+that path breaks somewhere before twenty projects, which is the trigger to move analysis to a
+Workspace-side component. Cost is ~$0.021 per analysed photograph, about $4.50/month at pilot volume.
+
+**Corrected — the operations estimate, which was optimistic for a worse reason than headroom**
+
+The earlier ~800 figure counted scenario runs rather than modules. Each module that acts consumes an
+operation per bundle, so per-photograph processing costs ~2,160 operations a month at three projects
+— twice the entire allowance for one scenario. `23-operations-budget.md` rebuilds the budget by
+removing per-photograph orchestration, which release 1 does not need because it produces no
+documents. The result is **703 operations, 70% of the verified limit**, on **2 active scenarios**,
+with retries, corrections, duplicate triggers and administrative tests all funded — and with
+validation, auditability and error handling untouched. Restoring per-photograph processing needs
+**≥3,000 operations/month and ≥3 active scenarios**, stated without a price because the price is
+unverified.
+
+**Added — release 1 at twelve tables**
+
+`21-release-1-twelve-tables.md`, generated from the model: Users, Projects, ProjectAssignments,
+Locations, ActivityTypes, SiteVisits, VisitActivities, Photos, Snags, Approvals, AuditLog,
+IntegrationJobs. Four consolidations, each with its rule and its cost. **262 fields in storage, 137
+of them generated rather than typed, and 13 on the normal field form** — with an honest caveat that a
+row syncs whole, so form size and sync size are different problems with different fixes.
+
+**Added — storage by artifact class**
+
+Original evidence, AI derivatives, report derivatives, generated documents, rejected temporary
+derivatives, backups and version history, each counted separately. A single backup copy nearly
+doubles the requirement, which makes the backup policy the largest storage decision in the system.
+The high scenario now carries its six requirements: retention rules, archive strategy, closeout
+procedure, duplicate handling, Workspace storage verification and the possible additional cost.
+
+**Added — scenario ownership convention**
+
+Existing scenarios may belong to unrelated company work and are not to be modified, renamed,
+activated, deleted or reused without separate authorisation. Anything created for this project goes
+in a dedicated `AHFR` folder, with a naming convention, a label, system-account ownership and
+project-only connections.
+
+**Validation:** 191 checks across 12 suites, all passing, including six new release-1 checks.

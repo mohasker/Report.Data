@@ -8,31 +8,48 @@
 
 | | |
 |---|---|
-| **Commit tested** | `bbe0490abf2686096b97b2530d61924be9ffbba1` |
-| **Commit subject** | Verified Make inspection, scope matrix, measured migration thresholds |
+| **Commit tested** | `4fadd46f11de4554258b5392efcd72e00e289690` |
+| **Commit subject** | Regenerate validation evidence against the clean tree |
 | **Command executed** | `python3 tools/run_validation.py` |
-| **Executed at** | 2026-09-11 09:41:50 UTC |
+| **Executed at** | 2026-09-11 10:32:36 UTC |
 | **Python** | 3.11.15 (CPython, GCC 13.3.0) |
-| **Operating system** | Linux 6.18.44-fc-v24 (x86_64) |
+| **Operating system** | Linux 6.18.44-fc-v32 (x86_64) |
 | **Environment** | Ephemeral Linux container. This run made no network call, used no credential and contacted no external service |
 | **Third-party dependencies** | **None.** Python standard library only |
 | **Model version** | 1.0.0 |
-| **Working tree before the run** | clean |
+| **Working tree before the run** | MODIFIED — see below |
+
+```
+M docs/01-data-foundation/17-validation-evidence.md
+ M docs/02a-plan/14-storage-and-image-volume.md
+ M docs/02a-plan/15-make-inspection-record.md
+ M model/model.json
+ M tools/build_model.py
+ M tools/run_validation.py
+ M tools/test_lean_mvp.py
+?? docs/02a-plan/21-release-1-twelve-tables.md
+?? docs/02a-plan/22-image-derivative-architecture.md
+?? docs/02a-plan/23-operations-budget.md
+?? tools/gen_release1_scope.py
+```
+
+> The run was executed against a working tree containing uncommitted changes. The commit recorded above is the parent commit, not the exact state tested. Re-run after committing to obtain a clean reproduction record.
+
 
 ### Byte-identical regeneration
 
-Every generated artifact was hashed (SHA-256) before regeneration, regenerated from `model/model.json`, and hashed again. **53 artifacts** were compared: 7 generated documents (the canonical model, the data dictionary, the transition matrix, the security matrix, the AppSheet workbook and the security-filter specification) and all 46 table schemas.
+Every generated artifact was hashed (SHA-256) before regeneration, regenerated from `model/model.json`, and hashed again. **54 artifacts** were compared: 8 generated documents (the canonical model, the data dictionary, the transition matrix, the security matrix, the AppSheet workbook and the security-filter specification) and all 46 table schemas.
 
 **Result: all artifacts came back byte-identical.** Regeneration is deterministic, so the committed artifacts are exactly what the model produces.
 
 ## 2. Summary
 
-**185 of 185 checks passed.**
+**191 of 191 checks passed.**
 
 | # | Suite | Kind | Checks | Passed | Failed |
 |---|---|---|---|---|---|
 | 1 | Seed conformance | structural | 3 | 3 | 0 |
-| 2 | Lean operational MVP | structural | 13 | 13 | 0 |
+| 2 | Lean operational MVP | structural | 19 | 19 | 0 |
 | 3 | Configurability and unbounded width | structural | 12 | 12 | 0 |
 | 4 | Project segregation | logic | 12 | 12 | 0 |
 | 5 | Role separation, time-bound access and recoverability | logic | 31 | 31 | 0 |
@@ -43,14 +60,14 @@ Every generated artifact was hashed (SHA-256) before regeneration, regenerated f
 | 10 | Deterministic calculation | logic | 22 | 22 | 0 |
 | 11 | Bilingual and right-to-left readiness | structural | 13 | 13 | 0 |
 | 12 | Governance and safety rules | structural | 18 | 18 | 0 |
-| | **Total** | | **185** | **185** | **0** |
+| | **Total** | | **191** | **191** | **0** |
 
 ### Console output
 
 ```
 ========================================================================
   Seed conformance                                       3 passed   0 failed
-  Lean operational MVP                                  13 passed   0 failed
+  Lean operational MVP                                  19 passed   0 failed
   Configurability and unbounded width                   12 passed   0 failed
   Project segregation                                   12 passed   0 failed
   Role separation, time-bound access and recoverability  31 passed   0 failed
@@ -62,7 +79,7 @@ Every generated artifact was hashed (SHA-256) before regeneration, regenerated f
   Bilingual and right-to-left readiness                 13 passed   0 failed
   Governance and safety rules                           18 passed   0 failed
 ========================================================================
-  TOTAL 185/185 checks passed
+  TOTAL 191/191 checks passed
 ```
 
 ### Artifact regeneration output
@@ -75,7 +92,8 @@ wrote /home/user/Report.Data/model/model.json
   enums       : 26
   transitions : 82 allowed, 36 explicitly forbidden
   security    : 10 roles x 46 tables = 460 grants, 20 exceptions
-  lean MVP    : 17 tables built first, 29 deferred but designed
+  lean MVP    : 17 tables, 29 deferred but designed
+  release 1   : 12 tables (capture and review; no document generation)
 $ python3 tools/gen_schemas.py
 wrote 46 table schemas to schemas/tables/
 $ python3 tools/gen_data_dictionary.py
@@ -88,6 +106,8 @@ wrote docs/02a-plan/01-appsheet-workbook.md
 wrote docs/02a-plan/02-security-filter-specification.md
 $ python3 tools/gen_scope_matrix.py
 wrote docs/02a-plan/17-lean-table-scope-matrix.md
+$ python3 tools/gen_release1_scope.py
+wrote docs/02a-plan/21-release-1-twelve-tables.md: 262 fields, 13 on the field form
 ```
 
 ## 3. What these checks are NOT evidence of
@@ -159,7 +179,7 @@ Every seed file conforms to the canonical model: columns, types, formats, vocabu
 | `SEED-02` | PASS | Every foreign key resolves within the seeded data | 0 unresolvable-by-design references (tables not built until a later phase) |
 | `SEED-03` | PASS | At least three materially different projects are present | 3 projects with 3 clients, 3 reporting frequencies, 3 billing methods, 2 document languages |
 
-### Lean operational MVP  ·  `structural`  ·  13/13 passed
+### Lean operational MVP  ·  `structural`  ·  19/19 passed
 
 A 12-18 table subset is built first, the 46-table model stays the reference architecture, and every deferred table keeps a schema so adding it later is additive.
 
@@ -177,6 +197,12 @@ A 12-18 table subset is built first, the 46-table model stays the reference arch
 | `LEAN-09` | PASS | Every project-scoped lean table still carries ProjectID | row-level security is unaffected by the trim |
 | `LEAN-10` | PASS | Content hashing survives in the lean subset | hashable lean tables: Photos, SiteVisits, VisitActivities |
 | `LEAN-11` | PASS | The cost of deferring delegation is stated plainly, not glossed | **This is the real cost of the lean build.** If the approver is away, approvals stop. Accepted only because no delegate has been named yet. |
+| `LEAN-14` | PASS | Release 1 is exactly twelve tables | 12 tables: Users, Projects, ProjectAssignments, Locations, ActivityTypes, SiteVisits, VisitActivities, Photos, Snags, Approvals, AuditLog, IntegrationJobs |
+| `LEAN-15` | PASS | Every release-1 table is part of the lean MVP | outside the lean set: none |
+| `LEAN-16` | PASS | No release-1 table requires a table that release 1 does not have | 12 tables, every mandatory reference resolved or explicitly folded |
+| `LEAN-17` | PASS | Release 1 keeps segregation, review, audit and failure visibility | audit trail, corrective actions, evidence, integration failure visibility, review decisions, segregation |
+| `LEAN-18` | PASS | Every release-1 consolidation states its rule and its cost | 4 consolidations, each explained |
+| `LEAN-19` | PASS | Release 1 produces no document, so it carries no document or numbering table | document generation arrives in release 1b: DocumentJobs, Documents, NumberRegister, LegalEntities |
 | `LEAN-12` | PASS | No table is listed as both built and deferred | the two lists are disjoint |
 
 ### Configurability and unbounded width  ·  `structural`  ·  12/12 passed
@@ -423,7 +449,7 @@ The operating rules the owner approved, expressed as assertions so that weakenin
 ## 6. Reproducing this run
 
 ```
-git checkout bbe0490abf2686096b97b2530d61924be9ffbba1
+git checkout 4fadd46f11de4554258b5392efcd72e00e289690
 python3 tools/run_validation.py
 ```
 

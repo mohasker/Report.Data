@@ -51,6 +51,9 @@ platform**, and the platform's capabilities themselves remain unverified (see
 | 18 | **Threshold-based migration strategy with the growth formula** | [`18-migration-threshold-strategy.md`](18-migration-threshold-strategy.md) | Hand-written |
 | 19 | **Real-device test protocol** | [`19-real-device-test-protocol.md`](19-real-device-test-protocol.md) | Hand-written |
 | 20 | **Administrator role placeholders and separation of duties** | [`20-administrator-role-placeholders.md`](20-administrator-role-placeholders.md) | Hand-written |
+| 21 | **Release 1: twelve tables, and what reaches a field user** | [`21-release-1-twelve-tables.md`](21-release-1-twelve-tables.md) | **Yes — generated** |
+| 22 | **Image derivative architecture: three classes, and how AI analysis gets its copy** | [`22-image-derivative-architecture.md`](22-image-derivative-architecture.md) | Hand-written, with verified vision facts |
+| 23 | **Make operations budget: designing to 60–70% of the verified limit** | [`23-operations-budget.md`](23-operations-budget.md) | Hand-written |
 
 Items 1, 2 and 11 regenerate from `model/model.json`, so the application specification, the security
 filters and the scope decision can never disagree with each other or with the data foundation. Run
@@ -103,6 +106,10 @@ on the owner's written approval**, and only after the three prerequisites below.
 2B.4  Field test: measure the one-minute target on the oldest handset
 2B.5  Segregation, configurability and recovery gate evidence
 ```
+
+**Release 1 is twelve tables, capture and review only** ([`21-release-1-twelve-tables.md`](21-release-1-twelve-tables.md)):
+262 fields in storage, **13 on the normal field form**, and no document, numbering or legal-entity
+table because release 1 produces no document.
 
 **The entitlement check is now the first gate, not a parallel task.** If security filters or offline
 image capture are unavailable, that is a capture-layer decision and no app should be built at all —

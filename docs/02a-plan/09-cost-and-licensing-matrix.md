@@ -1,6 +1,6 @@
 # Cost and Licensing Statement
 
-**Document ID:** AH-SYS-P2A-009 · **Revision:** 3 · **Date:** 2026-09-11
+**Document ID:** AH-SYS-P2A-009 · **Revision:** 4 · **Date:** 2026-09-11
 **Status:** Completed · Submitted for Owner Review
 **Supersedes:** revision 1 (USD 2,600–5,000 annual — withdrawn) and revision 2 ("expected pilot cost is USD 0" — withdrawn as an overstatement)
 
@@ -51,9 +51,9 @@ established the following **from the live account**:
 
 **Therefore:**
 
-- **Potentially USD 0 during limited testing** — two active scenarios, identifiers-only payloads, roughly three projects, estimated ~800 operations against 1,000 available.
-- **Not confirmed as permanently free.** The design needs five scenarios; the plan allows two. Operations, active scenarios and transfer all grow with project count.
-- **A paid tier is a probable future cost**, with a measurable trigger rather than a date. Its price is unverified: make.com is unreachable from this environment, and the owner can read it on their own billing page.
+- **Potentially USD 0 during limited testing.** The rebuilt operations budget lands at **703 operations, 70% of the verified limit**, using **2 active scenarios** — inside the plan, with retries, corrections, duplicates and administrative tests all funded ([`23-operations-budget.md`](23-operations-budget.md)).
+- **Not confirmed as permanently free.** That budget only fits because release 1 removes per-photograph orchestration. Restoring it needs **≥3,000 operations/month and ≥3 active scenarios** — the exact paid-plan requirement, stated without a price because the price is unverified.
+- **A paid tier is a probable cost at scale**, with a measurable trigger rather than a date. make.com is unreachable from this environment; the owner can read the price on their own billing page.
 
 ## 4. Claude API
 
@@ -62,8 +62,9 @@ established the following **from the live account**:
 | **For the field-capture MVP** | **Optional.** Capture, review, snags and the audit trail work with no AI at all |
 | **When automated AI analysis and report drafting are enabled** | **Mandatory incremental usage cost.** There is no free path to automated analysis |
 | Cost shape | Usage-based, per image analysed and per report drafted, **bounded by a hard monthly cap the owner sets** (EF-04) |
-| Cost controls in the design | Analyse only approved evidence, on downscaled derivatives; one analysis per photograph, cached; output token caps; per-project on/off switch; per-project usage recorded |
-| Not yet known | Cost per 100 photographs. Measured at the Phase 4 gate, not estimated now |
+| **Costed** | ~**$0.021 per analysed photograph** on the default model at a 1024 px derivative — about **$4.50/month** at pilot volume (216 analysed images), ~$30/month at 20 projects. Arithmetic and the cheaper-model option: [`22-image-derivative-architecture.md`](22-image-derivative-architecture.md) §5 |
+| Cost controls in the design | Analyse only approved evidence, on downscaled derivatives; one analysis per photograph; output token caps; per-project on/off switch; per-project usage recorded |
+| Still to measure | Real cost per 100 photographs, at the Phase 4 gate |
 
 ## 5. Additional Drive storage — future conditional
 
@@ -96,9 +97,9 @@ No external cash outlay identified. The cost is the company's own time.
 |---|---|
 | **Existing, not incremental** | Google Workspace, QuickBooks Online |
 | **Assumed USD 0 incremental, unverified** | AppSheet Core — pending the Admin Console check |
-| **Potentially USD 0 during limited testing, not permanently free** | Make — verified Free plan, 1,000 operations, **2 active scenarios against a design needing 5** |
+| **Potentially USD 0 during limited testing, not permanently free** | Make — verified Free plan, 1,000 operations, 2 active scenarios. The prototype fits at **70% of the limit**; restoring per-photograph processing needs **≥3,000 ops and ≥3 scenarios** |
 | **Optional for the MVP, mandatory when enabled** | Claude API — usage-based, capped by the owner |
-| **Future conditional** | Additional Drive storage — depends on allocation, current use and real image growth |
+| **Future conditional** | Additional Drive storage — depends on the company's existing allocation, current consumption and actual image growth. **Cannot be assessed until the Admin Console storage screen is read** |
 | **One-time** | No cash outlay; company time only |
 
 **No new mandatory subscription has been identified before entitlement verification. Variable

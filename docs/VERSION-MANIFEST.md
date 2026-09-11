@@ -4,7 +4,7 @@
 ID, a revision, a date and an approval status. A document that has not been approved is marked as
 such and may not be treated as a decision.
 
-**Repository version:** 0.4.0 (verified Make inspection, scope matrix, thresholds) · **Date:** 2026-09-11
+**Repository version:** 0.5.0 (release 1 at twelve tables, image derivative architecture, operations budget) · **Date:** 2026-09-11
 
 | Document ID | Document | Rev | Date | Status |
 |---|---|---|---|---|
@@ -32,18 +32,21 @@ such and may not be treated as a decision.
 | AH-SYS-P2A-006 | `02a-plan/06-drive-folder-provisioning.md` | 1 | 2026-09-11 | Completed · Nothing provisioned |
 | AH-SYS-P2A-007 | `02a-plan/07-make-scenario-specifications.md` | 1 | 2026-09-11 | Completed · Blueprints disabled |
 | AH-SYS-P2A-008 | `02a-plan/08-deployment-and-rollback.md` | 1 | 2026-09-11 | Completed |
-| AH-SYS-P2A-009 | `02a-plan/09-cost-and-licensing-matrix.md` | 3 | 2026-09-11 | Completed · **No new mandatory subscription identified before entitlement verification** |
+| AH-SYS-P2A-009 | `02a-plan/09-cost-and-licensing-matrix.md` | 4 | 2026-09-11 | Completed · **No new mandatory subscription identified before entitlement verification** |
 | AH-SYS-P2A-010 | `02a-plan/10-synthetic-data-loading.md` | 1 | 2026-09-11 | Completed |
 | AH-SYS-P2A-011 | `02a-plan/11-lean-mvp-scope.md` | 1 | 2026-09-11 | Completed · Submitted for Owner Review |
 | AH-SYS-P2A-012 | `02a-plan/12-appsheet-entitlement-checklist.md` | 1 | 2026-09-11 | Completed · **Awaiting the owner's console check** |
 | AH-SYS-P2A-013 | `02a-plan/13-field-workflow-and-taps.md` | 2 | 2026-09-11 | Completed · Target ≤75s, **not yet measured** |
-| AH-SYS-P2A-014 | `02a-plan/14-storage-and-image-volume.md` | 2 | 2026-09-11 | Completed · Assumptions plus low/expected/high scenarios |
-| AH-SYS-P2A-015 | `02a-plan/15-make-inspection-record.md` | 1 | 2026-09-11 | **Verified from the live account** — the first verified external fact |
+| AH-SYS-P2A-014 | `02a-plan/14-storage-and-image-volume.md` | 3 | 2026-09-11 | Completed · Assumptions, three scenarios, storage by artifact class |
+| AH-SYS-P2A-015 | `02a-plan/15-make-inspection-record.md` | 2 | 2026-09-11 | **Verified from the live account**; scenario counts stated separately |
 | AH-SYS-P2A-016 | `02a-plan/16-admin-console-checklist-owner.md` | 1 | 2026-09-11 | Completed · **Awaiting the owner's check** |
 | AH-SYS-P2A-017 | `02a-plan/17-lean-table-scope-matrix.md` | 1 | 2026-09-11 | **Generated** from the model |
 | AH-SYS-P2A-018 | `02a-plan/18-migration-threshold-strategy.md` | 1 | 2026-09-11 | Completed · Withdraws the fixed migration date |
 | AH-SYS-P2A-019 | `02a-plan/19-real-device-test-protocol.md` | 1 | 2026-09-11 | Completed · **Not executed** |
 | AH-SYS-P2A-020 | `02a-plan/20-administrator-role-placeholders.md` | 1 | 2026-09-11 | Completed · No identity assigned |
+| AH-SYS-P2A-021 | `02a-plan/21-release-1-twelve-tables.md` | 1 | 2026-09-11 | **Generated** — 12 tables, 262 fields, 13 on the field form |
+| AH-SYS-P2A-022 | `02a-plan/22-image-derivative-architecture.md` | 1 | 2026-09-11 | Completed · Corrects the "never through Make" rule |
+| AH-SYS-P2A-023 | `02a-plan/23-operations-budget.md` | 1 | 2026-09-11 | Completed · 703 ops, 70% of the verified limit |
 | AH-SYS-P1-000 | `01-data-foundation/00-PHASE-1-SUMMARY.md` | 1 | 2026-09-11 | Awaiting owner review |
 | AH-SYS-P1-001 | `01-data-dictionary.md` | 1 | 2026-09-11 | **Generated** from `model/model.json` |
 | AH-SYS-P1-002 | `02-key-id-and-hash-strategy.md` | 1 | 2026-09-11 | Awaiting owner review — closes C-06 |
@@ -79,7 +82,7 @@ such and may not be treated as a decision.
 
 ## Generated artifacts
 
-Seven documents and all 46 table schemas are **generated** from `model/model.json` and must not be
+Eight documents and all 46 table schemas are **generated** from `model/model.json` and must not be
 hand-edited. Regenerate everything and re-run the checks with:
 
 ```

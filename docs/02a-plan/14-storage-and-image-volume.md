@@ -110,3 +110,49 @@ In the order worth trying:
 After **one month** of real use. Replace A1, A4 and A5 with observed values and every number here
 recomputes. Everything above rests on three inputs; if those three are right, the rest follows, and
 if they are wrong, the rest is wrong in exactly the same proportion.
+
+---
+
+## 8. Storage by artifact class
+
+Added at the owner's request. The classes behave differently — one is permanent, one is transient,
+one is reproducible — so a single total hides the decisions.
+
+Per project per month, expected scenario, 120 photographs:
+
+| # | Class | Count | Unit size | **Total** | Retention | Reproducible? |
+|---|---|---|---|---|---|---|
+| 1 | **Original evidence** | 120 | 2.5 MB | **300 MB** | Full retention period | **No — this is the evidence** |
+| 2 | **AI review derivatives** | ~72 (approved only) | 400 KB | **29 MB** | **Deleted after 7 days** | Yes, from the original |
+| 3 | **Report derivatives** | ~40 (those printed) | 600 KB | **24 MB** | With the document | Yes |
+| 4 | **Generated documents** (PDF, and Word if exported) | 1–2 | 2 MB | **2–4 MB** | Full retention period | Yes, from the frozen snapshot |
+| 5 | **Rejected and superseded temporary derivatives** | ~10 | 400 KB | **4 MB** | Deleted with their parent derivative | Yes |
+| 6 | **Backup / export copies** | all of 1 and 4 | — | **~302 MB** | Per backup policy | No — that is the point of a backup |
+| 7 | Version history of documents | ~1 superseded revision | 2 MB | **2 MB** | With the document | Yes |
+| | **Live total (1–5, 7)** | | | **~361 MB** | | |
+| | **With one backup copy (1–7)** | | | **~663 MB** | | |
+
+**A backup copy nearly doubles the requirement.** That is the single largest storage decision in the
+system, and it is a policy question (EF-12), not a technical one.
+
+Steady state is smaller than it looks: classes 2 and 5 are deleted on a schedule, so they occupy
+roughly one week of accumulation rather than a month — about **7 MB** rather than 33 MB in the steady
+state.
+
+## 9. The high scenario is material — what it requires
+
+At ~1,157 GB a year for 20 projects, the high scenario is not a rounding error. If measurement moves
+the company toward it, six things become necessary rather than optional:
+
+| # | Requirement | What it means concretely |
+|---|---|---|
+| 1 | **Retention rules per classification** | Currently a default of 7 years and unconfirmed (EF-12). Evidence for a closed, uncontested project does not need the same retention as evidence in a live dispute |
+| 2 | **Archive strategy** | Closed periods moved out of the live store to cold storage; the record keeps the reference, the bytes move. Reduces sync load as well as cost |
+| 3 | **Project-closeout procedure** | On closeout: final report issued, evidence archived, residency obligations discharged, retention clock started, the project set to `Archived` and made read-only |
+| 4 | **Duplicate handling** | Duplicates are flagged and retained by design. At high volume that retention is a storage cost worth quantifying — currently assumed at 5% (A10) |
+| 5 | **Workspace storage verification** | Total allocation, current consumption, and whether it is pooled or per-user. **Unknown until the Admin Console storage screen is read** |
+| 6 | **Possible additional-storage cost** | Only assessable after item 5. A future conditional cost, with image upload quality the first lever before paying |
+
+**The cheapest lever remains image size.** Moving the average original from 5 MB to 2.5 MB halves
+every number in the high scenario, and it is one setting in the capture app — traded against evidence
+quality, which is the owner's call.

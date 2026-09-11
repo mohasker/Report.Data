@@ -2064,6 +2064,37 @@ LEAN_MVP = {
             "note": "The register keeps its reserved/issued/cancelled control; only the series "
                     "CONFIGURATION moves to the legal entity."},
     },
+    # Release 1: the controlled capture-and-review prototype (owner instruction, 2026-09-11).
+    # Twelve tables. No report generation, so no document, numbering or legal-entity table.
+    "release_1": {
+        "tables": [
+            "Users", "Projects", "ProjectAssignments", "Locations", "ActivityTypes",
+            "SiteVisits", "VisitActivities", "Photos", "Snags", "Approvals",
+            "AuditLog", "IntegrationJobs",
+        ],
+        "consolidations": {
+            "ProjectActivityRules": {
+                "into": "ActivityTypes, with an optional ProjectID column",
+                "rule": "A row with no ProjectID is the global rule; a row with a ProjectID is a "
+                        "project override of it. Same resolution logic, one table.",
+                "cost": "The override and the rule it overrides share a table, so an administrator "
+                        "reading the catalogue sees both. Acceptable at 34 activities."},
+            "Roles": {
+                "into": "RoleCode enum on Users and ProjectAssignments",
+                "rule": "The role vocabulary is fixed at ten for the prototype.",
+                "cost": "Role capabilities are documentation rather than data."},
+            "Clients": {
+                "into": "ClientNameEN, ClientNameAR and ClientKind on Projects",
+                "rule": "Display only; no billing data exists in release 1.",
+                "cost": "A client with several projects is repeated per project."},
+            "LegalEntities, DocumentJobs, Documents, NumberRegister": {
+                "into": "Not present. Release 1 produces no document",
+                "rule": "Reports are produced manually from approved evidence exported from the app.",
+                "cost": "No document numbering, no release control, no report snapshot. **This is "
+                        "the boundary of release 1** and the first thing release 1b adds."},
+        },
+        "adds_in_release_1b": ["DocumentJobs", "Documents", "NumberRegister", "LegalEntities"],
+    },
     "deferred_phases": {
         "Materials": 5, "MaterialUsage": 5, "Equipment": 5, "VisitEquipment": 5,
         "Employees": 5, "VisitManpower": 5,
@@ -2125,6 +2156,14 @@ def main():
     for t in LEAN_MVP["tables"]:
         if t not in TABLES:
             problems.append(f"lean MVP names unknown table {t}")
+    r1 = LEAN_MVP["release_1"]["tables"]
+    if len(r1) != 12:
+        problems.append(f"release 1 has {len(r1)} tables, expected 12")
+    for t in r1:
+        if t not in TABLES:
+            problems.append(f"release 1 names unknown table {t}")
+        if t not in LEAN_MVP["tables"]:
+            problems.append(f"release 1 table {t} is not in the lean MVP")
     lo, hi = LEAN_MVP["target_range"]
     if not lo <= len(LEAN_MVP["tables"]) <= hi:
         problems.append(f"lean MVP has {len(LEAN_MVP['tables'])} tables, outside {lo}-{hi}")
@@ -2167,8 +2206,10 @@ def main():
           f"{sum(len(t['forbidden']) for t in TRANSITIONS.values())} explicitly forbidden")
     print(f"  security    : {len(SECURITY['roles'])} roles x {len(TABLES)} tables = "
           f"{len(SECURITY['roles']) * len(TABLES)} grants, {len(SECURITY['exceptions'])} exceptions")
-    print(f"  lean MVP    : {len(LEAN_MVP['tables'])} tables built first, "
+    print(f"  lean MVP    : {len(LEAN_MVP['tables'])} tables, "
           f"{len(TABLES) - len(LEAN_MVP['tables'])} deferred but designed")
+    print(f"  release 1   : {len(LEAN_MVP['release_1']['tables'])} tables "
+          f"(capture and review; no document generation)")
 
 
 if __name__ == "__main__":
