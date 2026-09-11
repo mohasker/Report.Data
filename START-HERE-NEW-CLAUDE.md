@@ -5,7 +5,7 @@
 **Package version:** 1.2 · **Date:** 2026-09-11
 **Repository:** `mohasker/Report.Data` · **Branch:** `claude/dazzling-gauss-neihya`
 **Validated commit:** `a668f3f8d3ddf03588f16620984c960ccf86ed9b`
-**Earlier branch:** `claude/alharam-field-reporting-spec-afq1fr` — the same history up to `6f69c07`, not advanced since; §16
+**Mirror branch:** `claude/alharam-field-reporting-spec-afq1fr` — kept at the same commit, so either name resolves to this work; §16
 **Package commit:** recorded in `HANDOFF-MANIFEST.json` → `package_commit`
 
 > **Read this file completely before running anything.** It is written to be self-contained: it
@@ -478,7 +478,7 @@ and no others; in particular, never say "working", "done", "tested" or "ready" w
 |---|---|
 | Repository | `mohasker/Report.Data` |
 | **Branch — develop and push here, and nowhere else** | **`claude/dazzling-gauss-neihya`** |
-| **Earlier branch** | `claude/alharam-field-reporting-spec-afq1fr` — carries the same history up to `6f69c07` and has **not** been advanced since. Whether it is brought forward is the owner's decision; do not push to it unasked |
+| **Mirror branch** | `claude/alharam-field-reporting-spec-afq1fr` — the name used by every earlier handoff package, **fast-forwarded to the same commit** so that following the old package never lands you on stale work. It is a mirror, not a second line of development: develop on the branch above and mirror afterwards |
 | **Validated commit** | **`a668f3f8d3ddf03588f16620984c960ccf86ed9b`** — the commit the 240-check run in §17 was executed against |
 | **Package commit** | See `HANDOFF-MANIFEST.json` → `package_commit`. It adds only this handoff package to the validated commit |
 | Default branch | Do **not** push to it |

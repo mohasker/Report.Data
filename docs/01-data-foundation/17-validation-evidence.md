@@ -8,10 +8,10 @@
 
 | | |
 |---|---|
-| **Commit tested** | `a668f3f8d3ddf03588f16620984c960ccf86ed9b` |
-| **Commit subject** | Stamp package version 1.2 into the handoff builder |
+| **Commit tested** | `09d13a80c72ea317854dd5f0f71d4d59824b247d` |
+| **Commit subject** | Stamp the branch and validated commit into the handoff documents |
 | **Command executed** | `python3 tools/run_validation.py` |
-| **Executed at** | 2026-09-11 18:28:36 UTC |
+| **Executed at** | 2026-09-11 20:38:20 UTC |
 | **Python** | 3.11.15 (CPython, GCC 13.3.0) |
 | **Operating system** | Linux 6.18.44-fc-v24 (x86_64) |
 | **Environment** | Ephemeral Linux container. This run made no network call, used no credential and contacted no external service |
@@ -507,7 +507,7 @@ The operating rules the owner approved, expressed as assertions so that weakenin
 ## 6. Reproducing this run
 
 ```
-git checkout a668f3f8d3ddf03588f16620984c960ccf86ed9b
+git checkout 09d13a80c72ea317854dd5f0f71d4d59824b247d
 python3 tools/run_validation.py
 ```
 

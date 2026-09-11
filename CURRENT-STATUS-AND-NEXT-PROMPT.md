@@ -2,7 +2,7 @@
 
 **Document ID:** AH-SYS-HAND-003 · **Version:** 1.2 · **Date:** 2026-09-11
 **Branch:** `claude/dazzling-gauss-neihya`
-**Earlier branch:** `claude/alharam-field-reporting-spec-afq1fr` — same history up to `6f69c07`, not advanced since
+**Mirror branch:** `claude/alharam-field-reporting-spec-afq1fr` — fast-forwarded to the same commit, so either name resolves to this work
 **Validated commit:** `a668f3f8d3ddf03588f16620984c960ccf86ed9b`
 **Package commit:** see `HANDOFF-MANIFEST.json` → `package_commit`
 
@@ -128,8 +128,9 @@ package:**
 - Implementing a duplicate-upload workaround, creating a publicly accessible link to evidence,
   automating WhatsApp Web, or scraping any group.
 - Representing local validation as evidence that any external platform works.
-- Pushing to any branch other than `claude/dazzling-gauss-neihya` — including `claude/alharam-field-reporting-spec-afq1fr`, which is not to be
-  brought forward without the owner saying so.
+- Pushing to any branch other than `claude/dazzling-gauss-neihya` and its mirror `claude/alharam-field-reporting-spec-afq1fr`.
+  The mirror is only ever **fast-forwarded** to the working branch — never developed on, never
+  force-pushed.
 
 ---
 
