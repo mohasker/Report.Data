@@ -8,10 +8,10 @@
 
 | | |
 |---|---|
-| **Commit tested** | `ace67bd68698a3f7848e569189c1fe69bfc8a539` |
-| **Commit subject** | Record the validation run against a clean committed tree |
+| **Commit tested** | `9aa327fe9cf52ec878703d04ba3f1d3ec7ab181e` |
+| **Commit subject** | Regenerate validation evidence against the clean tree |
 | **Command executed** | `python3 tools/run_validation.py` |
-| **Executed at** | 2026-09-11 07:53:42 UTC |
+| **Executed at** | 2026-09-11 07:53:50 UTC |
 | **Python** | 3.11.15 (CPython, GCC 13.3.0) |
 | **Operating system** | Linux 6.18.44-fc-v24 (x86_64) |
 | **Environment** | Ephemeral Linux container. This run made no network call, used no credential and contacted no external service |
@@ -397,7 +397,7 @@ The operating rules the owner approved, expressed as assertions so that weakenin
 ## 6. Reproducing this run
 
 ```
-git checkout ace67bd68698a3f7848e569189c1fe69bfc8a539
+git checkout 9aa327fe9cf52ec878703d04ba3f1d3ec7ab181e
 python3 tools/run_validation.py
 ```
 
