@@ -226,7 +226,7 @@ Columns per table in brackets. "Built in" is the phase in which the table is *po
 |---|---|---|---|
 | `SiteVisits` | 37 | One reporting event. The unit of submission and review | 2 |
 | `VisitActivities` | 19 | What was done. Quantity, percent complete, supervisor confirmation | 2 |
-| `Photos` | 56 | One photograph. Write-once original, advisory AI fields, reviewer decision | 2 |
+| `Photos` | 64 | One photograph. Write-once original, advisory AI fields, reviewer decision | 2 |
 
 ### 4 · Snags and corrective actions — 1 table
 | Table | Cols | Purpose | Built in |

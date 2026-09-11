@@ -8,10 +8,10 @@
 
 | | |
 |---|---|
-| **Commit tested** | `9e9a32fbe9d6f24a1b7c45f2f05fc6dbfe7281ce` |
-| **Commit subject** | Minimum interaction, a confirmed activity, and filtered analysis |
+| **Commit tested** | `e25a714aeb4563f932f7a1973f614017451f2130` |
+| **Commit subject** | Correct figures the D-22 to D-24 pass moved |
 | **Command executed** | `python3 tools/run_validation.py` |
-| **Executed at** | 2026-09-11 15:32:11 UTC |
+| **Executed at** | 2026-09-11 15:33:01 UTC |
 | **Python** | 3.11.15 (CPython, GCC 13.3.0) |
 | **Operating system** | Linux 6.18.44-fc-v24 (x86_64) |
 | **Environment** | Ephemeral Linux container. This run made no network call, used no credential and contacted no external service |
@@ -20,16 +20,7 @@
 | **Working tree before the run** | MODIFIED — see below |
 
 ```
-M DECISIONS-AND-ASSUMPTIONS.md
- M MASTER-SPEC-CONSOLIDATED.md
- M START-HERE-NEW-CLAUDE.md
- M docs/00-discovery/05-risk-and-controls-register.md
- M docs/00-discovery/10-owner-decisions.md
- M docs/00-discovery/adr/ADR-0009-capture-once-native-share.md
- M docs/01-data-foundation/15-claude-prompt-and-schema-spec.md
- M docs/02a-plan/04-actions-and-workflow.md
- M docs/02a-plan/14-storage-and-image-volume.md
- M docs/OWNER-REVIEW-PACK.md
+M docs/OWNER-REVIEW-PACK.md
 ```
 
 > The run was executed against a working tree containing uncommitted changes. The commit recorded above is the parent commit, not the exact state tested. Re-run after committing to obtain a clean reproduction record.
@@ -515,7 +506,7 @@ The operating rules the owner approved, expressed as assertions so that weakenin
 ## 6. Reproducing this run
 
 ```
-git checkout 9e9a32fbe9d6f24a1b7c45f2f05fc6dbfe7281ce
+git checkout e25a714aeb4563f932f7a1973f614017451f2130
 python3 tools/run_validation.py
 ```
 
