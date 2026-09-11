@@ -8,10 +8,10 @@
 
 | | |
 |---|---|
-| **Commit tested** | `cde17537966bac6083f21469338493f737a412c7` |
-| **Commit subject** | Portable handoff package, and the review pack rendered for the owner |
+| **Commit tested** | `dc8764f7ade1911275235591f70a63b41c7c0151` |
+| **Commit subject** | Stamp the validated commit into the handoff documents |
 | **Command executed** | `python3 tools/run_validation.py` |
-| **Executed at** | 2026-09-11 13:30:02 UTC |
+| **Executed at** | 2026-09-11 13:30:23 UTC |
 | **Python** | 3.11.15 (CPython, GCC 13.3.0) |
 | **Operating system** | Linux 6.18.44-fc-v24 (x86_64) |
 | **Environment** | Ephemeral Linux container. This run made no network call, used no credential and contacted no external service |
@@ -477,7 +477,7 @@ The operating rules the owner approved, expressed as assertions so that weakenin
 ## 6. Reproducing this run
 
 ```
-git checkout cde17537966bac6083f21469338493f737a412c7
+git checkout dc8764f7ade1911275235591f70a63b41c7c0151
 python3 tools/run_validation.py
 ```
 
