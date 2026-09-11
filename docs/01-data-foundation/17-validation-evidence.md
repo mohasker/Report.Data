@@ -8,16 +8,24 @@
 
 | | |
 |---|---|
-| **Commit tested** | `337f48a877c98e104d272858f4e72e70a902433f` |
-| **Commit subject** | Recommendations for the eight open questions, OQ-15 to OQ-22 |
+| **Commit tested** | `a668f3f8d3ddf03588f16620984c960ccf86ed9b` |
+| **Commit subject** | Stamp package version 1.2 into the handoff builder |
 | **Command executed** | `python3 tools/run_validation.py` |
-| **Executed at** | 2026-09-11 17:48:00 UTC |
+| **Executed at** | 2026-09-11 18:28:36 UTC |
 | **Python** | 3.11.15 (CPython, GCC 13.3.0) |
 | **Operating system** | Linux 6.18.44-fc-v24 (x86_64) |
 | **Environment** | Ephemeral Linux container. This run made no network call, used no credential and contacted no external service |
 | **Third-party dependencies** | **None.** Python standard library only |
 | **Model version** | 1.0.0 |
-| **Working tree before the run** | clean |
+| **Working tree before the run** | MODIFIED — see below |
+
+```
+M CURRENT-STATUS-AND-NEXT-PROMPT.md
+ M START-HERE-NEW-CLAUDE.md
+```
+
+> The run was executed against a working tree containing uncommitted changes. The commit recorded above is the parent commit, not the exact state tested. Re-run after committing to obtain a clean reproduction record.
+
 
 ### Byte-identical regeneration
 
@@ -499,7 +507,7 @@ The operating rules the owner approved, expressed as assertions so that weakenin
 ## 6. Reproducing this run
 
 ```
-git checkout 337f48a877c98e104d272858f4e72e70a902433f
+git checkout a668f3f8d3ddf03588f16620984c960ccf86ed9b
 python3 tools/run_validation.py
 ```
 

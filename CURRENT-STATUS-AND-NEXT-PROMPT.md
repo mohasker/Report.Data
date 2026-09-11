@@ -1,8 +1,9 @@
 # Current Status and the Next Prompt
 
 **Document ID:** AH-SYS-HAND-003 · **Version:** 1.2 · **Date:** 2026-09-11
-**Branch:** `claude/alharam-field-reporting-spec-afq1fr`
-**Validated commit:** `4b19fc19fb926a0bf8a426e88150751b904426d9`
+**Branch:** `claude/dazzling-gauss-neihya`
+**Earlier branch:** `claude/alharam-field-reporting-spec-afq1fr` — same history up to `6f69c07`, not advanced since
+**Validated commit:** `a668f3f8d3ddf03588f16620984c960ccf86ed9b`
 **Package commit:** see `HANDOFF-MANIFEST.json` → `package_commit`
 
 ---
@@ -127,7 +128,8 @@ package:**
 - Implementing a duplicate-upload workaround, creating a publicly accessible link to evidence,
   automating WhatsApp Web, or scraping any group.
 - Representing local validation as evidence that any external platform works.
-- Pushing to any branch other than `claude/alharam-field-reporting-spec-afq1fr`.
+- Pushing to any branch other than `claude/dazzling-gauss-neihya` — including `claude/alharam-field-reporting-spec-afq1fr`, which is not to be
+  brought forward without the owner saying so.
 
 ---
 
@@ -196,7 +198,7 @@ Standing rules that apply to everything you do on this project:
 - Do not weaken any statement in this repository that is deliberately uncomfortable. Several of
   them were written after I corrected an earlier overstatement.
 
-Work on the branch claude/alharam-field-reporting-spec-afq1fr and push nowhere else.
+Work on the branch claude/dazzling-gauss-neihya and push nowhere else.
 
 Start now with steps 1 to 5, and report back before doing anything else.
 ```

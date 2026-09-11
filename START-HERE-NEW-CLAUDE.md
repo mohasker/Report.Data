@@ -3,8 +3,9 @@
 **This file is the entry point for a new Claude account taking this project over.**
 
 **Package version:** 1.2 · **Date:** 2026-09-11
-**Repository:** `mohasker/Report.Data` · **Branch:** `claude/alharam-field-reporting-spec-afq1fr`
-**Validated commit:** `4b19fc19fb926a0bf8a426e88150751b904426d9`
+**Repository:** `mohasker/Report.Data` · **Branch:** `claude/dazzling-gauss-neihya`
+**Validated commit:** `a668f3f8d3ddf03588f16620984c960ccf86ed9b`
+**Earlier branch:** `claude/alharam-field-reporting-spec-afq1fr` — the same history up to `6f69c07`, not advanced since; §16
 **Package commit:** recorded in `HANDOFF-MANIFEST.json` → `package_commit`
 
 > **Read this file completely before running anything.** It is written to be self-contained: it
@@ -476,8 +477,9 @@ and no others; in particular, never say "working", "done", "tested" or "ready" w
 | | |
 |---|---|
 | Repository | `mohasker/Report.Data` |
-| **Branch — develop and push here, and nowhere else** | **`claude/alharam-field-reporting-spec-afq1fr`** |
-| **Validated commit** | **`4b19fc19fb926a0bf8a426e88150751b904426d9`** — the commit the 240-check run in §17 was executed against |
+| **Branch — develop and push here, and nowhere else** | **`claude/dazzling-gauss-neihya`** |
+| **Earlier branch** | `claude/alharam-field-reporting-spec-afq1fr` — carries the same history up to `6f69c07` and has **not** been advanced since. Whether it is brought forward is the owner's decision; do not push to it unasked |
+| **Validated commit** | **`a668f3f8d3ddf03588f16620984c960ccf86ed9b`** — the commit the 240-check run in §17 was executed against |
 | **Package commit** | See `HANDOFF-MANIFEST.json` → `package_commit`. It adds only this handoff package to the validated commit |
 | Default branch | Do **not** push to it |
 
@@ -503,12 +505,12 @@ every check, compares the regenerated files against what is on disk, and rewrite
 
 ```
   Seed conformance                                       3 passed   0 failed
-  Capture once, use twice                               28 passed   0 failed
+  Capture once, use twice                               48 passed   0 failed
   Lean operational MVP                                  19 passed   0 failed
   Configurability and unbounded width                   12 passed   0 failed
   Project segregation                                   12 passed   0 failed
   Role separation, time-bound access and recoverability  31 passed   0 failed
-  Evidence rules                                        14 passed   0 failed
+  Evidence rules                                        15 passed   0 failed
   Status transitions, approvals and delegation          20 passed   0 failed
   Content hashing and approval binding                  14 passed   0 failed
   Document numbering                                    13 passed   0 failed
@@ -588,7 +590,7 @@ synthetic data.
 
 **You are authorised to:** read and modify this repository; run the local validation suite; write
 specifications, schemas, generators and checks; use synthetic data; commit and push to
-`claude/alharam-field-reporting-spec-afq1fr`.
+`claude/dazzling-gauss-neihya`, and to no other branch.
 
 **You are NOT authorised to:**
 
@@ -675,7 +677,7 @@ If you have the Git bundle and want the history:
 ```bash
 git clone AlHaram-Field-Reporting-System.bundle alharam-repo
 cd alharam-repo
-git checkout claude/alharam-field-reporting-spec-afq1fr
+git checkout claude/dazzling-gauss-neihya
 ```
 
 ---
