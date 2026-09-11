@@ -8,41 +8,16 @@
 
 | | |
 |---|---|
-| **Commit tested** | `cf9ffed19efe437a305b6d1d68593439e4bb1901` |
-| **Commit subject** | Validation evidence: clean-tree reproduction record |
+| **Commit tested** | `d11d9e437706ece0150ed1180fc3209ac2a6d3fc` |
+| **Commit subject** | Lean 17-table MVP, corrected cost basis, pre-connection deliverables |
 | **Command executed** | `python3 tools/run_validation.py` |
-| **Executed at** | 2026-09-11 08:23:03 UTC |
+| **Executed at** | 2026-09-11 08:23:34 UTC |
 | **Python** | 3.11.15 (CPython, GCC 13.3.0) |
 | **Operating system** | Linux 6.18.44-fc-v24 (x86_64) |
 | **Environment** | Ephemeral Linux container. This run made no network call, used no credential and contacted no external service |
 | **Third-party dependencies** | **None.** Python standard library only |
 | **Model version** | 1.0.0 |
-| **Working tree before the run** | MODIFIED — see below |
-
-```
-M README.md
- M docs/01-data-foundation/17-validation-evidence.md
- M docs/02a-plan/00-PHASE-2A-PLAN.md
- M docs/02a-plan/01-appsheet-workbook.md
- M docs/02a-plan/02-security-filter-specification.md
- M docs/02a-plan/09-cost-and-licensing-matrix.md
- M docs/OWNER-REVIEW-PACK.md
- M docs/VERSION-MANIFEST.md
- M model/model.json
- M tools/build_model.py
- M tools/evidence_meta.py
- M tools/gen_appsheet_workbook.py
- M tools/run_validation.py
- M tools/test_configurability.py
-?? docs/02a-plan/11-lean-mvp-scope.md
-?? docs/02a-plan/12-appsheet-entitlement-checklist.md
-?? docs/02a-plan/13-field-workflow-and-taps.md
-?? docs/02a-plan/14-storage-and-image-volume.md
-?? tools/test_lean_mvp.py
-```
-
-> The run was executed against a working tree containing uncommitted changes. The commit recorded above is the parent commit, not the exact state tested. Re-run after committing to obtain a clean reproduction record.
-
+| **Working tree before the run** | clean |
 
 ### Byte-identical regeneration
 
@@ -446,7 +421,7 @@ The operating rules the owner approved, expressed as assertions so that weakenin
 ## 6. Reproducing this run
 
 ```
-git checkout cf9ffed19efe437a305b6d1d68593439e4bb1901
+git checkout d11d9e437706ece0150ed1180fc3209ac2a6d3fc
 python3 tools/run_validation.py
 ```
 
