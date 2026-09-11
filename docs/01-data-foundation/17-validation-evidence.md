@@ -8,10 +8,10 @@
 
 | | |
 |---|---|
-| **Commit tested** | `20af0a20c9770d9e782219b5a4186c3f4914800f` |
-| **Commit subject** | Report plainly when run outside a git checkout |
+| **Commit tested** | `4b19fc19fb926a0bf8a426e88150751b904426d9` |
+| **Commit subject** | Remove a stale commit reference from the manifest note |
 | **Command executed** | `python3 tools/run_validation.py` |
-| **Executed at** | 2026-09-11 13:32:01 UTC |
+| **Executed at** | 2026-09-11 13:33:26 UTC |
 | **Python** | 3.11.15 (CPython, GCC 13.3.0) |
 | **Operating system** | Linux 6.18.44-fc-v24 (x86_64) |
 | **Environment** | Ephemeral Linux container. This run made no network call, used no credential and contacted no external service |
@@ -477,7 +477,7 @@ The operating rules the owner approved, expressed as assertions so that weakenin
 ## 6. Reproducing this run
 
 ```
-git checkout 20af0a20c9770d9e782219b5a4186c3f4914800f
+git checkout 4b19fc19fb926a0bf8a426e88150751b904426d9
 python3 tools/run_validation.py
 ```
 
