@@ -8,16 +8,23 @@
 
 | | |
 |---|---|
-| **Commit tested** | `07953b0671cb5ddc7c0164b6bc08ab9017601ef2` |
-| **Commit subject** | Decision D-25, the tightened speed threshold, and deterministic generation |
+| **Commit tested** | `cec56e18e396c63462fc29f98087fea0355e83bb` |
+| **Commit subject** | Regenerate the validation evidence against the clean tree |
 | **Command executed** | `python3 tools/run_validation.py` |
-| **Executed at** | 2026-09-12 12:46:12 UTC |
+| **Executed at** | 2026-09-12 12:46:51 UTC |
 | **Python** | 3.11.15 (CPython, GCC 13.3.0) |
 | **Operating system** | Linux 6.18.44-fc-v24 (x86_64) |
 | **Environment** | Ephemeral Linux container. This run made no network call, used no credential and contacted no external service |
 | **Third-party dependencies** | **None.** Python standard library only |
 | **Model version** | 1.0.0 |
-| **Working tree before the run** | clean |
+| **Working tree before the run** | MODIFIED — see below |
+
+```
+M tools/build_handoff.py
+```
+
+> The run was executed against a working tree containing uncommitted changes. The commit recorded above is the parent commit, not the exact state tested. Re-run after committing to obtain a clean reproduction record.
+
 
 ### Byte-identical regeneration
 
@@ -516,7 +523,7 @@ The operating rules the owner approved, expressed as assertions so that weakenin
 ## 6. Reproducing this run
 
 ```
-git checkout 07953b0671cb5ddc7c0164b6bc08ab9017601ef2
+git checkout cec56e18e396c63462fc29f98087fea0355e83bb
 python3 tools/run_validation.py
 ```
 
