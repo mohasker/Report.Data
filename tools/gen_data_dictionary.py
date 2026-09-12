@@ -24,7 +24,7 @@ def main():
     w("# Data Dictionary")
     w("")
     w("**Document ID:** AH-SYS-P1-001 · **Revision:** 1 · **Status:** generated — do not hand-edit")
-    w(f"**Generated:** {datetime.date.today().isoformat()} from `model/model.json` "
+    w(f"**Generated:** {modeldef.model_date()} from `model/model.json` "
       f"(model version {m['model_version']}) by `tools/gen_data_dictionary.py`")
     w("")
     w("> This document is produced from the canonical model, as are the JSON Schemas in")

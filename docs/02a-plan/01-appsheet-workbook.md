@@ -327,6 +327,13 @@ One photograph per row. The received file is write-once and is never altered (D-
 | `ClassificationStatus` | Enum (Pending, AIProposed, Confirmed, NotApplicable…) | Yes | No | Initial value `Pending` |
 | `ConfirmedByUserID` | Ref → Users |  | No |  |
 | `ConfirmedAt` | DateTime |  | No |  |
+| `QuarantineStatus` | Enum (NotQuarantined, Quarantined, AcceptedIntoProject, Rejected) | Yes | No | Initial value `NotQuarantined` |
+| `AccessRevokedAt` | DateTime |  | No |  |
+| `UploadCompletedAt` | DateTime |  | No |  |
+| `QuarantinedAt` | DateTime |  | No |  |
+| `QuarantineReviewedByUserID` | Ref → Users |  | No |  |
+| `QuarantineReviewedAt` | DateTime |  | No |  |
+| `QuarantineRejectionReason` | LongText |  | Yes |  |
 | `AIProposedCaptionEN` | Text |  | No |  |
 | `AIProposedCaptionAR` | Text |  | No |  |
 | `AIVisibleCondition` | Text |  | No |  |

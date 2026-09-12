@@ -14,6 +14,8 @@ from harness import Checks
 
 IN_WINDOW = "2026-04-09T12:00:00Z"
 OUT_OF_WINDOW = "2026-06-01T12:00:00Z"
+# Fixed anchors: never the system clock, so a check cannot start failing at midnight.
+AS_OF_AFTER_REVOCATION = "2026-04-15"
 BUSINESS_CONTENT = ["SiteVisits", "VisitActivities", "Photos", "Snags", "Documents",
                     "DocumentJobs", "Contracts", "BOQItems", "InvoiceRequests", "InvoiceLines",
                     "TaxRules"]
@@ -208,4 +210,115 @@ def run(model, data):
     c.check("ACC-31", "No real person is assigned to any role",
             not real, f"non-synthetic addresses: {real or 'none'} — identities remain pending "
                       f"until the owner supplies them")
+
+    # ---- D-25: evidence still queued when access is revoked --------------
+    REVOKED_AT = "2026-04-15T10:00:00Z"
+    capturer = "USR-0005"
+
+    def queued(captured_at, **extra):
+        photo = {"PhotoID": "PHO-QTEST", "ProjectID": "PRJ-0001", "CapturedBy": capturer,
+                 "CapturedAt": captured_at, "OriginalChecksum": "a1b2c3d4",
+                 "ChecksumAlgorithm": "SHA-256", "QuarantineStatus": "NotQuarantined"}
+        photo.update(extra)
+        return photo
+
+    before = queued("2026-04-15T09:30:00Z")
+    after = queued("2026-04-15T10:30:00Z")
+
+    disp, why = security.revocation_disposition(before, REVOKED_AT)
+    c.check("ACC-32", "Evidence captured BEFORE revocation completes into quarantine, never into "
+                      "the active project register, and is never discarded (D-25)",
+            disp == "complete_to_quarantine", why)
+
+    disp_after, why_after = security.revocation_disposition(after, REVOKED_AT)
+    c.check("ACC-33", "Evidence captured AFTER revocation is refused outright",
+            disp_after == "refuse", why_after)
+
+    disp_unknown, why_unknown = security.revocation_disposition(
+        queued(None), REVOKED_AT)
+    c.check("ACC-34", "Evidence whose capture time cannot be established is refused, because "
+                      "unprovable is not the same as early",
+            disp_unknown == "refuse", why_unknown)
+
+    c.check("ACC-35", "Discarding queued evidence is not one of the available outcomes",
+            {security.revocation_disposition(p, REVOKED_AT)[0]
+             for p in (before, after, queued(None))} <= {"complete_to_quarantine", "refuse"},
+            "the evaluator can only quarantine or refuse — it has no path that destroys a file")
+
+    # a retry after revocation must not launder the same photograph through
+    retries = {security.revocation_disposition(after, REVOKED_AT)[0] for _ in range(5)}
+    c.check("ACC-36", "Retrying a post-revocation submission changes nothing, however many times "
+                      "it is retried",
+            retries == {"refuse"}, f"five attempts, outcomes: {sorted(retries)}")
+
+    # the same photograph submitted from a second device gets the same answer
+    second_device = queued("2026-04-15T10:30:00Z", PhotoID="PHO-QTEST-DEV2",
+                           DeviceIdentifier="synthetic-device-B")
+    c.check("ACC-37", "A second device is not a second chance: the same capture time gets the "
+                      "same refusal",
+            security.revocation_disposition(second_device, REVOKED_AT)[0] == "refuse",
+            "the rule is the capture timestamp against the revocation timestamp, not the device")
+
+    # a duplicate of a pre-revocation capture quarantines once per file, not once per attempt
+    dup_a = queued("2026-04-15T09:30:00Z", PhotoID="PHO-QTEST-A")
+    dup_b = queued("2026-04-15T09:30:00Z", PhotoID="PHO-QTEST-B",
+                   DuplicateOfPhotoID="PHO-QTEST-A")
+    c.check("ACC-38", "A duplicate submission of pre-revocation evidence is quarantined and "
+                      "flagged as a duplicate, never silently dropped and never counted twice",
+            security.revocation_disposition(dup_b, REVOKED_AT)[0] == "complete_to_quarantine"
+            and dup_b["DuplicateOfPhotoID"] == dup_a["PhotoID"],
+            "retained under the duplicate rule (EVD-13); the reviewer decides, the system does "
+            "not delete")
+
+    c.check("ACC-39", "Quarantined evidence is invisible to every report, calculation, approval "
+                      "and document until a reviewer accepts it",
+            not security.quarantine_is_reportable({"QuarantineStatus": "Quarantined"})
+            and not security.quarantine_is_reportable({"QuarantineStatus": "Rejected"})
+            and security.quarantine_is_reportable({"QuarantineStatus": "AcceptedIntoProject"})
+            and security.quarantine_is_reportable({"QuarantineStatus": "NotQuarantined"}),
+            "readable: NotQuarantined, AcceptedIntoProject")
+
+    c.check("ACC-40", "Rejecting quarantined evidence without a reason is refused",
+            security.quarantine_review_is_valid(
+                {"QuarantineStatus": "Rejected", "QuarantineReviewedByUserID": "USR-0003",
+                 "QuarantineReviewedAt": REVOKED_AT}) is not None,
+            "a mandatory reason is what stops evidence disappearing quietly")
+
+    c.check("ACC-41", "The revoked user may not review their own quarantined evidence",
+            security.quarantine_review_is_valid(
+                {"QuarantineStatus": "AcceptedIntoProject", "CapturedBy": capturer,
+                 "QuarantineReviewedByUserID": capturer,
+                 "QuarantineReviewedAt": REVOKED_AT}) is not None,
+            "acceptance by the person whose access was revoked would defeat the whole control")
+
+    # and the revoked user can do nothing further, through the ordinary access rules
+    expired_user = "USR-0012"      # assignment ended 2026-02-28
+    denied = {op: security.can(model, data, expired_user, "Photos", op,
+                               {"ProjectID": "PRJ-0001", "CapturedBy": expired_user},
+                               AS_OF_AFTER_REVOCATION)[0]
+              for op in ("read", "create", "update", "delete")}
+    c.check("ACC-42", "A user whose access has ended can no longer view, create, edit or delete "
+                      "any evidence on that project",
+            not any(denied.values()), f"permitted operations after revocation: "
+                                      f"{[k for k, v in denied.items() if v] or 'none'}")
+
+    c.check("ACC-43", "No local original may be deleted before its upload is confirmed, so the "
+                      "model carries the confirmation timestamp that makes the rule checkable",
+            any(col["name"] == "UploadCompletedAt"
+                for col in model["tables"]["Photos"]["columns"]),
+            "Photos.UploadCompletedAt — CAP-GATE G-4 measures the behaviour, this column records it")
+
+    rev = model["capture_once"]["revocation"]
+    photo_cols = {col["name"] for col in model["tables"]["Photos"]["columns"]}
+    named = {tok.split(".", 1)[1] for line in rev["preserved_for_every_quarantined_item"]
+             for tok in line.replace(",", " ").split() if tok.startswith("Photos.")}
+    c.check("ACC-44", "Every column the revocation rule promises to preserve actually exists",
+            named <= photo_cols, f"missing: {sorted(named - photo_cols) or 'none'}")
+
+    c.check("ACC-45", "The revocation rule states that silent evidence loss is never acceptable, "
+                      "and names what happens when the platform cannot enforce it",
+            rev["silent_loss_is_never_acceptable"] is True
+            and "CAP-GATE fails" in rev["if_the_platform_cannot_enforce_this"],
+            rev["if_the_platform_cannot_enforce_this"])
+
     return c

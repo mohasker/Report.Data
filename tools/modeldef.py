@@ -33,6 +33,17 @@ def load():
         return json.load(fh)
 
 
+def model_date():
+    """The deterministic stamp for every generated document.
+
+    Never the system date. A generated file must depend on the model alone, so that
+    regenerating it tomorrow produces the same bytes and "byte-identical regeneration"
+    means what it says. Genuine event timestamps — when a validation run executed, when a
+    package was built — are recorded by the tools that observe those events, not here.
+    """
+    return load()["model_date"]
+
+
 def json_type(col):
     return _JSON_TYPE.get(col["type"], "string")
 

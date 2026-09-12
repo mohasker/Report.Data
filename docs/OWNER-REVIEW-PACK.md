@@ -13,7 +13,7 @@ not need to open unless something here provokes a question.
 | **What gets built first** | **Release 1: twelve tables**, capture and review only, inside a lean 17-table MVP; the other 29 tables stay as the reference architecture and are added additively ([`02a-plan/21-release-1-twelve-tables.md`](02a-plan/21-release-1-twelve-tables.md)) |
 | **The operating principle** | **Capture once, use twice — and ask for nothing else.** One capture serves the contractor-group share and every report. The supervisor never selects the same photographs twice, and on the normal path supplies **nothing but the photographs** ([`02a-plan/24-capture-once-workflow.md`](02a-plan/24-capture-once-workflow.md)) |
 | **Cost position** | **No new mandatory subscription identified before entitlement verification.** Workspace and QuickBooks are already paid; AppSheet is assumed included pending a 15-minute Admin Console check; AI analysis is a variable cost of roughly **$6.28 a month** at pilot volume — an estimate, not a measurement |
-| **What was executed** | **240 automated checks, all passing**, against synthetic data on a local machine |
+| **What was executed** | **257 automated checks, all passing**, against synthetic data on a local machine |
 | **What was connected** | **Nothing.** No Google account, no AppSheet app, no Make scenario, no Claude API call, no QuickBooks connection, no real data, no email. One **read-only** Make inspection was performed with written authorisation |
 | **The one thing nobody knows yet** | Whether the capture platform can share several stored image files to an existing WhatsApp group without a second selection (`CAP-GATE`). It is a device test, not a question anyone can answer from documentation |
 | **Recommendation** | **Conditional approval** — see §14 |
@@ -850,7 +850,7 @@ remaining uncertainty is in the platforms, not the design.
 point 3, and because the platform verification in point 1 could still change a structural decision.
 Conditional approval lets Phase 2A proceed at no risk while both are resolved.
 
-**Why not redesign:** nothing found in 240 checks suggests a structural fault. The three defects the
+**Why not redesign:** nothing found in 257 checks suggests a structural fault. The three defects the
 checks caught — two unreachable statuses, a project manager who could write the audit log, six
 vocabularies without change attribution — were fixed as they were found, and a fourth correction
 came from a fixture that refused to accept an Arabic-only client name.

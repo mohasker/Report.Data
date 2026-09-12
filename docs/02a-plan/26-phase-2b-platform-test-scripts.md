@@ -1,6 +1,6 @@
 # Phase 2B Platform Test Scripts — Segregation, Evidence Rules, Configurability
 
-**Document ID:** AH-SYS-P2A-026 · **Revision:** 1 · **Date:** 2026-09-11
+**Document ID:** AH-SYS-P2A-026 · **Revision:** 2 · **Date:** 2026-09-12
 **Status:** Completed · **Not executed** — no platform exists, and none is authorised
 **Companion to:** `19-real-device-test-protocol.md` (device and share), `05-offline-test-plan.md` (offline)
 
@@ -8,7 +8,7 @@
 
 ## 1. Why these are written before the platform exists
 
-The 240 local checks prove that **the model is right**. They cannot prove that a built system
+The 257 local checks prove that **the model is right**. They cannot prove that a built system
 **enforces** the model, because nothing has been built. That gap is the whole of Phase 2B, and it is
 the gap where a design quietly becomes a different design.
 
@@ -108,6 +108,30 @@ they are the two most likely to be missed.
 disappears on a replayed or offline submission is an ordinary platform behaviour and a serious
 failure here.
 
+## 5b. Revocation and quarantine — `P2B-REV-01` … `P2B-REV-08`
+
+Added by **decision D-25**. The local checks `ACC-32` … `ACC-45` prove the **rule**; these prove the
+**running system obeys it**, which is a different claim.
+
+| Script | Setup | Attempt | Pass only if | Local check |
+|---|---|---|---|---|
+| **P2B-REV-01** | Six photographs captured, queued, unsent. Access revoked while the device is offline | Reconnect | All six complete into **quarantine**. **None is discarded, none reaches the active project register** | ACC-32 |
+| **P2B-REV-02** | Access already revoked | Capture and attempt to submit | **Refused.** Not quarantined, not queued, not stored | ACC-33 |
+| **P2B-REV-03** | A queued photograph whose capture time is missing or unreadable | Reconnect | **Refused**, and the refusal says why. Unprovable is not treated as early | ACC-34 |
+| **P2B-REV-04** | The refusal of `P2B-REV-02` | Retry five times, closing and reopening the app between attempts | Refused every time, identically. **Persistence is not a bypass** | ACC-36 |
+| **P2B-REV-05** | The same account signed in on a **second device** after revocation | Capture and submit | Refused. The rule is the capture timestamp against the revocation timestamp, **never the device** | ACC-37 |
+| **P2B-REV-06** | The same pre-revocation photograph submitted **twice** | Reconnect | Quarantined **once**, the second flagged as a duplicate. **Not counted twice, not silently dropped** | ACC-38, EVD-13 |
+| **P2B-REV-07** | Quarantined items exist | Open every report, calculation, approval and document | **None of them can see a quarantined item.** Only accepted items appear | ACC-39 |
+| **P2B-REV-08** | A reviewer rejects a quarantined item | Submit the rejection with the reason left empty | **Refused.** The reason is mandatory, and the audit record is retained either way | ACC-40 |
+
+**And the standing condition, checked throughout §5b:** the revoked user can no longer **view, edit,
+delete, share or submit** anything (`ACC-42`). A revocation that leaves any one of those working is a
+segregation failure and stops Phase 2B under the §4 rule.
+
+**If the platform cannot enforce this:** `CAP-GATE` fails, and the queued files stay **locally
+protected — not deleted, not uploaded** — pending an authorised recovery procedure. That is the
+decision, not a fallback invented here.
+
 ## 6. Configurability — `P2B-CFG-01` … `P2B-CFG-10`
 
 **The question this suite answers in one sentence:** can the company add its next project without
@@ -142,7 +166,7 @@ Stated so that a full pass is not mistaken for more than it is.
 | Make operation consumption against the verified limit | `23-operations-budget.md` | Measured in the first month of running, not in a test |
 | AI proposal quality | Nowhere yet | A proposal is advisory by design (D-17, D-23). Its quality changes nothing a rule depends on |
 
-**A full pass of all forty-one scripts proves the system enforces its own rules. It proves nothing
+**A full pass of all forty-nine scripts proves the system enforces its own rules. It proves nothing
 about delivery, speed, cost or adoption.**
 
 ## 8. Pass, fail, and what a failure means
@@ -170,8 +194,8 @@ complete, or fit for production.**
 
 ## 10. Status
 
-**Completed · Submitted for Owner Review · Not executed.** Forty-one scripts — fourteen segregation,
-seventeen evidence-rule, ten configurability — of which **five have no local counterpart** and exist
+**Completed · Submitted for Owner Review · Not executed.** Forty-nine scripts — fourteen segregation,
+seventeen evidence-rule, **eight revocation and quarantine** (D-25), ten configurability — of which **five have no local counterpart** and exist
 only because a running system can fail in ways a model cannot describe. No platform exists, none is
-authorised, and the local suite remains at **240 of 240 across 13 suites**, unchanged by this
+authorised, and the local suite stands at **257 of 257 across 13 suites**, unchanged by this
 document.

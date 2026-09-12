@@ -489,7 +489,7 @@ Seventeen acceptance criteria, each mapped to the checks that bear on it in
 `docs/01-data-foundation/17-validation-evidence.md`. Three are proven in logic, ten are partial, and
 four are untested because the capability does not exist yet.
 
-**240 automated checks across 13 suites, all passing, against synthetic data, locally. Byte-identical
+**257 automated checks across 13 suites, all passing, against synthetic data, locally. Byte-identical
 regeneration confirmed.**
 
 ### What that does NOT prove

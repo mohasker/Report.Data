@@ -17,7 +17,7 @@
 
 ## 0. The two instructions that matter most
 
-**1. Do not restart, redesign, or reconnect anything.** This project is roughly 240 automated checks
+**1. Do not restart, redesign, or reconnect anything.** This project is roughly 257 automated checks
 and 70-odd documents into a deliberate, phased build. The design has been reviewed and corrected by
 the owner seven times, and twenty-four decisions are on the record. If something looks wrong, it is far more likely to be a decision you have not
 read yet than a mistake. Read `DECISIONS-AND-ASSUMPTIONS.md` before proposing any change.
@@ -509,15 +509,15 @@ every check, compares the regenerated files against what is on disk, and rewrite
   Lean operational MVP                                  19 passed   0 failed
   Configurability and unbounded width                   12 passed   0 failed
   Project segregation                                   12 passed   0 failed
-  Role separation, time-bound access and recoverability  31 passed   0 failed
+  Role separation, time-bound access and recoverability  45 passed   0 failed
   Evidence rules                                        15 passed   0 failed
   Status transitions, approvals and delegation          20 passed   0 failed
   Content hashing and approval binding                  14 passed   0 failed
   Document numbering                                    13 passed   0 failed
   Deterministic calculation                             22 passed   0 failed
   Bilingual and right-to-left readiness                 13 passed   0 failed
-  Governance and safety rules                           18 passed   0 failed
-  TOTAL 240/240 checks passed
+  Governance and safety rules                           21 passed   0 failed
+  TOTAL 257/257 checks passed
   byte-identical regeneration : yes
 ```
 
@@ -628,7 +628,7 @@ specifications, schemas, generators and checks; use synthetic data; commit and p
 **Do not start by building anything.**
 
 1. **Verify the package.** Confirm the checksums in `HANDOFF-MANIFEST.json`, then run
-   `python3 tools/run_validation.py` and confirm you get **240/240 passed** and **byte-identical
+   `python3 tools/run_validation.py` and confirm you get **257/257 passed** and **byte-identical
    regeneration: yes**. Report whether your reproduction matches. If it does not, stop and say so —
    a mismatch means something in transfer, not something to fix by editing.
 2. **Read, in the order given in §23.** Roughly 90 minutes. Do not skip
@@ -641,7 +641,7 @@ specifications, schemas, generators and checks; use synthetic data; commit and p
    recommendations — `docs/02a-plan/25-open-question-recommendations.md` (AH-SYS-P2A-025), one
    recommendation per question, **submitted for owner review and not decided**; what is needed there
    is the owner's answer, not more drafting. The **Phase 2B test scripts** are written too —
-   `docs/02a-plan/26-phase-2b-platform-test-scripts.md` (AH-SYS-P2A-026), 41 platform-neutral
+   `docs/02a-plan/26-phase-2b-platform-test-scripts.md` (AH-SYS-P2A-026), 49 platform-neutral
    scripts, **not executed**. What still needs no external access: the **Make scenario blueprints**
    for the capture-once actions, written disabled, and **extending the check suites** where a rule
    is specified but not yet tested.
@@ -677,7 +677,7 @@ If you have the ZIP but not the repository:
 ```bash
 unzip AlHaram-Field-Reporting-System-Handoff.zip -d alharam
 cd alharam
-python3 tools/run_validation.py          # expect 240/240
+python3 tools/run_validation.py          # expect 257/257
 ```
 
 If you have the Git bundle and want the history:
@@ -692,7 +692,7 @@ git checkout claude/dazzling-gauss-neihya
 
 ## 24. Do not restart, redesign, or reconnect
 
-**Do not rebuild the model from the specification.** It exists, it is canonical, and 240 checks
+**Do not rebuild the model from the specification.** It exists, it is canonical, and 257 checks
 depend on its exact shape. Change it by editing `tools/build_model.py` and re-running
 `python3 tools/run_validation.py` — never by editing `model/model.json` or any generated document
 directly.

@@ -237,7 +237,7 @@ To be resolved during the phase noted; none prevent starting Phase 1.
 | OQ-20 | What the **quality threshold** and the **near-duplicate similarity threshold** should be. Both are project configuration, and both trade a saved model call against a missed observation (D-24). | Phase 2B |
 | OQ-21 | Whether a **pending classification** should expire into a reviewer task after some number of days, or simply accumulate in a queue (D-23). | Phase 2A |
 | OQ-22 | Whether the location prompt, when it does appear, should offer the **nearest location by GPS** rather than the last used (D-22). | Phase 2A |
-| OQ-23 | What happens to **evidence still queued on a device when the user's access is revoked** — discarded, or completed into a reviewer's quarantine. Discarding destroys evidence the supervisor believes they submitted; completing lets someone without access write to a project. Surfaced by `CAP-GATE` G-5.3. | Phase 2B |
+| ~~OQ-23~~ | **Closed 2026-09-12 by owner decision D-25.** Evidence captured before revocation completes into a restricted quarantine area; evidence captured after it, or with no provable capture time, is refused; discarding is not an available outcome. See [`10-owner-decisions.md`](10-owner-decisions.md) D-25. | Decided |
 
 > **OQ-15 … OQ-22 now have written recommendations.** See
 > [`../02a-plan/25-open-question-recommendations.md`](../02a-plan/25-open-question-recommendations.md)

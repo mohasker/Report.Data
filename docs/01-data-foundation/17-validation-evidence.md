@@ -8,37 +8,51 @@
 
 | | |
 |---|---|
-| **Commit tested** | `2d67ad0f1f4ded8caea14c1cc8bf92a3eaff5cc9` |
-| **Commit subject** | One source of truth for the validated commit, and the owner's scope freeze |
+| **Commit tested** | `e214e2af6ae6e734e9321dda9e56e9ba7e95b4df` |
+| **Commit subject** | The CAP-GATE and entitlement preparation pack |
 | **Command executed** | `python3 tools/run_validation.py` |
-| **Executed at** | 2026-09-12 06:46:54 UTC |
+| **Executed at** | 2026-09-12 12:46:03 UTC |
 | **Python** | 3.11.15 (CPython, GCC 13.3.0) |
-| **Operating system** | Linux 6.18.44-fc-v32 (x86_64) |
+| **Operating system** | Linux 6.18.44-fc-v24 (x86_64) |
 | **Environment** | Ephemeral Linux container. This run made no network call, used no credential and contacted no external service |
 | **Third-party dependencies** | **None.** Python standard library only |
 | **Model version** | 1.0.0 |
 | **Working tree before the run** | MODIFIED — see below |
 
 ```
-M CURRENT-STATUS-AND-NEXT-PROMPT.md
+M CHANGELOG.md
+ M CURRENT-STATUS-AND-NEXT-PROMPT.md
  M DECISIONS-AND-ASSUMPTIONS.md
+ M MASTER-SPEC-CONSOLIDATED.md
+ M README.md
+ M START-HERE-NEW-CLAUDE.md
  M docs/00-discovery/04-open-questions.md
+ M docs/00-discovery/10-owner-decisions.md
  M docs/01-data-foundation/01-data-dictionary.md
- M docs/01-data-foundation/03-status-transition-matrix.md
- M docs/01-data-foundation/04-security-model.md
  M docs/01-data-foundation/17-validation-evidence.md
  M docs/02a-plan/01-appsheet-workbook.md
- M docs/02a-plan/02-security-filter-specification.md
- M docs/02a-plan/16-admin-console-checklist-owner.md
  M docs/02a-plan/17-lean-table-scope-matrix.md
  M docs/02a-plan/19-real-device-test-protocol.md
  M docs/02a-plan/21-release-1-twelve-tables.md
- M docs/02a-plan/24-capture-once-workflow.md
+ M docs/02a-plan/25-open-question-recommendations.md
+ M docs/02a-plan/26-phase-2b-platform-test-scripts.md
+ M docs/02a-plan/28-cap-gate-results-sheet.md
+ M docs/02a-plan/cap-gate-results-sheet.csv
+ M docs/OWNER-REVIEW-PACK.md
  M docs/VERSION-MANIFEST.md
-?? docs/02a-plan/27-cap-gate-prototype-specification.md
-?? docs/02a-plan/28-cap-gate-results-sheet.md
-?? docs/02a-plan/29-owner-participation-guide.md
-?? docs/02a-plan/cap-gate-results-sheet.csv
+ M model/model.json
+ M schemas/tables/Photos.schema.json
+ M tools/build_model.py
+ M tools/gen_appsheet_workbook.py
+ M tools/gen_capture_once.py
+ M tools/gen_data_dictionary.py
+ M tools/gen_matrices.py
+ M tools/gen_release1_scope.py
+ M tools/gen_scope_matrix.py
+ M tools/modeldef.py
+ M tools/security.py
+ M tools/test_access_control.py
+ M tools/test_governance.py
 ```
 
 > The run was executed against a working tree containing uncommitted changes. The commit recorded above is the parent commit, not the exact state tested. Re-run after committing to obtain a clean reproduction record.
@@ -52,7 +66,7 @@ Every generated artifact was hashed (SHA-256) before regeneration, regenerated f
 
 ## 2. Summary
 
-**240 of 240 checks passed.**
+**257 of 257 checks passed.**
 
 | # | Suite | Kind | Checks | Passed | Failed |
 |---|---|---|---|---|---|
@@ -61,15 +75,15 @@ Every generated artifact was hashed (SHA-256) before regeneration, regenerated f
 | 3 | Lean operational MVP | structural | 19 | 19 | 0 |
 | 4 | Configurability and unbounded width | structural | 12 | 12 | 0 |
 | 5 | Project segregation | logic | 12 | 12 | 0 |
-| 6 | Role separation, time-bound access and recoverability | logic | 31 | 31 | 0 |
+| 6 | Role separation, time-bound access and recoverability | logic | 45 | 45 | 0 |
 | 7 | Evidence rules | logic | 15 | 15 | 0 |
 | 8 | Status transitions, approvals and delegation | structural | 20 | 20 | 0 |
 | 9 | Content hashing and approval binding | logic | 14 | 14 | 0 |
 | 10 | Document numbering | simulation | 13 | 13 | 0 |
 | 11 | Deterministic calculation | logic | 22 | 22 | 0 |
 | 12 | Bilingual and right-to-left readiness | structural | 13 | 13 | 0 |
-| 13 | Governance and safety rules | structural | 18 | 18 | 0 |
-| | **Total** | | **240** | **240** | **0** |
+| 13 | Governance and safety rules | structural | 21 | 21 | 0 |
+| | **Total** | | **257** | **257** | **0** |
 
 ### Console output
 
@@ -80,16 +94,16 @@ Every generated artifact was hashed (SHA-256) before regeneration, regenerated f
   Lean operational MVP                                  19 passed   0 failed
   Configurability and unbounded width                   12 passed   0 failed
   Project segregation                                   12 passed   0 failed
-  Role separation, time-bound access and recoverability  31 passed   0 failed
+  Role separation, time-bound access and recoverability  45 passed   0 failed
   Evidence rules                                        15 passed   0 failed
   Status transitions, approvals and delegation          20 passed   0 failed
   Content hashing and approval binding                  14 passed   0 failed
   Document numbering                                    13 passed   0 failed
   Deterministic calculation                             22 passed   0 failed
   Bilingual and right-to-left readiness                 13 passed   0 failed
-  Governance and safety rules                           18 passed   0 failed
+  Governance and safety rules                           21 passed   0 failed
 ========================================================================
-  TOTAL 240/240 checks passed
+  TOTAL 257/257 checks passed
 ```
 
 ### Artifact regeneration output
@@ -98,8 +112,8 @@ Every generated artifact was hashed (SHA-256) before regeneration, regenerated f
 $ python3 tools/build_model.py
 wrote /home/user/Report.Data/model/model.json
   tables      : 46
-  columns     : 857
-  enums       : 32
+  columns     : 864
+  enums       : 33
   transitions : 82 allowed, 36 explicitly forbidden
   security    : 10 roles x 46 tables = 460 grants, 20 exceptions
   lean MVP    : 17 tables, 29 deferred but designed
@@ -109,7 +123,7 @@ wrote /home/user/Report.Data/model/model.json
 $ python3 tools/gen_schemas.py
 wrote 46 table schemas to schemas/tables/
 $ python3 tools/gen_data_dictionary.py
-wrote /home/user/Report.Data/docs/01-data-foundation/01-data-dictionary.md (1910 lines)
+wrote /home/user/Report.Data/docs/01-data-foundation/01-data-dictionary.md (1928 lines)
 $ python3 tools/gen_matrices.py
 wrote docs/01-data-foundation/03-status-transition-matrix.md
 wrote docs/01-data-foundation/04-security-model.md
@@ -119,7 +133,7 @@ wrote docs/02a-plan/02-security-filter-specification.md
 $ python3 tools/gen_scope_matrix.py
 wrote docs/02a-plan/17-lean-table-scope-matrix.md
 $ python3 tools/gen_release1_scope.py
-wrote docs/02a-plan/21-release-1-twelve-tables.md: 290 fields, 15 on the field form, 0 mandatory
+wrote docs/02a-plan/21-release-1-twelve-tables.md: 297 fields, 15 on the field form, 0 mandatory
 $ python3 tools/gen_capture_once.py
 wrote docs/02a-plan/24-capture-once-workflow.md: 9 steps, 15 device test conditions
 ```
@@ -317,7 +331,7 @@ No data, image, recipient, template, document number or financial record may cro
 | `SEG-11` | PASS | A location code reused across projects stays distinct because the ID is the key | codes shared across projects: ['BLK-A', 'SITE']; all LocationIDs unique: True |
 | `SEG-12` | PASS | A residency restriction disables AI for its own project only | AI disabled: ['PRJ-0003']; AI enabled: ['PRJ-0001', 'PRJ-0002'] |
 
-### Role separation, time-bound access and recoverability  ·  `logic`  ·  31/31 passed
+### Role separation, time-bound access and recoverability  ·  `logic`  ·  45/45 passed
 
 A technical administrator gets no business content; business administration is a separate role; auditor and break-glass access are time-bound and authorised; and the system cannot become unrecoverable.
 
@@ -354,6 +368,20 @@ A technical administrator gets no business content; business administration is a
 | `ACC-29` | PASS | A configuration with neither a backup administrator nor a documented route is detectable as a go-live blocker | the condition is computable from the recovery plan row, so go-live can be blocked on it rather than on someone remembering |
 | `ACC-30` | PASS | The recovery plan stores no credential and no route to obtaining one | the plan records whether a route exists and whether it was tested, nothing more |
 | `ACC-31` | PASS | No real person is assigned to any role | non-synthetic addresses: none — identities remain pending until the owner supplies them |
+| `ACC-32` | PASS | Evidence captured BEFORE revocation completes into quarantine, never into the active project register, and is never discarded (D-25) | captured 2026-04-15T09:30:00Z, before revocation at 2026-04-15T10:00:00Z |
+| `ACC-33` | PASS | Evidence captured AFTER revocation is refused outright | captured 2026-04-15T10:30:00Z, at or after revocation at 2026-04-15T10:00:00Z |
+| `ACC-34` | PASS | Evidence whose capture time cannot be established is refused, because unprovable is not the same as early | capture time is not recorded, so it cannot be shown to predate revocation |
+| `ACC-35` | PASS | Discarding queued evidence is not one of the available outcomes | the evaluator can only quarantine or refuse — it has no path that destroys a file |
+| `ACC-36` | PASS | Retrying a post-revocation submission changes nothing, however many times it is retried | five attempts, outcomes: ['refuse'] |
+| `ACC-37` | PASS | A second device is not a second chance: the same capture time gets the same refusal | the rule is the capture timestamp against the revocation timestamp, not the device |
+| `ACC-38` | PASS | A duplicate submission of pre-revocation evidence is quarantined and flagged as a duplicate, never silently dropped and never counted twice | retained under the duplicate rule (EVD-13); the reviewer decides, the system does not delete |
+| `ACC-39` | PASS | Quarantined evidence is invisible to every report, calculation, approval and document until a reviewer accepts it | readable: NotQuarantined, AcceptedIntoProject |
+| `ACC-40` | PASS | Rejecting quarantined evidence without a reason is refused | a mandatory reason is what stops evidence disappearing quietly |
+| `ACC-41` | PASS | The revoked user may not review their own quarantined evidence | acceptance by the person whose access was revoked would defeat the whole control |
+| `ACC-42` | PASS | A user whose access has ended can no longer view, create, edit or delete any evidence on that project | permitted operations after revocation: none |
+| `ACC-43` | PASS | No local original may be deleted before its upload is confirmed, so the model carries the confirmation timestamp that makes the rule checkable | Photos.UploadCompletedAt — CAP-GATE G-4 measures the behaviour, this column records it |
+| `ACC-44` | PASS | Every column the revocation rule promises to preserve actually exists | missing: none |
+| `ACC-45` | PASS | The revocation rule states that silent evidence loss is never acceptable, and names what happens when the platform cannot enforce it | CAP-GATE fails. The queued files stay locally protected — not deleted, not uploaded — pending an authorised recovery procedure. |
 
 ### Evidence rules  ·  `logic`  ·  15/15 passed
 
@@ -489,12 +517,12 @@ English and Arabic are supported from Phase 1, with no redesign required to add 
 | `LNG-07` | PASS | Arabic text passes through canonical serialisation unchanged | Arabic description preserved verbatim in the canonical string |
 | `LNG-08` | PASS | Arabic text is NFC-normalised without alteration | text is already NFC and is unchanged by normalisation |
 | `LNG-09` | PASS | Arabic-Indic digits in names are preserved as written | غرفة ١٢ مبنى أ retains Arabic-Indic digits |
-| `LNG-10` | PASS | Every controlled vocabulary carries an Arabic label for every value | 32 vocabularies, every value labelled in both languages |
+| `LNG-10` | PASS | Every controlled vocabulary carries an Arabic label for every value | 33 vocabularies, every value labelled in both languages |
 | `LNG-11` | PASS | Seeded reference data is populated in Arabic, not merely capable of it | roles, units, disciplines, activities, document types and classifications all carry Arabic |
 | `LNG-12` | PASS | Supervisors can record descriptions and captions in Arabic | 6 visits and 9 photo captions carry Arabic |
 | `LNG-13` | PASS | Arabic is never written into an English column to satisfy a requirement | English columns contain no Arabic text |
 
-### Governance and safety rules  ·  `structural`  ·  18/18 passed
+### Governance and safety rules  ·  `structural`  ·  21/21 passed
 
 The operating rules the owner approved, expressed as assertions so that weakening one of them fails a check rather than passing unnoticed.
 
@@ -518,13 +546,16 @@ The operating rules the owner approved, expressed as assertions so that weakenin
 | `GOV-16` | PASS | Financial tables are declared as such so access rules can act on it | financial tables: TaxRules, Contracts, WorkOrders, BOQItems, InvoiceRequests, InvoiceLines |
 | `GOV-17` | PASS | Every table carries creation and update attribution | missing: none |
 | `GOV-18` | PASS | The seed directory states plainly that its data is synthetic | stated in seed/README.md |
+| `GOV-19` | PASS | Regenerating the repository under two different system dates produces byte-identical output | 7 generators, 128 files, two system dates 2026-09-12 and 2027-03-04; differing: none |
+| `GOV-20` | PASS | No generator reads the system clock: a generated document depends on the model alone | 7 generators clean |
+| `GOV-21` | PASS | Genuine event timestamps are NOT removed: the validation evidence and the delivery receipt still record when they actually ran | determinism applies to generated specifications, never to the record of an event that occurred at a particular moment |
 
 ---
 
 ## 6. Reproducing this run
 
 ```
-git checkout 2d67ad0f1f4ded8caea14c1cc8bf92a3eaff5cc9
+git checkout e214e2af6ae6e734e9321dda9e56e9ba7e95b4df
 python3 tools/run_validation.py
 ```
 

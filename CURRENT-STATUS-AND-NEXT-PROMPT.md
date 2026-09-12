@@ -10,6 +10,30 @@
 
 ## 1. Last completed task
 
+**Owner decision D-25, the tightened speed threshold, and deterministic generation (2026-09-12).**
+
+- **D-25 closes `OQ-23`.** Evidence captured **before** revocation completes into a restricted
+  **quarantine** area — never the active project register, never the bin. Captured after it, or with
+  **no provable capture time**, it is **refused**. **Discarding is not an available outcome**, and it
+  is not reachable from the code. The revoked user loses view, edit, delete, share and submit
+  immediately; a reviewer accepts into the project or rejects with a **mandatory reason** that is
+  retained. If the platform cannot enforce this, **`CAP-GATE` fails** and the files stay locally
+  protected. One enum, seven `Photos` columns, one canonical block, **14 checks `ACC-32` … `ACC-45`**,
+  and **8 platform scripts `P2B-REV-01` … `P2B-REV-08`**.
+- **The speed threshold is the owner's:** median foreground ≤ baseline **+20 s**, p90 ≤ **+40 s**, no
+  second selection, no missing or duplicated evidence, and **both supervisors confirming daily use —
+  blocking even when the numbers pass.** Timing is now split into **foreground** and **background**,
+  and a background upload that stops the supervisor moving on is re-counted as foreground.
+- **Generation is deterministic.** Six generators stamped the system date; they now stamp
+  `model_date`. **`GOV-19` regenerates the repository twice under two different system dates and
+  requires identical bytes** — verified by deliberately breaking it, which failed the check and named
+  the file. `GOV-21` guards the other direction: genuine event timestamps stay.
+
+**Validation: 257 of 257 across 13 suites** (was 240), byte-identical regeneration confirmed, and now
+confirmed under a moving clock.
+
+### Before that
+
 **The CAP-GATE and entitlement preparation pack (2026-09-12), prepared under the owner's**
 **preparation-only authorisation.** Five deliverables, none executed:
 
@@ -34,7 +58,8 @@ to evidence still queued on a device when access is revoked.
 ### Before that
 
 **The Phase 2B platform test scripts (2026-09-11).** `docs/02a-plan/26-phase-2b-platform-test-scripts.md`
-(AH-SYS-P2A-026) — 41 scripts: 14 segregation, 17 evidence-rule, 10 configurability, each mapped to
+(AH-SYS-P2A-026) — 49 scripts: 14 segregation, 17 evidence-rule, 8 revocation and quarantine (D-25),
+10 configurability, each mapped to
 the local check it extends, and **five with no local counterpart at all**, because a running system
 can fail in ways a data model cannot describe: what a notification discloses, what a device has
 cached, whether a refusal survives a replay, whether a rule change reaches already-submitted
@@ -51,7 +76,7 @@ with the model cost of approving it and the cost of reversing it. Three of the e
 *measure first* — OQ-17 is routed into `CAP-GATE` rather than guessed at, and OQ-20 and OQ-22 wait
 on a distribution and a frequency that nobody has yet observed. **Nothing was implemented: no column
 was added, no check was altered, and all eight questions remain open until the owner answers.**
-Validation unchanged at **240 of 240 across 13 suites**, byte-identical regeneration confirmed.
+Validation was **240 of 240 across 13 suites** at that point; it stands at **257 of 257** today.
 
 ### Before that
 
@@ -85,7 +110,7 @@ What that involved:
 - **`tools/run_validation.py --out PATH`** now writes the evidence document outside the repository,
   so an exact commit can be validated without modifying a single tracked file.
 
-**Result: 240 of 240 checks passing across 13 suites, byte-identical regeneration confirmed, and the
+**Result at the time: 240 of 240 checks passing across 13 suites, byte-identical regeneration confirmed, and the
 exact packaged source commit validated without modifying tracked files.**
 
 ## 2. Current phase
@@ -150,7 +175,7 @@ Phase 1 data foundation. **Phase 2B — the first external connection — is not
 
 **In this order:**
 
-1. **Verify the package**, then run `python3 tools/run_validation.py` and confirm **240/240** and
+1. **Verify the package**, then run `python3 tools/run_validation.py` and confirm **257/257** and
    **byte-identical regeneration: yes**. Report whether the reproduction matches.
 2. **Read** in the order given in `START-HERE-NEW-CLAUDE.md` §23.
 3. **Report the current status and blockers back to the owner**, using the seven-value vocabulary,
@@ -158,7 +183,7 @@ Phase 1 data foundation. **Phase 2B — the first external connection — is not
 4. **Then continue Phase 2A on synthetic data only**, which means any of:
    - ~~drafting recommendations for **OQ-15 to OQ-22**~~ — **done**, AH-SYS-P2A-025. What remains
      is the owner's answer, not more drafting;
-   - ~~writing the **Phase 2B test scripts**~~ — **done**, AH-SYS-P2A-026: 41 platform-neutral
+   - ~~writing the **Phase 2B test scripts**~~ — **done**, AH-SYS-P2A-026: 49 platform-neutral
      scripts, not executed, waiting on a platform that is not authorised;
    - ~~writing the **disabled Make blueprints**~~ — **withdrawn by the owner on 2026-09-11**, see
      §3b. Not to be written before the entitlement result and `CAP-GATE`;
@@ -189,7 +214,7 @@ package:**
   automating WhatsApp Web, or scraping any group.
 - Representing local validation as evidence that any external platform works.
 - Pushing to any branch other than `claude/dazzling-gauss-neihya` and its mirror `claude/alharam-field-reporting-spec-afq1fr`.
-- Starting Phase 2B, executing any of the 41 platform test scripts, or writing a Make blueprint —
+- Starting Phase 2B, executing any of the 49 platform test scripts, or writing a Make blueprint —
   see §3b.
   The mirror is only ever **fast-forwarded** to the working branch — never developed on, never
   force-pushed.
@@ -222,7 +247,7 @@ Before doing any work:
    It is standard library only: no network, no credential, no installation, no external service.
 
 4. REPORT whether your reproduction matches what the manifest and the delivery receipt
-   record. I expect 240 of 240 checks passing across 13 suites, and byte-identical regeneration. If your
+   record. I expect 257 of 257 checks passing across 13 suites, and byte-identical regeneration. If your
    result differs in any way, stop and tell me exactly how. Do not "fix" a mismatch by editing
    files — a mismatch means something happened in transfer.
 

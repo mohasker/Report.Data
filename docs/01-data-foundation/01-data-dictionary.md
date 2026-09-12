@@ -44,7 +44,7 @@
 | [`ResidencyAssignments`](#residencyassignments) | master | project | internal | Phase 1–2 (MVP core) | 14 | Binds a residency requirement to a client, contract or project (D-12). |
 | [`SiteVisits`](#sitevisits) | operational | project | confidential | Phase 1–2 (MVP core) | 37 | One reporting event at a location on a date. The unit of submission and review. |
 | [`VisitActivities`](#visitactivities) | operational | project | confidential | Phase 1–2 (MVP core) | 19 | What was actually done during a visit. One row per activity. |
-| [`Photos`](#photos) | operational | project | confidential | Phase 1–2 (MVP core) | 64 | One photograph per row. The received file is write-once and is never altered (D-13). |
+| [`Photos`](#photos) | operational | project | confidential | Phase 1–2 (MVP core) | 71 | One photograph per row. The received file is write-once and is never altered (D-13). |
 | [`Snags`](#snags) | operational | project | confidential | Phase 1–2 (MVP core) | 24 | Defects and observations tracked to closure with evidence. |
 | [`DocumentJobs`](#documentjobs) | document | project | internal | Phase 5 | 27 | A request to produce a document from a frozen snapshot of approved records. |
 | [`Documents`](#documents) | document | project | confidential | Phase 5 | 25 | A produced document revision. Approval binds to ContentHash (ADR-0006). |
@@ -67,7 +67,7 @@
 | [`Employees`](#employees) | master | global | personal | Phase 5 | 12 | Crew register for resource reporting. Payroll data is deliberately excluded (spec 5.13). |
 | [`VisitManpower`](#visitmanpower) | operational | project | internal | Phase 5 | 12 | Manpower present during a visit, for resource summaries only. |
 
-**46 tables · 857 columns · 32 controlled vocabularies.**
+**46 tables · 864 columns · 33 controlled vocabularies.**
 
 ---
 
@@ -824,6 +824,13 @@ One photograph per row. The received file is write-once and is never altered (D-
 | `ClassificationStatus` | enum `ClassificationStatus` | ✔ | system |  |  | Default `Pending`. Pending is normal after a Quick Share and blocks nothing. Only Confirmed makes the activity trusted (D-23). |
 | `ConfirmedByUserID` | ref → `Users.UserID` |  | system |  |  | Who confirmed the classification. Attribution is the point. |
 | `ConfirmedAt` | datetime |  | system |  |  |  |
+| `QuarantineStatus` | enum `QuarantineStatus` | ✔ | system |  |  | Default `NotQuarantined`. Set by the system when access is revoked while evidence is still queued (D-25). Only NotQuarantined and AcceptedIntoProject are readable by a report, a calculation, an approval or a document. |
+| `AccessRevokedAt` | datetime |  | system |  |  | When the capturing user's access ended. The dividing line: evidence captured BEFORE it may complete into quarantine, evidence captured AFTER it is refused. |
+| `UploadCompletedAt` | datetime |  | system |  |  | When the upload was confirmed. No local original may be deleted before this is set (D-25, CAP-GATE G-4). |
+| `QuarantinedAt` | datetime |  | system |  |  |  |
+| `QuarantineReviewedByUserID` | ref → `Users.UserID` |  | system |  |  | Who accepted or rejected the quarantined evidence. Never the revoked user. |
+| `QuarantineReviewedAt` | datetime |  | system |  |  |  |
+| `QuarantineRejectionReason` | longtext |  | user |  |  | MANDATORY when QuarantineStatus is Rejected (D-25). Rejecting evidence without saying why is how evidence disappears quietly. |
 | `AIProposedCaptionEN` | text |  | ai |  |  | Proposed professional caption. Copied into CaptionEN only by a human action. |
 | `AIProposedCaptionAR` | text |  | ai |  |  |  |
 | `AIVisibleCondition` | text |  | ai |  |  | Visible condition only. Never a cause, never a compliance judgement (D-20). |
@@ -1636,6 +1643,17 @@ How far a photograph's activity classification has got (D-23). Pending is a norm
 | `Confirmed` | Confirmed | مؤكد | A supervisor or reviewer set ConfirmedActivityTypeID. The only trusted state. |
 | `NotApplicable` | Not applicable | لا ينطبق | The photograph carries no activity to classify — a safety observation, a material delivery. |
 | `Excluded` | Excluded | مستبعد | Deliberately left out: a duplicate, an unusable image, or evidence excluded from this report. |
+
+### QuarantineStatus
+
+What happened to evidence that was still queued on a device when the user's access was revoked (D-25). Quarantine preserves evidence without granting the revoked user anything.
+
+| Code | English | العربية | Meaning |
+|---|---|---|---|
+| `NotQuarantined` | Not quarantined | غير محجوز | The normal state. The photograph was captured and uploaded under a valid assignment. |
+| `Quarantined` | Quarantined | محجوز للمراجعة | Captured BEFORE revocation and completed into the restricted area after it. Invisible to the revoked user, excluded from every report, calculation and approval until a reviewer accepts it. |
+| `AcceptedIntoProject` | Accepted into the project | مقبول في المشروع | A reviewer accepted it. It becomes a traceable project record, and the quarantine history is retained. |
+| `Rejected` | Rejected | مرفوض | A reviewer rejected it, with a mandatory reason. The audit record is retained under the retention policy; the row is never deleted. |
 
 ### AnalysisEligibility
 

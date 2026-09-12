@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import modeldef
 
 DOCS = os.path.join(modeldef.ROOT, "docs", "01-data-foundation")
-TODAY = datetime.date.today().isoformat()
+TODAY = modeldef.model_date()          # deterministic: the model's date, never the clock
 
 
 def esc(t):

@@ -284,6 +284,47 @@
       "type": "string",
       "x-source": "system"
     },
+    "QuarantineStatus": {
+      "type": "string",
+      "enum": [
+        "NotQuarantined",
+        "Quarantined",
+        "AcceptedIntoProject",
+        "Rejected"
+      ],
+      "x-enum": "QuarantineStatus",
+      "x-source": "system",
+      "description": "Set by the system when access is revoked while evidence is still queued (D-25). Only NotQuarantined and AcceptedIntoProject are readable by a report, a calculation, an approval or a document."
+    },
+    "AccessRevokedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "When the capturing user's access ended. The dividing line: evidence captured BEFORE it may complete into quarantine, evidence captured AFTER it is refused."
+    },
+    "UploadCompletedAt": {
+      "type": "string",
+      "x-source": "system",
+      "description": "When the upload was confirmed. No local original may be deleted before this is set (D-25, CAP-GATE G-4)."
+    },
+    "QuarantinedAt": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "QuarantineReviewedByUserID": {
+      "type": "string",
+      "x-references": "Users.UserID",
+      "x-source": "system",
+      "description": "Who accepted or rejected the quarantined evidence. Never the revoked user. References Users.UserID"
+    },
+    "QuarantineReviewedAt": {
+      "type": "string",
+      "x-source": "system"
+    },
+    "QuarantineRejectionReason": {
+      "type": "string",
+      "x-source": "user",
+      "description": "MANDATORY when QuarantineStatus is Rejected (D-25). Rejecting evidence without saying why is how evidence disappears quietly."
+    },
     "AIProposedCaptionEN": {
       "type": "string",
       "x-source": "ai",
@@ -452,6 +493,7 @@
     "AIAnalysisStatus",
     "AnalysisEligibility",
     "ClassificationStatus",
+    "QuarantineStatus",
     "AIProposalDisposition",
     "ReviewerDecision",
     "ApprovedForReport",

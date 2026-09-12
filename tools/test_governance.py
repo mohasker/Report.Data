@@ -184,4 +184,97 @@ def run(model, data):
     readme = open(os.path.join(modeldef.ROOT, "seed", "README.md"), encoding="utf-8").read()
     c.check("GOV-18", "The seed directory states plainly that its data is synthetic",
             "SYNTHETIC TEST DATA ONLY" in readme, "stated in seed/README.md")
+
+    # ---- 19. generation is deterministic under a moving clock ------------
+    # Regeneration must depend on the model alone. Proven by regenerating the whole
+    # repository twice, under two different system dates, into two temporary copies
+    # outside the repository, and requiring identical bytes. Nothing tracked is touched.
+    import shutil, subprocess, tempfile, hashlib
+
+    GENERATORS = sorted(f for f in os.listdir(os.path.join(modeldef.ROOT, "tools"))
+                        if f.startswith("gen_") and f.endswith(".py"))
+
+    WRAPPER = (
+        "import datetime, runpy, sys\n"
+        "y, m, d = (int(x) for x in sys.argv[1].split('-'))\n"
+        "FAKE_DATE, FAKE_DT = datetime.date(y, m, d), datetime.datetime(y, m, d, 11, 22, 33)\n"
+        "class _D(datetime.date):\n"
+        "    @classmethod\n"
+        "    def today(cls): return FAKE_DATE\n"
+        "class _DT(datetime.datetime):\n"
+        "    @classmethod\n"
+        "    def now(cls, tz=None): return FAKE_DT\n"
+        "    @classmethod\n"
+        "    def utcnow(cls): return FAKE_DT\n"
+        "    @classmethod\n"
+        "    def today(cls): return FAKE_DT\n"
+        "datetime.date, datetime.datetime = _D, _DT\n"
+        "runpy.run_path(sys.argv[2], run_name='__main__')\n")
+
+    def regenerate_under(date_string):
+        """Copy the repository to a temporary tree, regenerate it with the clock set to
+        date_string, and return {relative path: sha256} for every generated artefact."""
+        tmp = tempfile.mkdtemp(prefix="ah-determinism-")
+        dest = os.path.join(tmp, "repo")
+        shutil.copytree(modeldef.ROOT, dest,
+                        ignore=shutil.ignore_patterns(".git", "dist", "__pycache__", "*.pyc"))
+        wrapper = os.path.join(tmp, "_clock.py")
+        with open(wrapper, "w", encoding="utf-8") as fh:
+            fh.write(WRAPPER)
+        for gen in GENERATORS:
+            proc = subprocess.run(
+                [sys.executable, wrapper, date_string, os.path.join(dest, "tools", gen)],
+                capture_output=True, text=True, cwd=dest)
+            if proc.returncode != 0:
+                shutil.rmtree(tmp, ignore_errors=True)
+                raise RuntimeError(f"{gen} failed under {date_string}: {proc.stderr.strip()[:300]}")
+        digests = {}
+        for sub in ("docs", "schemas"):
+            base = os.path.join(dest, sub)
+            for root, dirs, files in os.walk(base):
+                dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
+                for name in sorted(files):
+                    full = os.path.join(root, name)
+                    rel = os.path.relpath(full, dest)
+                    with open(full, "rb") as fh:
+                        digests[rel] = hashlib.sha256(fh.read()).hexdigest()
+        shutil.rmtree(tmp, ignore_errors=True)
+        return digests
+
+    try:
+        first = regenerate_under("2026-09-12")
+        second = regenerate_under("2027-03-04")
+        differing = sorted(k for k in first if first.get(k) != second.get(k))
+        only_one = sorted(set(first) ^ set(second))
+        determinism_detail = (f"{len(GENERATORS)} generators, {len(first)} files, two system "
+                              f"dates 2026-09-12 and 2027-03-04; differing: "
+                              f"{differing or 'none'}{'; only in one run: ' + str(only_one) if only_one else ''}")
+        deterministic = not differing and not only_one
+    except Exception as exc:                                  # a broken run is a failed check
+        deterministic, determinism_detail = False, f"regeneration failed: {exc}"
+
+    c.check("GOV-19", "Regenerating the repository under two different system dates produces "
+                      "byte-identical output",
+            deterministic, determinism_detail)
+
+    # and the static guard, so the clock cannot creep back into a generator
+    clock_calls = []
+    for gen in GENERATORS:
+        text = open(os.path.join(modeldef.ROOT, "tools", gen), encoding="utf-8").read()
+        for pattern in ("date.today(", "datetime.now(", "utcnow(", "time.time("):
+            if pattern in text:
+                clock_calls.append(f"{gen}: {pattern}")
+    c.check("GOV-20", "No generator reads the system clock: a generated document depends on the "
+                      "model alone",
+            not clock_calls, "; ".join(clock_calls) or f"{len(GENERATORS)} generators clean")
+
+    c.check("GOV-21", "Genuine event timestamps are NOT removed: the validation evidence and the "
+                      "delivery receipt still record when they actually ran",
+            "datetime" in open(os.path.join(modeldef.ROOT, "tools", "run_validation.py"),
+                               encoding="utf-8").read()
+            and "strftime" in open(os.path.join(modeldef.ROOT, "tools", "run_validation.py"),
+                                   encoding="utf-8").read(),
+            "determinism applies to generated specifications, never to the record of an event "
+            "that occurred at a particular moment")
+
     return c

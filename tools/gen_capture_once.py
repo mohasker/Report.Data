@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import modeldef
 
 OUT = os.path.join(modeldef.ROOT, "docs", "02a-plan", "24-capture-once-workflow.md")
-TODAY = datetime.date.today().isoformat()
+TODAY = modeldef.model_date()          # deterministic: the model's date, never the clock
 
 ACTOR = {"supervisor": "Supervisor", "system": "System", "ai": "AI (advisory)"}
 

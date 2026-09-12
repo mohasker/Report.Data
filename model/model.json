@@ -1,5 +1,6 @@
 {
   "model_version": "1.0.0",
+  "model_date": "2026-09-12",
   "phase": 1,
   "generated_by": "tools/build_model.py",
   "authority": "MASTER_SPEC.md section 5, as amended by owner decisions D-01..D-15 (docs/00-discovery/10-owner-decisions.md)",
@@ -423,6 +424,35 @@
           "label_en": "Excluded",
           "label_ar": "مستبعد",
           "description": "Deliberately left out: a duplicate, an unusable image, or evidence excluded from this report."
+        }
+      ]
+    },
+    "QuarantineStatus": {
+      "description": "What happened to evidence that was still queued on a device when the user's access was revoked (D-25). Quarantine preserves evidence without granting the revoked user anything.",
+      "values": [
+        {
+          "code": "NotQuarantined",
+          "label_en": "Not quarantined",
+          "label_ar": "غير محجوز",
+          "description": "The normal state. The photograph was captured and uploaded under a valid assignment."
+        },
+        {
+          "code": "Quarantined",
+          "label_en": "Quarantined",
+          "label_ar": "محجوز للمراجعة",
+          "description": "Captured BEFORE revocation and completed into the restricted area after it. Invisible to the revoked user, excluded from every report, calculation and approval until a reviewer accepts it."
+        },
+        {
+          "code": "AcceptedIntoProject",
+          "label_en": "Accepted into the project",
+          "label_ar": "مقبول في المشروع",
+          "description": "A reviewer accepted it. It becomes a traceable project record, and the quarantine history is retained."
+        },
+        {
+          "code": "Rejected",
+          "label_en": "Rejected",
+          "label_ar": "مرفوض",
+          "description": "A reviewer rejected it, with a mandatory reason. The audit record is retained under the retention policy; the row is never deleted."
         }
       ]
     },
@@ -5034,6 +5064,56 @@
           "type": "datetime",
           "required": false,
           "src": "system"
+        },
+        {
+          "name": "QuarantineStatus",
+          "type": "enum",
+          "required": true,
+          "default": "NotQuarantined",
+          "enum": "QuarantineStatus",
+          "src": "system",
+          "note": "Set by the system when access is revoked while evidence is still queued (D-25). Only NotQuarantined and AcceptedIntoProject are readable by a report, a calculation, an approval or a document."
+        },
+        {
+          "name": "AccessRevokedAt",
+          "type": "datetime",
+          "required": false,
+          "src": "system",
+          "note": "When the capturing user's access ended. The dividing line: evidence captured BEFORE it may complete into quarantine, evidence captured AFTER it is refused."
+        },
+        {
+          "name": "UploadCompletedAt",
+          "type": "datetime",
+          "required": false,
+          "src": "system",
+          "note": "When the upload was confirmed. No local original may be deleted before this is set (D-25, CAP-GATE G-4)."
+        },
+        {
+          "name": "QuarantinedAt",
+          "type": "datetime",
+          "required": false,
+          "src": "system"
+        },
+        {
+          "name": "QuarantineReviewedByUserID",
+          "type": "ref",
+          "required": false,
+          "ref": "Users.UserID",
+          "src": "system",
+          "note": "Who accepted or rejected the quarantined evidence. Never the revoked user."
+        },
+        {
+          "name": "QuarantineReviewedAt",
+          "type": "datetime",
+          "required": false,
+          "src": "system"
+        },
+        {
+          "name": "QuarantineRejectionReason",
+          "type": "longtext",
+          "required": false,
+          "src": "user",
+          "note": "MANDATORY when QuarantineStatus is Rejected (D-25). Rejecting evidence without saying why is how evidence disappears quietly."
         },
         {
           "name": "AIProposedCaptionEN",
@@ -13026,6 +13106,44 @@
         "Photos.AnalysisEligibility"
       ],
       "note": "Required in storage and required of the supervisor are different things. Every field above is required for the record to be meaningful, and none of them is a question on the normal path."
+    },
+    "revocation": {
+      "decision": "D-25",
+      "principle": "Revoking access must never destroy evidence, and must never let the revoked user reach the project again. Those are two separate obligations and the design owes both.",
+      "dividing_line": "Photos.CapturedAt against Photos.AccessRevokedAt. Provably captured before revocation, or it does not complete at all.",
+      "before_revocation": "Completes into the restricted quarantine area. Never written directly into the active project evidence register.",
+      "after_revocation": "REFUSED. Not quarantined, not queued, not stored as evidence.",
+      "revoked_user_may": [],
+      "revoked_user_may_not": [
+        "view",
+        "edit",
+        "delete",
+        "share",
+        "submit"
+      ],
+      "preserved_for_every_quarantined_item": [
+        "Photos.CapturedAt — the original capture timestamp, unchanged",
+        "Photos.CapturedBy — the device and user identity that captured it",
+        "Photos.OriginalChecksum — the file hash, with Photos.ChecksumAlgorithm",
+        "Photos.UploadCompletedAt — when the upload was confirmed",
+        "Photos.AccessRevokedAt — when access ended"
+      ],
+      "reviewer": {
+        "notified": "immediately, on the first quarantined item",
+        "may_accept": "creates a traceable project record; the quarantine history is retained",
+        "may_reject": "requires a mandatory reason in QuarantineRejectionReason; the audit record is retained under the retention policy and the row is never deleted",
+        "may_not_be": "the revoked user"
+      },
+      "readable_by_reports": [
+        "NotQuarantined",
+        "AcceptedIntoProject"
+      ],
+      "never_readable_by_reports": [
+        "Quarantined",
+        "Rejected"
+      ],
+      "if_the_platform_cannot_enforce_this": "CAP-GATE fails. The queued files stay locally protected — not deleted, not uploaded — pending an authorised recovery procedure.",
+      "silent_loss_is_never_acceptable": true
     },
     "classification": {
       "principle": "AI-generated free text never becomes the trusted structured activity. A proposal and a confirmation are different columns, and only the confirmation is read by anything.",

@@ -309,4 +309,4 @@ deliberately routed into `CAP-GATE` rather than guessed at.
 
 **Completed · Submitted for Owner Review.** No model file has been changed, no column has been added,
 no check has been altered, and no recommendation in this document has been implemented. The
-validation suite stands at **240 of 240 across 13 suites**, unchanged by this document.
+validation suite stood at **240 of 240 across 13 suites** when this document was written, and at **257 of 257** after decision D-25; neither number was changed by this document.

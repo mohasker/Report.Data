@@ -191,3 +191,53 @@ def can(model, data, user_id, table, operation, row=None, as_of=None):
 def readable_rows(model, data, user_id, table, as_of=None):
     return [r for r in data.get(table, [])
             if can(model, data, user_id, table, "read", r, as_of)[0]]
+
+
+# --- D-25: evidence still queued when access is revoked ------------------------------
+QUARANTINE_REPORTABLE = ("NotQuarantined", "AcceptedIntoProject")
+
+
+def revocation_disposition(photo, revoked_at):
+    """What must happen to one queued photograph when its capturer's access is revoked.
+
+    Returns (disposition, reason). Three outcomes only, and no fourth is permitted:
+
+      "complete_to_quarantine" — provably captured BEFORE revocation. It completes, but into
+                                 the restricted area, never into the active project register.
+      "refuse"                 — captured at or after revocation, or the capture time cannot
+                                 be established. Unprovable is refused, deliberately: a
+                                 photograph whose capture time is unknown cannot be shown to
+                                 predate anything.
+      "normal"                 — no revocation applies.
+
+    Discarding is not an outcome. Evidence the supervisor believes they submitted is never
+    destroyed to keep the register tidy (D-25).
+    """
+    if not revoked_at:
+        return "normal", "no revocation in force"
+    captured = photo.get("CapturedAt")
+    if not captured:
+        return "refuse", "capture time is not recorded, so it cannot be shown to predate revocation"
+    if captured < revoked_at:
+        return "complete_to_quarantine", f"captured {captured}, before revocation at {revoked_at}"
+    return "refuse", f"captured {captured}, at or after revocation at {revoked_at}"
+
+
+def quarantine_is_reportable(photo):
+    """May a report, calculation, approval or document read this photograph?"""
+    return photo.get("QuarantineStatus", "NotQuarantined") in QUARANTINE_REPORTABLE
+
+
+def quarantine_review_is_valid(photo):
+    """Return an error string, or None when the reviewer's disposition is acceptable."""
+    status = photo.get("QuarantineStatus")
+    if status == "Rejected" and not (photo.get("QuarantineRejectionReason") or "").strip():
+        return "a rejection requires a mandatory reason"
+    if status in ("AcceptedIntoProject", "Rejected"):
+        if not photo.get("QuarantineReviewedByUserID"):
+            return "a quarantine decision requires an identified reviewer"
+        if photo.get("QuarantineReviewedByUserID") == photo.get("CapturedBy"):
+            return "the revoked capturer may not review their own quarantined evidence"
+        if not photo.get("QuarantineReviewedAt"):
+            return "a quarantine decision requires a timestamp"
+    return None

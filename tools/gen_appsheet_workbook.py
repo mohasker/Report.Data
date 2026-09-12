@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import modeldef
 
 OUT = os.path.join(modeldef.ROOT, "docs", "02a-plan")
-TODAY = datetime.date.today().isoformat()
+TODAY = modeldef.model_date()          # deterministic: the model's date, never the clock
 
 # The tables the application actually carries come from the lean MVP manifest in the
 # model, so this specification and the scope decision can never disagree.

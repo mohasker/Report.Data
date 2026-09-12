@@ -1,6 +1,6 @@
 # Real-Device Test Protocol
 
-**Document ID:** AH-SYS-P2A-019 · **Revision:** 3 · **Date:** 2026-09-12
+**Document ID:** AH-SYS-P2A-019 · **Revision:** 4 · **Date:** 2026-09-12
 **Status:** Completed · **Not executed** — no device, no app, no supervisor
 **Supersedes the measurement sections of:** `05-offline-test-plan.md`, `13-field-workflow-and-taps.md`
 **Revision 2** adds §4b, the `CAP-GATE` native-share test — the pass/fail requirement the
@@ -9,6 +9,9 @@ there changes the capture platform, not the form.
 **Revision 3** adds §4c, the five measurement groups the owner added on 2026-09-11: the WhatsApp
 baseline race, the storage ledger, the duplication census, proof that the upload completed before
 any local cleanup, and behaviour after access is revoked.
+**Revision 4** tightens the speed threshold to the owner's figures (+20 s median, +40 s p90), splits
+the measurement into **foreground time that needs the supervisor** and **background synchronisation
+that does not**, and replaces the open question in G-5 with **decision D-25**.
 
 > **The target is a design target, not a validated result.** Recorded as the owner specified:
 >
@@ -178,15 +181,36 @@ what they already do will go back to what they already do, and no amount of gove
 | G-1.1 | **Baseline first.** On the same phone, in the same group, with the same six subjects: open WhatsApp, take or attach six photographs, type the sentence a supervisor types today, send. Repeat **five** times | Median and slowest of five, in seconds |
 | G-1.2 | **Then the app**, same phone, same group, same six subjects, Quick Share, five times | Median and slowest of five |
 | G-1.3 | Both are timed **from the phone leaving the pocket to the message appearing in the group** | Not from app-open to submit — that measures the wrong thing |
-| G-1.4 | The supervisor is asked, after run five, one question: *"Would you use this instead of WhatsApp?"* | Yes / no / only if — **recorded verbatim, per supervisor** |
+| G-1.4 | The supervisor is asked, after run five, one question: *"Is this acceptable for daily use?"* | Yes / no / only if — **recorded verbatim, from each of the two supervisors** |
 
-**Proposed acceptance, for the owner to set:** median app time **no more than the baseline plus 40
-seconds**, slowest run **no more than the baseline plus 75 seconds**. The app is doing more than
-WhatsApp does — it is producing a record — so equality is not the target; **invisibility of the
-difference** is.
+### The two clocks
 
-> **G-1.4 outranks the stopwatch.** "Close enough that supervisors will actually use it" is a
-> judgement about people, not a number, and the number cannot overrule two supervisors saying no.
+**One number was hiding two different costs.** They are now recorded separately, because only one of
+them is the supervisor's problem:
+
+| Clock | What it covers | Why it is separate |
+|---|---|---|
+| **Foreground time** | Everything that **requires the supervisor's attention**: opening the app, confirming, capturing, tapping share, choosing the group, confirming the send | **This is the number that decides adoption.** It is what the supervisor experiences as "how long this takes" |
+| **Background time** | Upload and synchronisation that continues **after the supervisor has moved on** | Not free — it must complete, and G-4 proves nothing is cleaned up before it does — but it costs the supervisor nothing **provided they can walk away** |
+
+**Recorded for every run, both numbers, and one behaviour:** whether the supervisor can leave the app,
+lock the phone, or start the next visit while synchronisation continues. **A background upload that
+holds the supervisor hostage is a foreground cost wearing a different name**, and is recorded as
+foreground time when it behaves that way.
+
+### Acceptance — the owner's threshold, 2026-09-12
+
+| Criterion | Threshold |
+|---|---|
+| **Median foreground time** | **No more than the WhatsApp baseline + 20 seconds** |
+| **p90 foreground time** | **No more than the baseline + 40 seconds** |
+| **Second image selection** | **None, under any condition** |
+| **Missing or duplicated evidence** | **None** |
+| **Supervisors' verdict** | **Both participating supervisors confirm the workflow is acceptable for daily use** |
+
+> **The verdict remains blocking even when every number passes.** "Acceptable for daily use" is a
+> judgement about people, and a stopwatch cannot overrule two supervisors saying no. It is recorded
+> as a fail, not argued away.
 
 ### G-2 — The storage ledger
 
@@ -256,19 +280,26 @@ A checksum comparison is better and is deferred with the checksum work in `23-op
 | G-5.3 | Repeat with **six captured photographs still queued and unsent** | **What happens to the queued evidence** |
 | G-5.4 | Inspect the device afterwards | What remains readable: cached rows, thumbnails, queued files, the gallery copies |
 
-**G-5.3 has no agreed answer yet, and this document does not invent one.** Two outcomes are
-defensible and they conflict:
+**G-5.3 is now decided — owner decision D-25, 2026-09-12.** `OQ-23` is closed, and the test measures
+conformance to the decision rather than asking what should happen:
 
-- **Discard the queue** — clean, and it **destroys evidence** the supervisor believes they submitted.
-- **Let it complete into a reviewer's quarantine** — no evidence is lost, but a person who no longer
-  has access to the project has just written to it.
+| The queued item | Required behaviour |
+|---|---|
+| Captured **before** the revocation timestamp | **Completes into the restricted quarantine area.** Never into the active project evidence register |
+| Captured **at or after** it | **Refused.** Not quarantined, not queued, not stored |
+| **Capture time not provable** | **Refused.** Unprovable is not the same as early |
+| Any of them | **Never discarded.** Discarding is not an available outcome |
+| Preserved on every quarantined item | Capture timestamp, device and user identity, file hash, upload timestamp, revocation timestamp |
+| The revoked user | **Cannot view, edit, delete, share or submit** anything further, immediately |
+| The reviewer | Notified immediately; accepts into the project, or rejects **with a mandatory reason** that is retained |
+| If the platform cannot enforce it safely | **`CAP-GATE` fails**, and the queued files stay **locally protected — not deleted, not uploaded** — pending an authorised recovery procedure |
 
-**Recorded as `OQ-23` for the owner to decide.** The test measures what the platform actually does;
-the decision about what it *should* do is not a test result.
+**Locally enforced already:** checks `ACC-32` … `ACC-45`. Those prove the *rule*; G-5 measures whether
+the *platform* obeys it.
 
 **Pass for G-5.1, G-5.2 and G-5.4:** access ends without reinstalling the application, and nothing
-that was cached remains readable after the next refresh. **Whatever `OQ-23` decides, silent evidence
-loss is a fail.**
+that was cached remains readable after the next refresh. **Silent evidence loss is a fail under every
+outcome.**
 
 ### What §4c does not measure
 

@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import modeldef
 
 OUT = os.path.join(modeldef.ROOT, "docs", "02a-plan", "21-release-1-twelve-tables.md")
-TODAY = datetime.date.today().isoformat()
+TODAY = modeldef.model_date()          # deterministic: the model's date, never the clock
 
 AUTO_SOURCES = {"system", "integration", "calculation", "ai"}
 # Tables whose rows reach a field device at all

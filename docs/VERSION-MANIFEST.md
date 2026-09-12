@@ -4,7 +4,7 @@
 ID, a revision, a date and an approval status. A document that has not been approved is marked as
 such and may not be treated as a decision.
 
-**Repository version:** 0.7.3 (the CAP-GATE and entitlement preparation pack — **prepared, not executed**) · **Date:** 2026-09-12
+**Repository version:** 0.8.0 (owner decision D-25, the tightened speed threshold, and deterministic generation) · **Date:** 2026-09-12
 
 | Document ID | Document | Rev | Date | Status |
 |---|---|---|---|---|
@@ -17,13 +17,13 @@ such and may not be treated as a decision.
 | AH-SYS-P0-001 | `01-mvp-boundary.md` | 1 | 2026-09-11 | Approved — scope corrected per D-01 |
 | AH-SYS-P0-002 | `02-architecture.md` | 0 | 2026-09-10 | Approved unchanged |
 | AH-SYS-P0-003 | `03-assumptions-register.md` | 1 | 2026-09-11 | Approved — A-06/A-07 superseded, A-10 amended |
-| AH-SYS-P0-004 | `04-open-questions.md` | 3 | 2026-09-11 | All ten dispositioned; OQ-15 … OQ-22 registered, recommendations in AH-SYS-P2A-025 |
+| AH-SYS-P0-004 | `04-open-questions.md` | 4 | 2026-09-12 | All ten dispositioned; OQ-15 … OQ-23 registered; OQ-23 closed by D-25 |
 | AH-SYS-P0-005 | `05-risk-and-controls-register.md` | 3 | 2026-09-11 | Approved — R-33 … R-43 added for capture once and the correction pass |
 | AH-SYS-P0-006 | `06-spec-conflicts-and-platform-limits.md` | 1 | 2026-09-11 | Approved — C-01, C-02, C-05, C-09, S-03, P-09 updated |
 | AH-SYS-P0-007 | `07-phase-plan.md` | 1 | 2026-09-11 | Approved — Phase 0 closed, Phase 1 authorised |
 | AH-SYS-P0-008 | `08-phase-1-artifact-manifest.md` | 1 | 2026-09-11 | Approved — incorporates the D-15 additions |
 | AH-SYS-P0-009 | `09-configuration-register.md` | 1 | 2026-09-11 | Live register |
-| AH-SYS-P0-010 | `10-owner-decisions.md` | 2 | 2026-09-11 | **Authoritative decision record** — D-01 … D-24 |
+| AH-SYS-P0-010 | `10-owner-decisions.md` | 3 | 2026-09-12 | **Authoritative decision record** — D-01 … D-25; D-25 closes OQ-23 |
 | AH-SYS-GOV-001 | `STATUS-DEFINITIONS.md` | 1 | 2026-09-11 | **Approved** — the acceptance vocabulary |
 | AH-SYS-REV-001 | `OWNER-REVIEW-PACK.md` | 4 | 2026-09-11 | **Submitted for Owner Review** — §11b carries capture once and minimum interaction |
 | AH-SYS-P1-019 | `19-user-and-device-profiles.md` | 1 | 2026-09-11 | Completed — awaiting real devices (EF-05) |
@@ -46,16 +46,16 @@ such and may not be treated as a decision.
 | AH-SYS-P2A-016 | `02a-plan/16-admin-console-checklist-owner.md` | 4 | 2026-09-12 | Completed · **Awaiting the owner's check** · four more screens, evidence register, design-impact matrix |
 | AH-SYS-P2A-017 | `02a-plan/17-lean-table-scope-matrix.md` | 1 | 2026-09-11 | **Generated** from the model |
 | AH-SYS-P2A-018 | `02a-plan/18-migration-threshold-strategy.md` | 1 | 2026-09-11 | Completed · Withdraws the fixed migration date |
-| AH-SYS-P2A-019 | `02a-plan/19-real-device-test-protocol.md` | 3 | 2026-09-12 | Completed · **Not executed** · §4b fifteen conditions, §4c groups G-1 … G-5 |
+| AH-SYS-P2A-019 | `02a-plan/19-real-device-test-protocol.md` | 4 | 2026-09-12 | Completed · **Not executed** · §4b fifteen conditions, §4c G-1 … G-5, owner's tightened threshold, D-25 in G-5 |
 | AH-SYS-P2A-020 | `02a-plan/20-administrator-role-placeholders.md` | 1 | 2026-09-11 | Completed · No identity assigned |
 | AH-SYS-P2A-021 | `02a-plan/21-release-1-twelve-tables.md` | 3 | 2026-09-11 | **Generated** — 12 tables, 290 fields, 15 on the field form, **0 mandatory** |
 | AH-SYS-P2A-022 | `02a-plan/22-image-derivative-architecture.md` | 3 | 2026-09-11 | Completed · Re-costed: only eligible photographs are analysed |
 | AH-SYS-P2A-023 | `02a-plan/23-operations-budget.md` | 3 | 2026-09-11 | Completed · 703 ops · §6b: both analysis policies priced; neither fits the free tier through Make |
 | AH-SYS-P2A-024 | `02a-plan/24-capture-once-workflow.md` | 2 | 2026-09-11 | **Generated** — capture once, minimum interaction, classification, analysis policy |
 | AH-SYS-P2A-025 | `02a-plan/25-open-question-recommendations.md` | 1 | 2026-09-11 | Completed · **Submitted for Owner Review** — recommendations only, OQ-15 … OQ-22, nothing implemented |
-| AH-SYS-P2A-026 | `02a-plan/26-phase-2b-platform-test-scripts.md` | 1 | 2026-09-11 | Completed · **Not executed** — 41 platform-neutral scripts, written before any platform exists |
+| AH-SYS-P2A-026 | `02a-plan/26-phase-2b-platform-test-scripts.md` | 2 | 2026-09-12 | Completed · **Not executed** — 49 platform-neutral scripts; §5b revocation and quarantine added by D-25 |
 | AH-SYS-P2A-027 | `02a-plan/27-cap-gate-prototype-specification.md` | 1 | 2026-09-12 | Completed · **Nothing built** — disposable synthetic prototype, needs written authorisation |
-| AH-SYS-P2A-028 | `02a-plan/28-cap-gate-results-sheet.md` | 1 | 2026-09-12 | Completed · **Empty** — 16 runs plus 2 baselines, 7 pass/fail criteria, blank CSV |
+| AH-SYS-P2A-028 | `02a-plan/28-cap-gate-results-sheet.md` | 2 | 2026-09-12 | Completed · **Empty** — 16 runs plus 2 baselines, 8 pass/fail criteria, foreground/background split, blank CSV |
 | AH-SYS-P2A-029 | `02a-plan/29-owner-participation-guide.md` | 1 | 2026-09-12 | Completed · No test scheduled or authorised |
 | AH-SYS-P1-000 | `01-data-foundation/00-PHASE-1-SUMMARY.md` | 1 | 2026-09-11 | Awaiting owner review |
 | AH-SYS-P1-001 | `01-data-dictionary.md` | 1 | 2026-09-11 | **Generated** from `model/model.json` |
@@ -74,7 +74,7 @@ such and may not be treated as a decision.
 | AH-SYS-P1-014 | `14-orchestration-contract-and-runbook.md` | 1 | 2026-09-11 | Contract defined; runbook completed in Phase 3 |
 | AH-SYS-P1-015 | `15-claude-prompt-and-schema-spec.md` | 3 | 2026-09-11 | Complete; no credential exists · batch analysis, forbidden inferences, eligibility filter |
 | AH-SYS-P1-016 | `16-external-facts-register.md` | 2 | 2026-09-11 | Live register — **26** outstanding facts |
-| AH-SYS-P1-017 | `17-validation-evidence.md` | 4 | 2026-09-11 | **Generated from an executed run** — 240/240 checks passed |
+| AH-SYS-P1-017 | `17-validation-evidence.md` | 5 | 2026-09-12 | **Generated from an executed run** — 257/257 checks passed |
 | AH-SYS-CFG-000 | `config/config.reference.md` | 1 | 2026-09-11 | Live — names only, no values |
 | AH-SYS-CFG-001 | `config/rounding-policy.md` | 1 | 2026-09-11 | Complete |
 | — | `model/model.json` | 1.0.0 | 2026-09-11 | **Canonical model** — single source of truth; now carries `capture_once` |

@@ -12,6 +12,9 @@ import json, os, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 MODEL_VERSION = "1.0.0"
+# The deterministic stamp carried into every generated document. Bump it when the model
+# changes; never derive it from the system clock.
+MODEL_DATE = "2026-09-12"
 
 # --------------------------------------------------------------------------
 # helpers
@@ -178,6 +181,23 @@ enum("ClassificationStatus", "How far a photograph's activity classification has
      "The photograph carries no activity to classify — a safety observation, a material delivery."),
     ("Excluded", "Excluded", "مستبعد",
      "Deliberately left out: a duplicate, an unusable image, or evidence excluded from this report."),
+])
+
+enum("QuarantineStatus", "What happened to evidence that was still queued on a device when the "
+     "user's access was revoked (D-25). Quarantine preserves evidence without granting the "
+     "revoked user anything.", [
+    ("NotQuarantined", "Not quarantined", "غير محجوز",
+     "The normal state. The photograph was captured and uploaded under a valid assignment."),
+    ("Quarantined", "Quarantined", "محجوز للمراجعة",
+     "Captured BEFORE revocation and completed into the restricted area after it. Invisible to "
+     "the revoked user, excluded from every report, calculation and approval until a reviewer "
+     "accepts it."),
+    ("AcceptedIntoProject", "Accepted into the project", "مقبول في المشروع",
+     "A reviewer accepted it. It becomes a traceable project record, and the quarantine history "
+     "is retained."),
+    ("Rejected", "Rejected", "مرفوض",
+     "A reviewer rejected it, with a mandatory reason. The audit record is retained under the "
+     "retention policy; the row is never deleted."),
 ])
 
 enum("AnalysisEligibility", "Whether a photograph is worth sending to analysis (D-24). Filtering "
@@ -1062,6 +1082,24 @@ table("Photos", "operational", "project", "confidential", 1,
     col("ConfirmedByUserID", "ref", False, ref="Users.UserID", src="system",
         note="Who confirmed the classification. Attribution is the point."),
     col("ConfirmedAt", "datetime", False, src="system"),
+    col("QuarantineStatus", "enum", True, default="NotQuarantined", enum="QuarantineStatus",
+        src="system",
+        note="Set by the system when access is revoked while evidence is still queued (D-25). "
+             "Only NotQuarantined and AcceptedIntoProject are readable by a report, a "
+             "calculation, an approval or a document."),
+    col("AccessRevokedAt", "datetime", False, src="system",
+        note="When the capturing user's access ended. The dividing line: evidence captured "
+             "BEFORE it may complete into quarantine, evidence captured AFTER it is refused."),
+    col("UploadCompletedAt", "datetime", False, src="system",
+        note="When the upload was confirmed. No local original may be deleted before this is "
+             "set (D-25, CAP-GATE G-4)."),
+    col("QuarantinedAt", "datetime", False, src="system"),
+    col("QuarantineReviewedByUserID", "ref", False, ref="Users.UserID", src="system",
+        note="Who accepted or rejected the quarantined evidence. Never the revoked user."),
+    col("QuarantineReviewedAt", "datetime", False, src="system"),
+    col("QuarantineRejectionReason", "longtext", False, src="user",
+        note="MANDATORY when QuarantineStatus is Rejected (D-25). Rejecting evidence without "
+             "saying why is how evidence disappears quietly."),
     col("AIProposedCaptionEN", "text", False, src="ai", advisory=True, ar="AIProposedCaptionAR",
         note="Proposed professional caption. Copied into CaptionEN only by a human action."),
     col("AIProposedCaptionAR", "text", False, src="ai", advisory=True, lang="ar"),
@@ -2482,6 +2520,40 @@ CAPTURE_ONCE = {
                 "question on the normal path.",
     },
     # D-23: a controlled activity classification that a human confirms.
+    "revocation": {
+        "decision": "D-25",
+        "principle": "Revoking access must never destroy evidence, and must never let the revoked "
+                     "user reach the project again. Those are two separate obligations and the "
+                     "design owes both.",
+        "dividing_line": "Photos.CapturedAt against Photos.AccessRevokedAt. Provably captured "
+                         "before revocation, or it does not complete at all.",
+        "before_revocation": "Completes into the restricted quarantine area. Never written "
+                             "directly into the active project evidence register.",
+        "after_revocation": "REFUSED. Not quarantined, not queued, not stored as evidence.",
+        "revoked_user_may": [],
+        "revoked_user_may_not": ["view", "edit", "delete", "share", "submit"],
+        "preserved_for_every_quarantined_item": [
+            "Photos.CapturedAt — the original capture timestamp, unchanged",
+            "Photos.CapturedBy — the device and user identity that captured it",
+            "Photos.OriginalChecksum — the file hash, with Photos.ChecksumAlgorithm",
+            "Photos.UploadCompletedAt — when the upload was confirmed",
+            "Photos.AccessRevokedAt — when access ended",
+        ],
+        "reviewer": {
+            "notified": "immediately, on the first quarantined item",
+            "may_accept": "creates a traceable project record; the quarantine history is retained",
+            "may_reject": "requires a mandatory reason in QuarantineRejectionReason; the audit "
+                          "record is retained under the retention policy and the row is never "
+                          "deleted",
+            "may_not_be": "the revoked user",
+        },
+        "readable_by_reports": ["NotQuarantined", "AcceptedIntoProject"],
+        "never_readable_by_reports": ["Quarantined", "Rejected"],
+        "if_the_platform_cannot_enforce_this": "CAP-GATE fails. The queued files stay locally "
+                                               "protected — not deleted, not uploaded — pending "
+                                               "an authorised recovery procedure.",
+        "silent_loss_is_never_acceptable": True,
+    },
     "classification": {
         "principle": "AI-generated free text never becomes the trusted structured activity. A "
                      "proposal and a confirmation are different columns, and only the "
@@ -2729,6 +2801,7 @@ def main():
 
     model = {
         "model_version": MODEL_VERSION,
+        "model_date": MODEL_DATE,
         "phase": 1,
         "generated_by": "tools/build_model.py",
         "authority": "MASTER_SPEC.md section 5, as amended by owner decisions D-01..D-15 "

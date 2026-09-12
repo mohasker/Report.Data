@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import modeldef
 
 OUT = os.path.join(modeldef.ROOT, "docs", "02a-plan", "17-lean-table-scope-matrix.md")
-TODAY = datetime.date.today().isoformat()
+TODAY = modeldef.model_date()          # deterministic: the model's date, never the clock
 
 # purpose, primary user, rows per PROJECT per month (expected scenario), in app?, syncs to device?,
 # deferrable?, depends on

@@ -4,6 +4,8 @@
 **Decision by:** General Manager (system owner) · **Effect:** Phase 0 approved; Phase 1 authorised
 **Revision 1** adds D-16 to D-21, the operational correction of 2026-09-11.
 **Revision 2** adds D-22 to D-24, the correction pass of the same day.
+**Revision 3** adds **D-25**, the quarantine rule for evidence still queued when access is
+revoked, decided by the owner on 2026-09-12. It closes `OQ-23`.
 
 This record is the authority for the revision 1 changes made to the Phase 0 documents. Where a
 decision below conflicts with an earlier revision of any Phase 0 document, **this record governs**.
@@ -407,3 +409,44 @@ the free orchestration tier**, because three operations per photograph is irredu
 pass through an orchestrator. Full arithmetic:
 [`../02a-plan/23-operations-budget.md`](../02a-plan/23-operations-budget.md) §6b and
 [`../02a-plan/22-image-derivative-architecture.md`](../02a-plan/22-image-derivative-architecture.md) §5.
+
+---
+
+## D-25 — Revoked access preserves evidence in quarantine
+
+**Decided:** 2026-09-12 · **Closes:** `OQ-23` · **Raised by:** `CAP-GATE` G-5.3
+
+**The question.** A supervisor's access is revoked while six photographs are still queued, unsent, on
+their phone. Discarding them destroys evidence the supervisor believes they submitted. Accepting them
+lets a person who no longer has access write into the project. Both are wrong, and the owner refused
+to choose between them.
+
+**The decision.** Neither. **Evidence captured before revocation completes into a restricted
+quarantine area** — not into the active project evidence register, and not into the bin.
+
+| Rule | |
+|---|---|
+| **The dividing line** | `Photos.CapturedAt` against `Photos.AccessRevokedAt`. **Provably** before, or it does not complete |
+| **Captured before revocation** | Completes into quarantine. Never written directly to the project register |
+| **Captured after revocation** | **Refused.** Not quarantined, not queued, not stored |
+| **Capture time unknown** | **Refused.** Unprovable is not the same as early, and treating it as early is how a rule becomes a loophole |
+| **Discarding** | **Not an available outcome.** The evaluator can quarantine or refuse; it has no path that destroys a file |
+| **The revoked user** | May not view, edit, delete, share or submit anything further, immediately |
+| **Preserved for every quarantined item** | Original capture timestamp, device and user identity, file hash and algorithm, upload timestamp, revocation timestamp |
+| **The reviewer** | Notified immediately. May **accept** — creating a traceable project record — or **reject** with a **mandatory reason**. Never the revoked user |
+| **On rejection** | The audit record is retained under the retention policy. **The row is never deleted** |
+| **Visibility** | Only `NotQuarantined` and `AcceptedIntoProject` are readable by a report, calculation, approval or document |
+| **If the platform cannot enforce this safely** | **`CAP-GATE` fails.** The queued files stay locally protected — not deleted, not uploaded — pending an authorised recovery procedure |
+| **Silent evidence loss** | **Never acceptable, under any outcome** |
+
+**What it changed in the model.** One enum, `QuarantineStatus`, and seven columns on `Photos`:
+`QuarantineStatus`, `AccessRevokedAt`, `UploadCompletedAt`, `QuarantinedAt`,
+`QuarantineReviewedByUserID`, `QuarantineReviewedAt`, `QuarantineRejectionReason`. One canonical
+block, `capture_once.revocation`. **Fourteen checks, `ACC-32` … `ACC-45`**, covering capture before
+revocation, capture after it, unprovable capture time, the absence of a discard path, retry, a second
+device, duplicate submission, reportability, a rejection with no reason, review by the revoked user,
+and the loss of every operation after revocation.
+
+**Why the unprovable case is refused rather than quarantined.** Quarantine is a promise that the
+evidence predates the revocation. A photograph with no capture time cannot support that promise, and
+a quarantine area that accepts unprovable items is just the project register with extra steps.

@@ -570,3 +570,55 @@ rather than be absorbed as a setting.
 
 **Validation:** **240 checks across 13 suites, all passing.** Byte-identical regeneration confirmed.
 Unchanged by this release, which adds no model content.
+
+---
+
+## [0.8.0] — 2026-09-12 — Decision D-25, the tightened speed threshold, and deterministic generation
+
+**Owner decision D-25 — revoked access preserves evidence in quarantine.** `OQ-23` is closed. The
+owner refused both available answers and specified a third: evidence captured **before** revocation
+completes into a **restricted quarantine area** — not the active project register, and not the bin.
+
+**Added**
+
+- Enum **`QuarantineStatus`** and seven `Photos` columns: `QuarantineStatus`, `AccessRevokedAt`,
+  `UploadCompletedAt`, `QuarantinedAt`, `QuarantineReviewedByUserID`, `QuarantineReviewedAt`,
+  `QuarantineRejectionReason`. One canonical block, `capture_once.revocation`.
+- `security.revocation_disposition()`, which has **three outcomes and no fourth**: quarantine, refuse,
+  or normal. **Discarding is not reachable from the code**, which is the point — a rule that depends
+  on nobody adding a delete path is not a rule.
+- **Evidence with no provable capture time is refused, not quarantined.** Quarantine asserts that the
+  evidence predates the revocation; a photograph with no capture time cannot support that assertion,
+  and a quarantine area that accepts unprovable items is the project register with extra steps.
+- **Fourteen checks, `ACC-32` … `ACC-45`** — capture before revocation, capture after it, unprovable
+  capture time, the absence of a discard path, five retries, a second device, duplicate submission,
+  reportability, rejection without a reason, review by the revoked user, every operation denied after
+  revocation, the confirmation column that makes G-4 checkable, and two guards on the rule block
+  itself.
+- **Eight platform scripts, `P2B-REV-01` … `P2B-REV-08`** in AH-SYS-P2A-026 §5b — 41 scripts becomes
+  **49**. The local checks prove the rule; these prove a running system obeys it.
+
+**Changed — the owner's tightened speed threshold**
+
+- **Median foreground ≤ baseline + 20 s** and **p90 foreground ≤ baseline + 40 s**, replacing the
+  proposed +40 / +75. No second selection, no missing or duplicated evidence, and **both** supervisors
+  confirming daily use — **the verdict stays blocking even when every number passes**.
+- **The single time measurement is split in two:** foreground time that needs the supervisor's
+  attention, and background synchronisation that does not. With one condition — **a background upload
+  that prevents the supervisor from moving on is re-counted as foreground time**, where it can turn a
+  pass into a fail.
+
+**Fixed — generation is deterministic**
+
+- Six generators stamped `datetime.date.today()`, so eight documents changed at midnight with no
+  content change and "byte-identical regeneration" reported NO. They now stamp **`model_date`**, a
+  field in the canonical model.
+- **`GOV-19` regenerates the whole repository twice, under two different system dates, into two
+  temporary trees outside the repository, and requires identical bytes.** It was verified by
+  reintroducing a clock read: the check failed and named the file. `GOV-20` is the static guard
+  against the clock creeping back in; `GOV-21` asserts that genuine event timestamps — the validation
+  run, the delivery receipt — are **not** removed, because determinism applies to generated
+  specifications, never to the record of something that happened at a moment.
+
+**Validation:** **257 checks across 13 suites, all passing** (was 240). Byte-identical regeneration
+confirmed, and now confirmed under a moving clock.

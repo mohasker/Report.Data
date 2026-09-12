@@ -50,6 +50,12 @@ Source documents, if you want the full reasoning: `docs/00-discovery/10-owner-de
 | **D-I** | **Release 1 is the twelve-table capture-and-review release** | No document, no numbering, no legal entity. Reports are produced manually from approved evidence |
 | **D-J** | **Three image classes**, replacing the "never through Make" absolute | Original never; AI derivative yes at pilot volume; report derivative at generation time |
 
+### The quarantine decision, 2026-09-12 — D-25
+
+| # | Decision | What it changed |
+|---|---|---|
+| **D-25** | **Revoking access preserves evidence in quarantine.** Captured before revocation → completes into a restricted quarantine area, never the project register. Captured after it, or with no provable capture time → **refused**. **Discarding is not an available outcome.** The revoked user may not view, edit, delete, share or submit. A reviewer accepts (creating a traceable record) or rejects **with a mandatory reason**, and the audit record is retained. If the platform cannot enforce it, **`CAP-GATE` fails** and the files stay locally protected | One enum, seven `Photos` columns, the `capture_once.revocation` block, and **14 checks `ACC-32` … `ACC-45`**. Closes `OQ-23` |
+
 ### The operational correction, 2026-09-11 — D-16 to D-21
 
 | # | Decision | Consequence |
@@ -150,7 +156,7 @@ load-bearing without being written down.
 | **OQ-20** | What the **quality threshold** and the **near-duplicate similarity threshold** should be. Both are project configuration, and both trade a saved model call against a missed observation | Phase 2B |
 | **OQ-21** | Whether a **pending classification** should expire into a reviewer task after some number of days, or simply accumulate in a queue | Phase 2A |
 | **OQ-22** | Whether the location prompt, when it does appear, should offer the nearest location by GPS rather than the last used | Phase 2A |
-| **OQ-23** | **Queued evidence when access is revoked** — discarded, or completed into a reviewer's quarantine. Raised by `CAP-GATE` G-5.3; the test measures what the platform does, not what it should do | Phase 2B |
+| ~~OQ-23~~ | **Closed 2026-09-12 by decision D-25** — preserved in quarantine, never discarded, never written straight to the project register | — |
 
 **OQ-15 to OQ-22 need no external access.** **Written recommendations for all eight now exist** in
 `docs/02a-plan/25-open-question-recommendations.md` (AH-SYS-P2A-025) — one recommendation each, with
