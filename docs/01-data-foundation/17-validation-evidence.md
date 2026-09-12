@@ -8,55 +8,16 @@
 
 | | |
 |---|---|
-| **Commit tested** | `e214e2af6ae6e734e9321dda9e56e9ba7e95b4df` |
-| **Commit subject** | The CAP-GATE and entitlement preparation pack |
+| **Commit tested** | `07953b0671cb5ddc7c0164b6bc08ab9017601ef2` |
+| **Commit subject** | Decision D-25, the tightened speed threshold, and deterministic generation |
 | **Command executed** | `python3 tools/run_validation.py` |
-| **Executed at** | 2026-09-12 12:46:03 UTC |
+| **Executed at** | 2026-09-12 12:46:12 UTC |
 | **Python** | 3.11.15 (CPython, GCC 13.3.0) |
 | **Operating system** | Linux 6.18.44-fc-v24 (x86_64) |
 | **Environment** | Ephemeral Linux container. This run made no network call, used no credential and contacted no external service |
 | **Third-party dependencies** | **None.** Python standard library only |
 | **Model version** | 1.0.0 |
-| **Working tree before the run** | MODIFIED — see below |
-
-```
-M CHANGELOG.md
- M CURRENT-STATUS-AND-NEXT-PROMPT.md
- M DECISIONS-AND-ASSUMPTIONS.md
- M MASTER-SPEC-CONSOLIDATED.md
- M README.md
- M START-HERE-NEW-CLAUDE.md
- M docs/00-discovery/04-open-questions.md
- M docs/00-discovery/10-owner-decisions.md
- M docs/01-data-foundation/01-data-dictionary.md
- M docs/01-data-foundation/17-validation-evidence.md
- M docs/02a-plan/01-appsheet-workbook.md
- M docs/02a-plan/17-lean-table-scope-matrix.md
- M docs/02a-plan/19-real-device-test-protocol.md
- M docs/02a-plan/21-release-1-twelve-tables.md
- M docs/02a-plan/25-open-question-recommendations.md
- M docs/02a-plan/26-phase-2b-platform-test-scripts.md
- M docs/02a-plan/28-cap-gate-results-sheet.md
- M docs/02a-plan/cap-gate-results-sheet.csv
- M docs/OWNER-REVIEW-PACK.md
- M docs/VERSION-MANIFEST.md
- M model/model.json
- M schemas/tables/Photos.schema.json
- M tools/build_model.py
- M tools/gen_appsheet_workbook.py
- M tools/gen_capture_once.py
- M tools/gen_data_dictionary.py
- M tools/gen_matrices.py
- M tools/gen_release1_scope.py
- M tools/gen_scope_matrix.py
- M tools/modeldef.py
- M tools/security.py
- M tools/test_access_control.py
- M tools/test_governance.py
-```
-
-> The run was executed against a working tree containing uncommitted changes. The commit recorded above is the parent commit, not the exact state tested. Re-run after committing to obtain a clean reproduction record.
-
+| **Working tree before the run** | clean |
 
 ### Byte-identical regeneration
 
@@ -555,7 +516,7 @@ The operating rules the owner approved, expressed as assertions so that weakenin
 ## 6. Reproducing this run
 
 ```
-git checkout e214e2af6ae6e734e9321dda9e56e9ba7e95b4df
+git checkout 07953b0671cb5ddc7c0164b6bc08ab9017601ef2
 python3 tools/run_validation.py
 ```
 
