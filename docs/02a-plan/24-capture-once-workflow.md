@@ -1,7 +1,7 @@
 # Capture Once, Use Twice — Field Workflow Specification
 
 **Document ID:** AH-SYS-P2A-024 · **Revision:** 2 · **Status:** generated — do not hand-edit
-**Generated:** 2026-09-11 from `model/model.json` by `tools/gen_capture_once.py`
+**Generated:** 2026-09-12 from `model/model.json` by `tools/gen_capture_once.py`
 **Authority:** the owner's operational corrections of 2026-09-11 (decisions D-16 to D-24)
 
 > This document is generated from the canonical model. The automated checks in

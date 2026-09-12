@@ -1,7 +1,7 @@
 # Data Dictionary
 
 **Document ID:** AH-SYS-P1-001 · **Revision:** 1 · **Status:** generated — do not hand-edit
-**Generated:** 2026-09-11 from `model/model.json` (model version 1.0.0) by `tools/gen_data_dictionary.py`
+**Generated:** 2026-09-12 from `model/model.json` (model version 1.0.0) by `tools/gen_data_dictionary.py`
 
 > This document is produced from the canonical model, as are the JSON Schemas in
 > `schemas/tables/`. They cannot drift apart, because both come from the same source.

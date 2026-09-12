@@ -1,7 +1,7 @@
 # Status Transition Matrix
 
 **Document ID:** AH-SYS-P1-003 · **Revision:** 1 · **Status:** generated — do not hand-edit
-**Generated:** 2026-09-11 from `model/model.json` by `tools/gen_matrices.py`
+**Generated:** 2026-09-12 from `model/model.json` by `tools/gen_matrices.py`
 **Tested by:** `tools/test_transitions.py` · **Evidence:** `17-validation-evidence.md` (TRN-01 … TRN-20)
 
 > Work advances only through a transition declared here. Anything not listed is refused,

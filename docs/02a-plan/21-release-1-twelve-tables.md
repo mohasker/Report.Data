@@ -1,7 +1,7 @@
 # Release 1 — Twelve Tables, and What Reaches a Field User
 
 **Document ID:** AH-SYS-P2A-021 · **Revision:** 2 · **Status:** generated — do not hand-edit
-**Generated:** 2026-09-11 from `model/model.json` by `tools/gen_release1_scope.py`
+**Generated:** 2026-09-12 from `model/model.json` by `tools/gen_release1_scope.py`
 
 > **Storage field counts come from the canonical model.** Exposure counts come from the
 > declared form and view design, which is a specification and has not been built.

@@ -1,7 +1,7 @@
 # Role and Row-Level Security Matrix
 
 **Document ID:** AH-SYS-P1-004 · **Revision:** 1 · **Status:** generated — do not hand-edit
-**Generated:** 2026-09-11 from `model/model.json` by `tools/gen_matrices.py`
+**Generated:** 2026-09-12 from `model/model.json` by `tools/gen_matrices.py`
 **Executable statement:** `tools/security.py` · **Tested by:** `tools/test_segregation.py`
 **Evidence:** `17-validation-evidence.md` (SEG-01 … SEG-12, GOV-06 … GOV-08)
 

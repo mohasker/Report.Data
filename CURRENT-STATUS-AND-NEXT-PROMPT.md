@@ -10,6 +10,29 @@
 
 ## 1. Last completed task
 
+**The CAP-GATE and entitlement preparation pack (2026-09-12), prepared under the owner's**
+**preparation-only authorisation.** Five deliverables, none executed:
+
+- `16-admin-console-checklist-owner.md` **rev 4** — the four screens revision 3 did not ask about
+  (**pilot users' organisational unit**, **Drive sharing policy**, **data regions**, **device
+  management**), an **evidence register** with redaction rules, and a **design-impact matrix** that
+  names, answer by answer, which document changes and how.
+- `19-real-device-test-protocol.md` **rev 3** — **§4c**, the owner's nine measurements. Four were
+  already in §4b and are not measured twice; five are new: **G-1** the WhatsApp baseline race,
+  **G-2** the four-point storage ledger, **G-3** the duplication census, **G-4** proof the upload
+  completed before any cleanup, **G-5** behaviour after access is revoked.
+- `27-cap-gate-prototype-specification.md` — the smallest thing that can answer the question, and
+  **disposable by design**: two tables, two screens, no rules, no automation, deleted after the test.
+- `28-cap-gate-results-sheet.md` + `cap-gate-results-sheet.csv` — 16 runs plus 2 baselines, the
+  seven pass/fail criteria, and a blank CSV. **A results sheet is not a result.**
+- `29-owner-participation-guide.md` — one page: the four things only the owner can do beforehand,
+  the three moments needed on the day, and what the owner should refuse to accept.
+
+**Nothing was connected, built, purchased or executed.** New open question **OQ-23**: what happens
+to evidence still queued on a device when access is revoked.
+
+### Before that
+
 **The Phase 2B platform test scripts (2026-09-11).** `docs/02a-plan/26-phase-2b-platform-test-scripts.md`
 (AH-SYS-P2A-026) — 41 scripts: 14 segregation, 17 evidence-rule, 10 configurability, each mapped to
 the local check it extends, and **five with no local counterpart at all**, because a running system
@@ -69,7 +92,7 @@ exact packaged source commit validated without modifying tracked files.**
 
 **Phase 2A — plan and synthetic prototype design. Completed · Submitted for Owner Review.**
 
-Phase 2A connects nothing and costs nothing. It has produced 27 planning documents on top of the
+Phase 2A connects nothing and costs nothing. It has produced 30 planning documents on top of the
 Phase 1 data foundation. **Phase 2B — the first external connection — is not authorised.**
 
 | Scope | Status (seven-value vocabulary) |
@@ -108,10 +131,11 @@ Phase 1 data foundation. **Phase 2B — the first external connection — is not
   real-device test may disprove. This overrides the earlier listing of blueprints as available work.
 - **The only prepared-but-not-executed work now authorised** is the Google Admin Console entitlement
   checklist and the synthetic `CAP-GATE` prototype and protocol — **prepared for the owner's
-  participation, never run without it.**
+  participation, never run without it. Delivered 2026-09-12** as AH-SYS-P2A-016 rev 4, -019 rev 3,
+  -027, -028 and -029. **Awaiting the owner's review**; the Admin Console inspection and the
+  building of the synthetic prototype are each a separate authorisation that has not been given.
 - `CAP-GATE` is to be **extended** to measure the nine points in
-  `docs/02a-plan/19-real-device-test-protocol.md` §4c *(to be written when that preparation is
-  authorised to begin)*: total time against posting straight to WhatsApp; whether images must be
+  `docs/02a-plan/19-real-device-test-protocol.md` §4c — **now written**: total time against posting straight to WhatsApp; whether images must be
   selected a second time; actual files versus links; image order and captions; temporary phone
   storage before capture, after capture, after synchronisation and after safe cleanup; whether
   images are duplicated across the gallery, the application cache and WhatsApp storage; weak-network

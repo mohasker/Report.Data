@@ -1,7 +1,7 @@
 # Security Filter Specification
 
 **Document ID:** AH-SYS-P2A-002 · **Revision:** 1 · **Status:** generated — do not hand-edit
-**Generated:** 2026-09-11 from `model/model.json` by `tools/gen_appsheet_workbook.py`
+**Generated:** 2026-09-12 from `model/model.json` by `tools/gen_appsheet_workbook.py`
 
 > Security filters are the **enforcement** layer, not the presentation layer. Views, slices
 > and column visibility control what is shown; a security filter controls what is delivered

@@ -1,11 +1,14 @@
 # Real-Device Test Protocol
 
-**Document ID:** AH-SYS-P2A-019 · **Revision:** 2 · **Date:** 2026-09-11
+**Document ID:** AH-SYS-P2A-019 · **Revision:** 3 · **Date:** 2026-09-12
 **Status:** Completed · **Not executed** — no device, no app, no supervisor
 **Supersedes the measurement sections of:** `05-offline-test-plan.md`, `13-field-workflow-and-taps.md`
 **Revision 2** adds §4b, the `CAP-GATE` native-share test — the pass/fail requirement the
 owner set on 2026-09-11. It is the most consequential section in this protocol: a failure
 there changes the capture platform, not the form.
+**Revision 3** adds §4c, the five measurement groups the owner added on 2026-09-11: the WhatsApp
+baseline race, the storage ledger, the duplication census, proof that the upload completed before
+any local cleanup, and behaviour after access is revoked.
 
 > **The target is a design target, not a validated result.** Recorded as the owner specified:
 >
@@ -147,6 +150,134 @@ accessible Drive link.
 **What does not change if the platform does:** the canonical data model, Drive security, Make
 orchestration, Claude controls, approval rules and audit requirements. They are defined independently
 of the capture interface, which is the whole reason this is a survivable failure.
+
+## 4c. CAP-GATE extension — owner instruction, 2026-09-11 *(pass/fail, blocking)*
+
+Nine measurements were added by the owner. **Four of them are already in §4b** and are not measured
+twice; five are new and are specified here as measurement groups **G-1 … G-5**.
+
+| Owner's measurement | Where it is measured |
+|---|---|
+| Whether images must be selected again | §4b condition 12 — **already the CAP-01 gate** |
+| Actual files versus links | §4b conditions 11 and 13 |
+| Image order and captions | §4b conditions 4 and 5 |
+| Weak-network and offline behaviour | §4b conditions 9 and 10 |
+| **Total time against posting directly to WhatsApp** | **G-1, new** |
+| **Phone storage at four points** | **G-2, new** |
+| **Duplication across gallery, app and WhatsApp** | **G-3, new** |
+| **Proof the upload completed before any cleanup** | **G-4, new** |
+| **Behaviour after access is revoked** | **G-5, new** |
+
+### G-1 — The WhatsApp baseline race
+
+**The comparison the whole adoption question rests on.** A supervisor who finds the app slower than
+what they already do will go back to what they already do, and no amount of governance survives that.
+
+| Step | What is done | Recorded |
+|---|---|---|
+| G-1.1 | **Baseline first.** On the same phone, in the same group, with the same six subjects: open WhatsApp, take or attach six photographs, type the sentence a supervisor types today, send. Repeat **five** times | Median and slowest of five, in seconds |
+| G-1.2 | **Then the app**, same phone, same group, same six subjects, Quick Share, five times | Median and slowest of five |
+| G-1.3 | Both are timed **from the phone leaving the pocket to the message appearing in the group** | Not from app-open to submit — that measures the wrong thing |
+| G-1.4 | The supervisor is asked, after run five, one question: *"Would you use this instead of WhatsApp?"* | Yes / no / only if — **recorded verbatim, per supervisor** |
+
+**Proposed acceptance, for the owner to set:** median app time **no more than the baseline plus 40
+seconds**, slowest run **no more than the baseline plus 75 seconds**. The app is doing more than
+WhatsApp does — it is producing a record — so equality is not the target; **invisibility of the
+difference** is.
+
+> **G-1.4 outranks the stopwatch.** "Close enough that supervisors will actually use it" is a
+> judgement about people, not a number, and the number cannot overrule two supervisors saying no.
+
+### G-2 — The storage ledger
+
+Measured at **four points**, on each device, for one run of six photographs:
+
+| Point | When | How |
+|---|---|---|
+| **S-0** | Before capture | Device free space; the application's reported size |
+| **S-1** | After capture, before synchronisation | Same two figures |
+| **S-2** | After synchronisation completes | Same two figures |
+| **S-3** | After the application's own cleanup | Same two figures |
+
+**Honesty about precision.** Per-application storage figures are **coarse and lag on both platforms**
+— iOS reports documents-and-data with delay, Android splits app, data and cache differently. Treat
+them as indicative to tens of megabytes. **The reliable figures are the device free-space delta
+across S-0 → S-3, and the file counts in G-3**, which are exact.
+
+**Pass:** `S-3` free space returns to within **10 MB** of `S-0`, *after* accounting for the copies
+G-3 says are expected to remain. A monotonic climb across repeated runs is a **leak**, and a leak is
+a finding even when every share succeeded.
+
+### G-3 — The duplication census
+
+**Count actual files, per photograph, after a completed share.** Where a copy exists is not the
+question; how many exist, and who owns each, is.
+
+| Location | Expected copies | Owned by | May we delete it? |
+|---|---|---|---|
+| Camera roll / gallery | 0 or 1 | **The user** | **Never.** Deleting a person's own photograph is not cleanup, it is data loss |
+| Application storage or cache | 1 while pending, **0 after cleanup** | The application | Yes — this is the only copy cleanup may touch |
+| WhatsApp media storage | 1 after sending | WhatsApp | **Never** |
+| Drive | 1 | The organisation | Not by the phone |
+
+**Recorded:** the count in each location, the file sizes, and the resulting **amplification factor**
+(total bytes on the phone ÷ bytes of one original). At six photographs of 3–5 MB, an amplification
+of three is ordinary and an amplification of five needs explaining.
+
+**Pass:** every copy is accounted for by the table above, and **no copy exists that nobody owns**.
+
+### G-4 — Upload before cleanup
+
+**The one measurement in this protocol where a failure means permanent evidence loss.**
+
+| Step | What is done | Pass |
+|---|---|---|
+| G-4.1 | Capture six photographs. **Put the device into flight mode before synchronisation completes** | **Nothing is cleaned up.** Six local files still present |
+| G-4.2 | Leave it offline for ten minutes, then close and reopen the application | Still six local files. Still queued |
+| G-4.3 | Restore the network. Wait for the upload to be confirmed | Drive holds six files, each matching the local size |
+| G-4.4 | Only now check the local copies | Cleanup happened **after** confirmation, never before |
+| G-4.5 | Repeat, killing the application mid-upload instead of using flight mode | Same result: no local deletion of anything unconfirmed |
+
+**Pass criterion, absolute:** **no local original is ever deleted before its upload is confirmed, under
+any interruption.** One failure here fails `CAP-GATE` outright, whatever else passed — an app that
+deletes evidence it has not delivered is worse than no app, because the supervisor believes the
+record exists.
+
+**How confirmation is judged:** the file is present in Drive **and** its size matches the local file.
+A checksum comparison is better and is deferred with the checksum work in `23-operations-budget.md`
+§3 — until then, size matching is what can honestly be claimed.
+
+### G-5 — Access revoked
+
+| Step | What is done | Recorded |
+|---|---|---|
+| G-5.1 | The owner removes the test user's project assignment **while the device is online and idle** | How long until the project disappears from the device; whether it needs a restart |
+| G-5.2 | Repeat with the device **offline**, then reconnect | Whether previously visible rows were readable in the gap, and for how long |
+| G-5.3 | Repeat with **six captured photographs still queued and unsent** | **What happens to the queued evidence** |
+| G-5.4 | Inspect the device afterwards | What remains readable: cached rows, thumbnails, queued files, the gallery copies |
+
+**G-5.3 has no agreed answer yet, and this document does not invent one.** Two outcomes are
+defensible and they conflict:
+
+- **Discard the queue** — clean, and it **destroys evidence** the supervisor believes they submitted.
+- **Let it complete into a reviewer's quarantine** — no evidence is lost, but a person who no longer
+  has access to the project has just written to it.
+
+**Recorded as `OQ-23` for the owner to decide.** The test measures what the platform actually does;
+the decision about what it *should* do is not a test result.
+
+**Pass for G-5.1, G-5.2 and G-5.4:** access ends without reinstalling the application, and nothing
+that was cached remains readable after the next refresh. **Whatever `OQ-23` decides, silent evidence
+loss is a fail.**
+
+### What §4c does not measure
+
+- **Whether the contractor received the message.** Not observable. Recorded once more here because it
+  is the single most tempting claim in the whole project.
+- **Whether WhatsApp re-encodes the images it sends.** It does what it does; our copy in Drive is the
+  evidence, and the group copy is a courtesy. If the group copy matters legally, that is a question
+  for the owner, not a measurement.
+- **Battery cost.** Worth knowing, not worth blocking on.
 
 ## 5. Image fidelity
 

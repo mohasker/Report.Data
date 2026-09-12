@@ -4,7 +4,7 @@
 ID, a revision, a date and an approval status. A document that has not been approved is marked as
 such and may not be treated as a decision.
 
-**Repository version:** 0.7.2 (Phase 2B platform test scripts, written before any platform exists — **not executed**) · **Date:** 2026-09-11
+**Repository version:** 0.7.3 (the CAP-GATE and entitlement preparation pack — **prepared, not executed**) · **Date:** 2026-09-12
 
 | Document ID | Document | Rev | Date | Status |
 |---|---|---|---|---|
@@ -43,10 +43,10 @@ such and may not be treated as a decision.
 | AH-SYS-P2A-013 | `02a-plan/13-field-workflow-and-taps.md` | 4 | 2026-09-11 | Completed · Rebuilt for minimum interaction: **11–14 taps**, target ≤75s, **not yet measured** |
 | AH-SYS-P2A-014 | `02a-plan/14-storage-and-image-volume.md` | 4 | 2026-09-11 | Completed · Derivative volume re-costed for capture once |
 | AH-SYS-P2A-015 | `02a-plan/15-make-inspection-record.md` | 2 | 2026-09-11 | **Verified from the live account**; scenario counts stated separately |
-| AH-SYS-P2A-016 | `02a-plan/16-admin-console-checklist-owner.md` | 3 | 2026-09-11 | Completed · **Awaiting the owner's check** |
+| AH-SYS-P2A-016 | `02a-plan/16-admin-console-checklist-owner.md` | 4 | 2026-09-12 | Completed · **Awaiting the owner's check** · four more screens, evidence register, design-impact matrix |
 | AH-SYS-P2A-017 | `02a-plan/17-lean-table-scope-matrix.md` | 1 | 2026-09-11 | **Generated** from the model |
 | AH-SYS-P2A-018 | `02a-plan/18-migration-threshold-strategy.md` | 1 | 2026-09-11 | Completed · Withdraws the fixed migration date |
-| AH-SYS-P2A-019 | `02a-plan/19-real-device-test-protocol.md` | 2 | 2026-09-11 | Completed · **Not executed** · §4b `CAP-GATE`, fifteen conditions |
+| AH-SYS-P2A-019 | `02a-plan/19-real-device-test-protocol.md` | 3 | 2026-09-12 | Completed · **Not executed** · §4b fifteen conditions, §4c groups G-1 … G-5 |
 | AH-SYS-P2A-020 | `02a-plan/20-administrator-role-placeholders.md` | 1 | 2026-09-11 | Completed · No identity assigned |
 | AH-SYS-P2A-021 | `02a-plan/21-release-1-twelve-tables.md` | 3 | 2026-09-11 | **Generated** — 12 tables, 290 fields, 15 on the field form, **0 mandatory** |
 | AH-SYS-P2A-022 | `02a-plan/22-image-derivative-architecture.md` | 3 | 2026-09-11 | Completed · Re-costed: only eligible photographs are analysed |
@@ -54,6 +54,9 @@ such and may not be treated as a decision.
 | AH-SYS-P2A-024 | `02a-plan/24-capture-once-workflow.md` | 2 | 2026-09-11 | **Generated** — capture once, minimum interaction, classification, analysis policy |
 | AH-SYS-P2A-025 | `02a-plan/25-open-question-recommendations.md` | 1 | 2026-09-11 | Completed · **Submitted for Owner Review** — recommendations only, OQ-15 … OQ-22, nothing implemented |
 | AH-SYS-P2A-026 | `02a-plan/26-phase-2b-platform-test-scripts.md` | 1 | 2026-09-11 | Completed · **Not executed** — 41 platform-neutral scripts, written before any platform exists |
+| AH-SYS-P2A-027 | `02a-plan/27-cap-gate-prototype-specification.md` | 1 | 2026-09-12 | Completed · **Nothing built** — disposable synthetic prototype, needs written authorisation |
+| AH-SYS-P2A-028 | `02a-plan/28-cap-gate-results-sheet.md` | 1 | 2026-09-12 | Completed · **Empty** — 16 runs plus 2 baselines, 7 pass/fail criteria, blank CSV |
+| AH-SYS-P2A-029 | `02a-plan/29-owner-participation-guide.md` | 1 | 2026-09-12 | Completed · No test scheduled or authorised |
 | AH-SYS-P1-000 | `01-data-foundation/00-PHASE-1-SUMMARY.md` | 1 | 2026-09-11 | Awaiting owner review |
 | AH-SYS-P1-001 | `01-data-dictionary.md` | 1 | 2026-09-11 | **Generated** from `model/model.json` |
 | AH-SYS-P1-002 | `02-key-id-and-hash-strategy.md` | 1 | 2026-09-11 | Awaiting owner review — closes C-06 |

@@ -1,7 +1,7 @@
 # Lean MVP Scope Matrix — 17 Tables, One Page
 
 **Document ID:** AH-SYS-P2A-017 · **Revision:** 1 · **Status:** generated — do not hand-edit
-**Generated:** 2026-09-11 from `model/model.json` by `tools/gen_scope_matrix.py`
+**Generated:** 2026-09-12 from `model/model.json` by `tools/gen_scope_matrix.py`
 
 > Field counts come from the canonical model and cannot drift. **Row estimates are
 > arithmetic from the assumptions in [`14-storage-and-image-volume.md`](14-storage-and-image-volume.md)

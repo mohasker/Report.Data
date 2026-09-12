@@ -150,6 +150,7 @@ load-bearing without being written down.
 | **OQ-20** | What the **quality threshold** and the **near-duplicate similarity threshold** should be. Both are project configuration, and both trade a saved model call against a missed observation | Phase 2B |
 | **OQ-21** | Whether a **pending classification** should expire into a reviewer task after some number of days, or simply accumulate in a queue | Phase 2A |
 | **OQ-22** | Whether the location prompt, when it does appear, should offer the nearest location by GPS rather than the last used | Phase 2A |
+| **OQ-23** | **Queued evidence when access is revoked** — discarded, or completed into a reviewer's quarantine. Raised by `CAP-GATE` G-5.3; the test measures what the platform does, not what it should do | Phase 2B |
 
 **OQ-15 to OQ-22 need no external access.** **Written recommendations for all eight now exist** in
 `docs/02a-plan/25-open-question-recommendations.md` (AH-SYS-P2A-025) — one recommendation each, with

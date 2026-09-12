@@ -8,12 +8,12 @@
 
 | | |
 |---|---|
-| **Commit tested** | `9ed7e495a97a92c1485ac449359096a5b40b3bf7` |
-| **Commit subject** | The Phase 2B platform test scripts, written before any platform exists |
+| **Commit tested** | `2d67ad0f1f4ded8caea14c1cc8bf92a3eaff5cc9` |
+| **Commit subject** | One source of truth for the validated commit, and the owner's scope freeze |
 | **Command executed** | `python3 tools/run_validation.py` |
-| **Executed at** | 2026-09-11 22:55:29 UTC |
+| **Executed at** | 2026-09-12 06:46:54 UTC |
 | **Python** | 3.11.15 (CPython, GCC 13.3.0) |
-| **Operating system** | Linux 6.18.44-fc-v24 (x86_64) |
+| **Operating system** | Linux 6.18.44-fc-v32 (x86_64) |
 | **Environment** | Ephemeral Linux container. This run made no network call, used no credential and contacted no external service |
 | **Third-party dependencies** | **None.** Python standard library only |
 | **Model version** | 1.0.0 |
@@ -21,7 +21,24 @@
 
 ```
 M CURRENT-STATUS-AND-NEXT-PROMPT.md
- M START-HERE-NEW-CLAUDE.md
+ M DECISIONS-AND-ASSUMPTIONS.md
+ M docs/00-discovery/04-open-questions.md
+ M docs/01-data-foundation/01-data-dictionary.md
+ M docs/01-data-foundation/03-status-transition-matrix.md
+ M docs/01-data-foundation/04-security-model.md
+ M docs/01-data-foundation/17-validation-evidence.md
+ M docs/02a-plan/01-appsheet-workbook.md
+ M docs/02a-plan/02-security-filter-specification.md
+ M docs/02a-plan/16-admin-console-checklist-owner.md
+ M docs/02a-plan/17-lean-table-scope-matrix.md
+ M docs/02a-plan/19-real-device-test-protocol.md
+ M docs/02a-plan/21-release-1-twelve-tables.md
+ M docs/02a-plan/24-capture-once-workflow.md
+ M docs/VERSION-MANIFEST.md
+?? docs/02a-plan/27-cap-gate-prototype-specification.md
+?? docs/02a-plan/28-cap-gate-results-sheet.md
+?? docs/02a-plan/29-owner-participation-guide.md
+?? docs/02a-plan/cap-gate-results-sheet.csv
 ```
 
 > The run was executed against a working tree containing uncommitted changes. The commit recorded above is the parent commit, not the exact state tested. Re-run after committing to obtain a clean reproduction record.
@@ -233,8 +250,8 @@ The evidence is captured exactly once; the description is optional; AI proposes 
 | `CAP-43` | PASS | Skipping is about waste, not coverage: a report still uses every relevant approved photograph | every photograph a reviewer may approve for a report. Skipping is abou… |
 | `CAP-44` | PASS | Every eligibility proportion is labelled an estimate until measured | replaced by counts in the pilot's first month |
 | `CAP-45` | PASS | The eligible share is arithmetic on the stated assumptions, not a guess | 1 - (0.08 + 0.05 + 0.04) = 0.83; 360 x 0.83 = 299 |
-| `CAP-25` | PASS | The CAP-01 acceptance requirement appears in the documentation the owner reads, not only in the model | 14 documents cite CAP-01 |
-| `CAP-26` | PASS | No surviving document still makes the work description mandatory | 71 documents scanned |
+| `CAP-25` | PASS | The CAP-01 acceptance requirement appears in the documentation the owner reads, not only in the model | 16 documents cite CAP-01 |
+| `CAP-26` | PASS | No surviving document still makes the work description mandatory | 74 documents scanned |
 
 ### Lean operational MVP  ·  `structural`  ·  19/19 passed
 
@@ -507,7 +524,7 @@ The operating rules the owner approved, expressed as assertions so that weakenin
 ## 6. Reproducing this run
 
 ```
-git checkout 9ed7e495a97a92c1485ac449359096a5b40b3bf7
+git checkout 2d67ad0f1f4ded8caea14c1cc8bf92a3eaff5cc9
 python3 tools/run_validation.py
 ```
 
